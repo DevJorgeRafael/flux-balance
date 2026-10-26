@@ -2,6 +2,52 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.1.1] - 2026-10-26
+
+Esta versión añade la nueva sección de estadísticas a la navegación principal.
+La pestaña queda preparada como punto de entrada para futuras métricas
+financieras sin modificar la lógica existente de cuentas, movimientos,
+persistencia ni navegación de detalle.
+
+### Añadido
+
+- Nueva pestaña **Stats** dentro de la navegación inferior de Expo Router.
+- Nueva ruta `src/app/(tabs)/stats.tsx` con:
+  - Título localizado de la sección.
+  - Estado inicial de funcionalidad próximamente disponible.
+  - Iconografía específica de estadísticas mediante `ChartColumn`.
+  - Tarjeta vacía preparada para incorporar métricas y visualizaciones futuras.
+  - Espaciado inferior compatible con la barra de navegación y el área segura
+    de Android e iOS.
+- Nuevas traducciones `stats` y `comingSoon` en español e inglés.
+
+### Cambiado
+
+- La barra inferior ahora muestra cuatro destinos:
+  - **Inicio**.
+  - **Cuentas**.
+  - **Stats**.
+  - **Ajustes**.
+- Se añadió el icono de estadísticas al `AppTabBar`.
+- Se incrementó el tamaño base de los iconos de navegación para mejorar su
+  legibilidad al incorporar el nuevo destino.
+- La distribución de la barra inferior se ajustó para conservar el botón
+  flotante central y mostrar correctamente los tabs adicionales.
+- La superficie de la barra inferior utiliza una sombra explícita compatible
+  con Android y una superficie oscura dedicada para mantener el contraste en
+  el tema oscuro.
+
+### Compatibilidad
+
+- `package.json` y `app.json` quedan sincronizados en la versión `1.1.1`.
+- La nueva ruta se integra en el `DashboardProvider` existente y conserva el
+  estado compartido de la aplicación.
+- No se modifican las rutas de detalle de cuenta ni de movimiento.
+- No se modifica la persistencia SQLite ni el cálculo de balances, ingresos,
+  gastos o rendimientos.
+- Se mantiene la compatibilidad con los idiomas español e inglés y con los
+  temas claro y oscuro.
+
 ## [1.1.0] - 2026-10-26
 
 Esta versión incorpora una reorganización importante de la navegación y de la

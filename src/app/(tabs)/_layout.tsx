@@ -18,6 +18,7 @@ export default function TabsLayout() {
       >
         <Tabs.Screen name="index" options={{ title: t('home') }} />
         <Tabs.Screen name="accounts" options={{ title: t('accountsTab') }} />
+        <Tabs.Screen name="stats" options={{ title: t('stats') }} />
         <Tabs.Screen name="settings" options={{ title: t('settings') }} />
       </Tabs>
     </DashboardProvider>
