@@ -1,7 +1,7 @@
 {
   "name": "flux-balance",
   "main": "expo-router/entry",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "dependencies": {
     "@expo/ui": "~58.0.23",
     "expo": "^58.0.19",
@@ -48,6 +48,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/core/services/stats-breakdown.test.mjs src/infrastructure/database/demoData.test.mjs",
     "prepare": "husky"
   },
   "lint-staged": {

@@ -50,6 +50,8 @@ export interface ThemeColors {
   scrim: string;
   /** Fondo de placeholder mientras carga una imagen. */
   skeleton: string;
+  chartCategories: readonly [string, string, string, string, string, string];
+  chartOther: string;
 }
 
 const neutral = {
@@ -95,6 +97,8 @@ export const lightPalette: ThemeColors = {
   overlay: 'rgba(0,0,0,0.5)',
   scrim: 'rgba(250,250,249,0.85)',
   skeleton: '#e7e5e4',
+  chartCategories: ['#43627F', '#4A746A', '#8A693F', '#975750', '#66743F', '#6B5B4C'],
+  chartOther: '#6E727A',
 };
 
 export const darkPalette: ThemeColors = {
@@ -137,4 +141,6 @@ export const darkPalette: ThemeColors = {
   overlay: 'rgba(0,0,0,0.7)',
   scrim: 'rgba(9,9,11,0.85)',
   skeleton: '#27272a',
+  chartCategories: ['#7D9BB8', '#82AC9F', '#C7A572', '#CE8C82', '#A7B57A', '#B29C87'],
+  chartOther: '#9A9CA3',
 };

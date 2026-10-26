@@ -45,7 +45,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     isRefreshing,
     loadData,
     handleRefresh,
-    handleSeedDemoData,
+    handleSeedDemoData: seedDemoData,
     handleResetAllData,
   } = useDashboardStats();
 
@@ -56,6 +56,11 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     handleSelectAccountFilter,
     reloadTransactions,
   } = useAccountFilters(accounts);
+
+  const handleSeedDemoData = useCallback(async () => {
+    await seedDemoData();
+    await reloadTransactions();
+  }, [reloadTransactions, seedDemoData]);
 
   const handleDataChanged = useCallback(() => {
     void loadData();
