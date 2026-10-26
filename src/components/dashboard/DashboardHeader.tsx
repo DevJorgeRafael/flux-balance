@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, type ViewInstance } from 'react-native';
 import { Sun, Moon, Settings, RotateCcw, Sparkles, Languages } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { useColors } from '@/components/ui/theme';
@@ -10,6 +10,7 @@ interface DashboardHeaderProps {
   isDevMode: boolean;
   isDark: boolean;
   language: 'es' | 'en';
+  themeButtonRef: React.RefObject<ViewInstance | null>;
   toggleSettings: () => void;
   closeSettings: () => void;
   toggleTheme: () => void;
@@ -23,6 +24,7 @@ export function DashboardHeader({
   isDevMode,
   isDark,
   language,
+  themeButtonRef,
   toggleSettings,
   closeSettings,
   toggleTheme,
@@ -80,6 +82,7 @@ export function DashboardHeader({
                 <Text style={[styles.menuLabel, { color: colors.text }]}>{t('theme')}</Text>
               </View>
               <TouchableOpacity
+                ref={themeButtonRef}
                 style={[styles.toggleButton, { backgroundColor: colors.primarySoft }]}
                 onPress={toggleTheme}
                 activeOpacity={0.75}

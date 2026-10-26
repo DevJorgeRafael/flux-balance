@@ -22,3 +22,4 @@ export {
   useAllowFontScaling,
 } from './UIProvider';
 export type { UIProviderProps, ThemeMode } from './UIProvider';
+export { ThemeTransitionProvider, useThemeTransition } from './ThemeTransition';

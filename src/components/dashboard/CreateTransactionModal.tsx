@@ -1,9 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
   Text,
-  Modal,
   ScrollView,
   TouchableOpacity,
   TextInput,
@@ -11,14 +10,13 @@ import {
   Alert,
 } from 'react-native';
 import { X } from 'lucide-react-native';
-import { MotiView } from 'moti';
 import { TransactionType } from '@/core/models/transaction';
 import { Account } from '@/core/models/account';
 import { Category } from '@/core/models/category';
-import { useColors, useInsets } from '@/components/ui/theme';
+import { useColors } from '@/components/ui/theme';
 import { SqliteTransactionRepository } from '@/infrastructure/repositories';
 import { useTranslation } from '@/core/i18n/useTranslation';
-import { BackdropBlur } from '@/components/ui/BackdropBlur';
+import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 
 interface CreateTransactionModalProps {
   visible: boolean;
@@ -42,7 +40,6 @@ export function CreateTransactionModal({
   blurTarget,
 }: CreateTransactionModalProps) {
   const colors = useColors();
-  const insets = useInsets();
   const { t } = useTranslation();
 
   const [txType, setTxType] = useState<TransactionType>(initialType);
@@ -62,39 +59,6 @@ export function CreateTransactionModal({
       }
     }
   }
-
-  // Control de animación entrada/salida
-  const [isRendered, setIsRendered] = useState(false);
-  const [isAnimatingIn, setIsAnimatingIn] = useState(false);
-  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    const run = async () => {
-      if (visible) {
-        if (!cancelled) setIsRendered(true);
-        await new Promise<void>((resolve) => setTimeout(resolve, 16));
-        if (!cancelled) setIsAnimatingIn(true);
-      } else {
-        if (!cancelled) setIsAnimatingIn(false);
-        closeTimeoutRef.current = setTimeout(() => {
-          if (!cancelled) setIsRendered(false);
-        }, 250);
-      }
-    };
-    void run();
-    return () => {
-      cancelled = true;
-      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-    };
-  }, [visible]);
-
-  const handleClose = () => {
-    setIsAnimatingIn(false);
-    setTimeout(() => {
-      onClose();
-    }, 210);
-  };
 
   const resetForm = () => {
     setTxAmount('');
@@ -139,7 +103,7 @@ export function CreateTransactionModal({
       });
 
       resetForm();
-      handleClose();
+      onClose();
       onTransactionCreated();
     } catch (err: unknown) {
       console.error('Error creating transaction:', err);
@@ -149,37 +113,28 @@ export function CreateTransactionModal({
     }
   };
 
-  if (!isRendered) return null;
-
   return (
-    <Modal
-      visible={isRendered}
-      transparent
-      animationType="none"
-      onRequestClose={handleClose}
+    <BottomSheetModal
+      visible={visible}
+      onClose={onClose}
+      blurTarget={blurTarget}
+      maxHeight="92%"
     >
-      <BackdropBlur visible={isAnimatingIn} onPress={handleClose} blurTarget={blurTarget} />
+      <View style={styles.modalTopBar}>
+        <Text style={[styles.modalHeading, { color: colors.text }]}>
+          {txType === 'INCOME' ? t('registerIncome') : t('registerExpense')}
+        </Text>
+        <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <X size={22} color={colors.textLight} strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
 
-      {/* Sheet — slide up/down sin layout animation */}
-      <View style={styles.modalBackdrop} pointerEvents="box-none">
-        <MotiView
-          animate={{
-            translateY: isAnimatingIn ? 0 : 400,
-            opacity: isAnimatingIn ? 1 : 0,
-          }}
-          transition={{ type: 'timing', duration: 220 } as any}
-          style={[styles.modalSheet, { backgroundColor: colors.surface, paddingBottom: insets.bottom + 24 }]}
-        >
-          <View style={styles.modalTopBar}>
-            <Text style={[styles.modalHeading, { color: colors.text }]}>
-              {txType === 'INCOME' ? t('registerIncome') : t('registerExpense')}
-            </Text>
-            <TouchableOpacity onPress={handleClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-              <X size={22} color={colors.textLight} strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Segmented Control de Tipo */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 8 }}
+      >
+        {/* Segmented Control de Tipo */}
           <View style={[styles.typeSegmentedControl, { backgroundColor: colors.background, borderColor: colors.border }]}>
             <TouchableOpacity
               style={[
@@ -339,28 +294,12 @@ export function CreateTransactionModal({
               <Text style={styles.submitTransactionButtonText}>{t('saveMovement')}</Text>
             )}
           </TouchableOpacity>
-        </MotiView>
-      </View>
-    </Modal>
+      </ScrollView>
+    </BottomSheetModal>
   );
 }
 
 const styles = StyleSheet.create({
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    position: 'relative',
-    zIndex: 1,
-    elevation: 1,
-  },
-  modalSheet: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    zIndex: 1,
-    elevation: 1,
-  },
   modalTopBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',

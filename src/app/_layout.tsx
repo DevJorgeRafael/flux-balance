@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Stack } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { ActivityIndicator, LogBox, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as SystemUI from 'expo-system-ui';
 
 import { StatusBar } from 'expo-status-bar';
-import { UIProvider, useColors, useThemeMode } from '@/components/ui/theme';
+import {
+  ThemeTransitionProvider,
+  UIProvider,
+  useColors,
+  useThemeMode,
+} from '@/components/ui/theme';
 import { initDatabase } from '@/infrastructure/database/db';
 import { TranslationProvider } from '@/core/i18n/useTranslation';
 
@@ -33,16 +38,35 @@ function RootWithTheme() {
     void SystemUI.setBackgroundColorAsync(colors.background);
   }, [colors.background]);
 
+  const baseNavigationTheme = isDark ? DarkTheme : DefaultTheme;
+  const navigationTheme = {
+    ...baseNavigationTheme,
+    colors: {
+      ...baseNavigationTheme.colors,
+      primary: colors.primary,
+      background: colors.background,
+      card: colors.background,
+      text: colors.text,
+      border: colors.border,
+      notification: colors.error,
+    },
+  };
+
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          animation: 'fade',
-          contentStyle: { backgroundColor: colors.background },
-        }}
-      />
+      <ThemeProvider value={navigationTheme}>
+        <ThemeTransitionProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: 'slide_from_right',
+              gestureEnabled: true,
+              contentStyle: { backgroundColor: colors.background },
+            }}
+          />
+        </ThemeTransitionProvider>
+      </ThemeProvider>
     </>
   );
 }

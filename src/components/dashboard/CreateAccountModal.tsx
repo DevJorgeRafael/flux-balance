@@ -1,9 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
   Text,
-  Modal,
   ScrollView,
   TouchableOpacity,
   TextInput,
@@ -11,10 +10,9 @@ import {
   Alert,
 } from 'react-native';
 import { X, CreditCard, TrendingUp, Calendar } from 'lucide-react-native';
-import { MotiView } from 'moti';
-import Animated, { LinearTransition, FadeIn, Easing } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { AccountType } from '@/core/models/account';
-import { useColors, useInsets } from '@/components/ui/theme';
+import { useColors } from '@/components/ui/theme';
 import { SqliteAccountRepository } from '@/infrastructure/repositories';
 import {
   calculateDailyProjection,
@@ -22,7 +20,7 @@ import {
 } from '@/core/services/interest-calculator';
 import { AccountProjectionPreview } from '@/components/dashboard/AccountProjectionPreview';
 import { useTranslation } from '@/core/i18n/useTranslation';
-import { BackdropBlur } from '@/components/ui/BackdropBlur';
+import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 
 interface CreateAccountModalProps {
   visible: boolean;
@@ -40,7 +38,6 @@ export function CreateAccountModal({
   blurTarget,
 }: CreateAccountModalProps) {
   const colors = useColors();
-  const insets = useInsets();
   const { t } = useTranslation();
 
   const [accName, setAccName] = useState('');
@@ -49,42 +46,6 @@ export function CreateAccountModal({
   const [accTNA, setAccTNA] = useState('');
   const [accTermMonths, setAccTermMonths] = useState('3');
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
-
-  // Control interno para animar entrada y salida del modal
-  const [isRendered, setIsRendered] = useState(false);
-  const [isAnimatingIn, setIsAnimatingIn] = useState(false);
-  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    const run = async () => {
-      if (visible) {
-        if (!cancelled) setIsRendered(true);
-        // Esperar dos frames para que React haga commit del estado inicial (off-screen)
-        // antes de que Moti inicie la transición
-        await new Promise<void>((resolve) => setTimeout(resolve, 16));
-        if (!cancelled) setIsAnimatingIn(true);
-      } else {
-        if (!cancelled) setIsAnimatingIn(false);
-        closeTimeoutRef.current = setTimeout(() => {
-          if (!cancelled) setIsRendered(false);
-        }, 250);
-      }
-    };
-    void run();
-    return () => {
-      cancelled = true;
-      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-    };
-  }, [visible]);
-
-  const handleClose = () => {
-    // Dispara la animación de salida, luego llama onClose
-    setIsAnimatingIn(false);
-    setTimeout(() => {
-      onClose();
-    }, 210);
-  };
 
   const resetForm = () => {
     setAccName('');
@@ -125,7 +86,7 @@ export function CreateAccountModal({
       });
 
       resetForm();
-      handleClose();
+      onClose();
       onAccountCreated();
     } catch (err) {
       console.error('Error creating account:', err);
@@ -155,39 +116,22 @@ export function CreateAccountModal({
       ? calculateDailyProjection(previewCapital, previewRate, 365).at(-1)?.balance ?? previewCapital
       : null;
 
-  if (!isRendered) return null;
-
   return (
-    <Modal
-      visible={isRendered}
-      transparent
-      animationType="none"
-      onRequestClose={handleClose}
+    <BottomSheetModal
+      visible={visible}
+      onClose={onClose}
+      blurTarget={blurTarget}
+      maxHeight="88%"
+      bottomPaddingExtra={20}
     >
-      <BackdropBlur visible={isAnimatingIn} onPress={handleClose} blurTarget={blurTarget} />
+      <View style={styles.modalTopBar}>
+        <Text style={[styles.modalHeading, { color: colors.text }]}>{t('newAccountTitle')}</Text>
+        <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <X size={22} color={colors.textLight} strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
 
-      {/* Sheet — solo slide up/down, sin layout animation ni Reanimated */}
-      <View style={styles.modalBackdrop} pointerEvents="box-none">
-        <MotiView
-          animate={{
-            translateY: isAnimatingIn ? 0 : 400,
-            opacity: isAnimatingIn ? 1 : 0,
-          }}
-          transition={{ type: 'timing', duration: 220 } as any}
-          layout={LinearTransition.duration(200).easing(Easing.out(Easing.quad))}
-          style={[
-            styles.modalSheet,
-            { backgroundColor: colors.surface, paddingBottom: insets.bottom + 20, maxHeight: '88%' },
-          ]}
-        >
-          <View style={styles.modalTopBar}>
-            <Text style={[styles.modalHeading, { color: colors.text }]}>{t('newAccountTitle')}</Text>
-            <TouchableOpacity onPress={handleClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-              <X size={22} color={colors.textLight} strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
             {/* Selector de Tipo de Cuenta */}
             <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 4 }]}>{t('accountType')}</Text>
             <View style={styles.accountTypeSelectorRow}>
@@ -355,32 +299,12 @@ export function CreateAccountModal({
                 </Text>
               )}
             </TouchableOpacity>
-          </ScrollView>
-        </MotiView>
-      </View>
-    </Modal>
+      </ScrollView>
+    </BottomSheetModal>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    zIndex: 0,
-  },
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    position: 'relative',
-    zIndex: 1,
-    elevation: 1,
-  },
-  modalSheet: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    zIndex: 1,
-    elevation: 1,
-  },
   modalTopBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
