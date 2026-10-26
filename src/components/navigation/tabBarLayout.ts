@@ -1,0 +1,4 @@
+export const TAB_BAR_HEIGHT = 64;
+export const TAB_BAR_OVERHANG = 28;
+export const TAB_BAR_CONTENT_OFFSET = TAB_BAR_HEIGHT + TAB_BAR_OVERHANG;
+export const TAB_BAR_CONTENT_GAP = 20;

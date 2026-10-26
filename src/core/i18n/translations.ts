@@ -2,6 +2,9 @@ export type Language = 'es' | 'en';
 
 export const translations = {
   es: {
+    home: 'Inicio',
+    accountsTab: 'Cuentas',
+    newMovement: 'Nuevo movimiento',
     consolidatedBalance: 'Balance consolidado',
     income: 'Ingresos',
     expense: 'Gastos',
@@ -84,6 +87,9 @@ export const translations = {
     months: 'meses',
   },
   en: {
+    home: 'Home',
+    accountsTab: 'Accounts',
+    newMovement: 'New movement',
     consolidatedBalance: 'Consolidated balance',
     income: 'Income',
     expense: 'Expenses',

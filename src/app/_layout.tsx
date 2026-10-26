@@ -62,7 +62,9 @@ function RootWithTheme() {
             gestureEnabled: true,
             contentStyle: { backgroundColor: colors.background },
           }}
-        />
+        >
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
       </ThemeProvider>
     </>
   );

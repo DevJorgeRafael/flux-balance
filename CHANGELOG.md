@@ -2,6 +2,103 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.1.0] - 2026-10-26
+
+Esta versión incorpora una reorganización importante de la navegación y de la
+arquitectura de la pantalla principal. El dashboard conserva la lógica
+existente de cuentas, movimientos, filtros y modales, pero ahora forma parte
+de una navegación inferior persistente y comparte su estado mediante un
+contexto dedicado.
+
+### Añadido
+
+- Navegación inferior con tabs para:
+  - **Inicio**, con el dashboard y el balance consolidado.
+  - **Cuentas**, con el carrusel y la gestión de cuentas.
+  - **Ajustes**, con las preferencias de tema, idioma y acciones de desarrollo.
+- Barra inferior personalizada en `AppTabBar` con:
+  - Iconos y etiquetas localizados.
+  - Estado activo/inactivo según el tema.
+  - Botón central flotante para crear rápidamente un movimiento.
+  - Soporte para el inset inferior del dispositivo.
+  - Separación visual para que el botón central no interfiera con los tabs.
+- Constantes compartidas de layout para la barra inferior:
+  - Altura de la barra.
+  - Solapamiento superior.
+  - Espacio inferior de contenido.
+  - Separación adicional para evitar que la navegación tape listas o tarjetas.
+- `DashboardContext` para centralizar y compartir:
+  - Cuentas y categorías.
+  - Balance total y totales mensuales.
+  - Estado de carga y refresco.
+  - Cuenta filtrada y movimientos visibles.
+  - Apertura de los modales de nueva cuenta y nuevo movimiento.
+  - Acciones de datos demo y reinicio de la base local.
+- Nuevas pantallas Expo Router:
+  - `src/app/(tabs)/index.tsx`
+  - `src/app/(tabs)/accounts.tsx`
+  - `src/app/(tabs)/settings.tsx`
+- Ajustes y preferencias como pantalla independiente, incluyendo:
+  - Cambio entre tema claro y oscuro.
+  - Cambio de idioma.
+  - Carga de datos demo en desarrollo.
+  - Reinicio de datos en desarrollo.
+
+### Cambiado
+
+- Migración de la pantalla inicial a un grupo de rutas `(tabs)` de Expo Router.
+- Actualización del layout raíz para presentar el navegador de tabs como
+  entrada principal de la aplicación.
+- Eliminación de la responsabilidad de los modales del dashboard:
+  ahora se montan una sola vez dentro de `DashboardProvider`, evitando
+  duplicación de estado y manteniendo el flujo disponible desde cualquier tab.
+- El refresco desde el dashboard también recarga los movimientos filtrados,
+  manteniendo sincronizados el balance, las cuentas y el historial.
+- El carrusel de cuentas ahora admite distintos usos:
+  - Filtrado completo desde Inicio.
+  - Vista de cuentas sin el filtro “Todas” desde la pestaña Cuentas.
+  - Navegación directa al detalle de una cuenta.
+- Ajuste del espaciado inferior de las pantallas desplazables para convivir con
+  la barra inferior y el área segura de Android/iOS.
+- Ajuste de traducciones para las nuevas etiquetas de navegación:
+  - Inicio / Home.
+  - Cuentas / Accounts.
+  - Ajustes / Settings.
+- El dashboard mantiene la composición visual azul superior y hoja inferior,
+  pero ahora se adapta correctamente al espacio reservado por la navegación.
+
+### Corregido
+
+- Evita que la barra inferior cubra el contenido final de las listas.
+- Evita que el botón flotante de nuevo movimiento se solape con los botones de
+  navegación.
+- Mantiene los modales de cuenta y movimiento accesibles desde el nuevo flujo
+  de navegación.
+- Conserva la selección de cuenta y la lista de movimientos al refrescar los
+  datos desde el contexto compartido.
+- Corrige la alineación del carrusel cuando se utiliza dentro de una pantalla
+  con padding horizontal propio.
+- Mantiene el comportamiento de tema, idioma, datos demo y reinicio después de
+  separar Ajustes en su propia ruta.
+
+### Internacionalización
+
+- Añadidas las claves de navegación en español e inglés:
+  - `home`
+  - `accountsTab`
+  - `settings`
+  - `newMovement`
+- Las etiquetas de la barra inferior se resuelven mediante el proveedor de
+  traducciones existente y respetan el idioma seleccionado.
+
+### Compatibilidad
+
+- `package.json` y `app.json` quedan sincronizados en la versión `1.1.0`.
+- La navegación continúa utilizando Expo Router y mantiene las rutas existentes
+  de detalle de cuenta y detalle de movimiento.
+- La lógica de persistencia SQLite, cuentas, depósitos, movimientos y cálculos
+  financieros no se reemplaza; únicamente se reorganiza su acceso desde la UI.
+
 ## [1.0.5] - 2026-10-26
 
 ### Mejorado

@@ -16,43 +16,53 @@ import { useTranslation } from '@/core/i18n/useTranslation';
 interface AccountCarouselProps {
   accounts: Account[];
   totalBalance: number;
-  selectedFilterAccountId: string | null;
-  onSelectAccountFilter: (id: string | null) => void;
+  selectedFilterAccountId?: string | null;
+  onSelectAccountFilter?: (id: string | null) => void;
   onOpenCreateAccountModal: () => void;
+  showNewAccount?: boolean;
+  showHeader?: boolean;
+  showAllFilter?: boolean;
+  onPressAccount?: (id: string) => void;
 }
 
 export function AccountCarousel({
   accounts,
   totalBalance,
-  selectedFilterAccountId,
+  selectedFilterAccountId = null,
   onSelectAccountFilter,
   onOpenCreateAccountModal,
+  showNewAccount = true,
+  showHeader = true,
+  showAllFilter = true,
+  onPressAccount,
 }: AccountCarouselProps) {
   const colors = useColors();
   const { t } = useTranslation();
 
   return (
     <>
-      {/* Sección Cuentas Cabecera */}
-      <View style={styles.sectionHeaderRow}>
-        <View style={styles.titleWithBadge}>
-          <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('accounts')}</Text>
-          <View style={[styles.counterBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={[styles.counterBadgeText, { color: colors.textLight }]}>{accounts.length}</Text>
+      {showHeader && (
+        <View style={styles.sectionHeaderRow}>
+          <View style={styles.titleWithBadge}>
+            <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('accounts')}</Text>
+            <View style={[styles.counterBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[styles.counterBadgeText, { color: colors.textLight }]}>{accounts.length}</Text>
+            </View>
           </View>
-        </View>
 
-        {/* Botón Nueva Cuenta en Cabecera */}
-        <TouchableOpacity
-          style={[styles.addAccountHeaderBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          onPress={onOpenCreateAccountModal}
-          activeOpacity={0.7}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Plus size={15} color={colors.primaryText} strokeWidth={2.5} />
-          <Text style={[styles.addAccountHeaderText, { color: colors.primaryText }]}>{t('newAccount')}</Text>
-        </TouchableOpacity>
-      </View>
+          {showNewAccount && (
+            <TouchableOpacity
+              style={[styles.addAccountHeaderBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              onPress={onOpenCreateAccountModal}
+              activeOpacity={0.7}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Plus size={15} color={colors.primaryText} strokeWidth={2.5} />
+              <Text style={[styles.addAccountHeaderText, { color: colors.primaryText }]}>{t('newAccount')}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       {accounts.length === 0 ? (
         <View style={[styles.emptyContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -63,16 +73,18 @@ export function AccountCarousel({
           <Text style={[styles.emptySubtext, { color: colors.textLight }]}>
             {t('createFirstAccount')}
           </Text>
-          <TouchableOpacity
-            style={[styles.createAccountPrimaryBtn, { backgroundColor: colors.primary }]}
-            onPress={onOpenCreateAccountModal}
-            activeOpacity={0.85}
-          >
-            <Plus size={18} color={colors.onPrimary} strokeWidth={2.5} />
-            <Text style={[styles.createAccountPrimaryBtnText, { color: colors.onPrimary }]}>
-              {t('createFirstAccount')}
-            </Text>
-          </TouchableOpacity>
+          {showNewAccount && (
+            <TouchableOpacity
+              style={[styles.createAccountPrimaryBtn, { backgroundColor: colors.primary }]}
+              onPress={onOpenCreateAccountModal}
+              activeOpacity={0.85}
+            >
+              <Plus size={18} color={colors.onPrimary} strokeWidth={2.5} />
+              <Text style={[styles.createAccountPrimaryBtnText, { color: colors.onPrimary }]}>
+                {t('createFirstAccount')}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <ScrollView
@@ -81,19 +93,19 @@ export function AccountCarousel({
           style={styles.horizontalCardsScroll}
           contentContainerStyle={styles.horizontalCardsTrack}
         >
-          {/* Chip/Tarjeta "Todas" */}
-          <TouchableOpacity
-            style={[
-              styles.modernAccountCard,
-              {
-                backgroundColor: colors.surface,
-                borderColor: selectedFilterAccountId === null ? colors.primary : colors.border,
-                borderWidth: selectedFilterAccountId === null ? 2 : 1,
-              },
-            ]}
-            onPress={() => onSelectAccountFilter(null)}
-            activeOpacity={0.8}
-          >
+          {showAllFilter && (
+            <TouchableOpacity
+              style={[
+                styles.modernAccountCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: selectedFilterAccountId === null ? colors.primary : colors.border,
+                  borderWidth: selectedFilterAccountId === null ? 2 : 1,
+                },
+              ]}
+              onPress={() => onSelectAccountFilter?.(null)}
+              activeOpacity={0.8}
+            >
             <View style={styles.accountCardHeader}>
               <Text style={[styles.accountTypeHeader, { color: colors.textLight }]}>
                 {t('allAccounts').toUpperCase()}
@@ -154,34 +166,43 @@ export function AccountCarousel({
               </Text>
             </View>
           </TouchableOpacity>
+          )}
 
           {/* Tarjetas individuales de Cuentas */}
           {accounts.map((acc) => (
             <AccountCard
               key={acc.id}
               account={acc}
-              isSelected={selectedFilterAccountId === acc.id}
-              onPress={() => onSelectAccountFilter(acc.id)}
+              isSelected={showAllFilter && selectedFilterAccountId === acc.id}
+              onPress={() => {
+                if (onPressAccount) {
+                  onPressAccount(acc.id);
+                } else {
+                  onSelectAccountFilter?.(acc.id);
+                }
+              }}
             />
           ))}
 
           {/* Tarjeta para Añadir Otra Cuenta */}
-          <TouchableOpacity
-            style={[
-              styles.addAccountDashedCard,
-              { backgroundColor: colors.surface, borderColor: colors.border },
-            ]}
-            onPress={onOpenCreateAccountModal}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.addAccountIconCircle, { backgroundColor: colors.primarySoft }]}>
-              <Plus size={20} color={colors.primaryText} strokeWidth={2.5} />
-            </View>
-            <Text style={[styles.addAccountDashedTitle, { color: colors.text }]}>{t('newAccount')}</Text>
-            <Text style={[styles.addAccountDashedSubtext, { color: colors.textLight }]}>
-              {t('addAnother')}
-            </Text>
-          </TouchableOpacity>
+          {showNewAccount && (
+            <TouchableOpacity
+              style={[
+                styles.addAccountDashedCard,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+              onPress={onOpenCreateAccountModal}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.addAccountIconCircle, { backgroundColor: colors.primarySoft }]}>
+                <Plus size={20} color={colors.primaryText} strokeWidth={2.5} />
+              </View>
+              <Text style={[styles.addAccountDashedTitle, { color: colors.text }]}>{t('newAccount')}</Text>
+              <Text style={[styles.addAccountDashedSubtext, { color: colors.textLight }]}>
+                {t('addAnother')}
+              </Text>
+            </TouchableOpacity>
+          )}
         </ScrollView>
       )}
     </>
