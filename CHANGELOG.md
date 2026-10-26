@@ -2,6 +2,17 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.0.5] - 2026-10-26
+
+### Mejorado
+
+- Rediseño de la pantalla principal con una zona superior azul y una hoja
+  superpuesta para reforzar la jerarquía visual del balance.
+- Tarjeta resumen de Ingresos, Gastos y Neto con tres columnas alineadas,
+  contraste consistente y mejor profundidad en modo claro y oscuro.
+- Carrusel de cuentas con espaciado lateral y elevación corregidos para evitar
+  sombras recortadas.
+
 ## [1.0.4] - 2026-10-26
 
 ### Mejorado
