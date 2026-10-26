@@ -2,6 +2,34 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.1.2] - 2026-10-26
+
+La pestaña **Stats** pasa a ser funcional con análisis mensual de movimientos.
+
+### Añadido
+
+- Selector de mes e ingresos/gastos.
+- Gráfico de dona y desglose por categorías.
+- Estados vacíos para meses sin movimientos.
+- Datos demo reutilizables y pruebas unitarias para estadísticas y saldos.
+
+### Cambiado
+
+- Stats ahora carga y analiza los movimientos reales desde SQLite.
+- Se añadieron colores, traducciones y soporte de temas para la nueva vista.
+- El cálculo agrupa categorías adicionales en **Otros** y garantiza porcentajes
+  que suman `100%`.
+
+### Corregido
+
+- Se mejoró la recarga de datos al volver a Stats y al actualizar movimientos.
+- Se evitó que cargas anteriores sobrescriban datos más recientes.
+
+### Compatibilidad
+
+- `package.json` y `app.json` quedan sincronizados en `1.1.2`.
+- Se mantienen la navegación, persistencia, temas e idiomas existentes.
+
 ## [1.1.1] - 2026-10-26
 
 Esta versión añade la nueva sección de estadísticas a la navegación principal.
