@@ -54,7 +54,6 @@ export default function DashboardScreen() {
     isDevMode,
     isDark,
     toggleTheme,
-    themeButtonRef,
     toggleSettings,
     closeSettings,
   } = useThemeDropdown();
@@ -118,7 +117,9 @@ export default function DashboardScreen() {
         </ScrollView>
       </BlurTargetView>
 
-      <BackdropBlur visible={isSettingsOpen} onPress={closeSettings} blurTarget={blurTarget} />
+      {isSettingsOpen && (
+        <BackdropBlur visible={isSettingsOpen} onPress={closeSettings} blurTarget={blurTarget} />
+      )}
 
       <View style={[styles.headerOverlay, { top: insets.top }]} pointerEvents="box-none">
         <DashboardHeader
@@ -126,7 +127,6 @@ export default function DashboardScreen() {
           isDevMode={isDevMode}
           isDark={isDark}
           language={language}
-          themeButtonRef={themeButtonRef}
           toggleSettings={toggleSettings}
           closeSettings={closeSettings}
           toggleTheme={toggleTheme}

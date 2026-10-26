@@ -132,6 +132,7 @@ export function CreateTransactionModal({
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        style={{ flexGrow: 0 }}
         contentContainerStyle={{ paddingBottom: 8 }}
       >
         {/* Segmented Control de Tipo */}

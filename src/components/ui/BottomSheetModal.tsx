@@ -39,40 +39,41 @@ export function BottomSheetModal({
   const colors = useColors();
   const insets = useInsets();
 
-  const [isRendered, setIsRendered] = useState(visible);
+  const [isRendered, setIsRendered] = useState(false);
   const [isAnimatingIn, setIsAnimatingIn] = useState(false);
-  const [prevVisible, setPrevVisible] = useState(visible);
-
-  if (visible !== prevVisible) {
-    setPrevVisible(visible);
-    if (visible) {
-      setIsRendered(true);
-      setIsAnimatingIn(false);
-    } else {
-      setIsAnimatingIn(false);
-    }
-  }
 
   useEffect(() => {
-    let cancelled = false;
+    let renderTimeout: ReturnType<typeof setTimeout>;
+    let animationTimeout: ReturnType<typeof setTimeout>;
 
-    const timeout = setTimeout(
-      () => {
-        if (cancelled) return;
-        if (visible) {
-          setIsAnimatingIn(true);
-        } else {
-          setIsRendered(false);
-        }
-      },
-      visible ? 16 : CLOSE_DURATION
-    );
+    if (visible) {
+      renderTimeout = setTimeout(() => {
+        setIsRendered(true);
+      }, 0);
+      animationTimeout = setTimeout(() => {
+        setIsAnimatingIn(true);
+      }, 20);
+    } else {
+      renderTimeout = setTimeout(() => {
+        setIsAnimatingIn(false);
+      }, 0);
+      animationTimeout = setTimeout(() => {
+        setIsRendered(false);
+      }, 250);
+    }
 
     return () => {
-      cancelled = true;
-      clearTimeout(timeout);
+      clearTimeout(renderTimeout);
+      clearTimeout(animationTimeout);
     };
   }, [visible]);
+
+  const handleClose = () => {
+    setIsAnimatingIn(false);
+    setTimeout(() => {
+      onClose();
+    }, 220);
+  };
 
   if (!isRendered) return null;
 
@@ -82,16 +83,14 @@ export function BottomSheetModal({
       transparent
       animationType="none"
       statusBarTranslucent
-      navigationBarTranslucent
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
-      <BackdropBlur visible={isAnimatingIn} onPress={onClose} blurTarget={blurTarget} />
+      <BackdropBlur visible={isAnimatingIn} onPress={handleClose} blurTarget={blurTarget} />
 
       <View style={styles.backdrop} pointerEvents="box-none">
         <MotiView
-          from={{ translateY: 420, opacity: 0 }}
           animate={{
-            translateY: isAnimatingIn ? 0 : 420,
+            translateY: isAnimatingIn ? 0 : 500,
             opacity: isAnimatingIn ? 1 : 0,
           }}
           transition={{
@@ -99,8 +98,7 @@ export function BottomSheetModal({
             duration: isAnimatingIn ? OPEN_DURATION : CLOSE_DURATION,
             easing: isAnimatingIn ? OPEN_EASING : CLOSE_EASING,
           } as any}
-          layout={LinearTransition.duration(220).easing(Easing.out(Easing.quad))}
-          pointerEvents={isAnimatingIn ? 'auto' : 'none'}
+          layout={LinearTransition.duration(OPEN_DURATION).easing(OPEN_EASING)}
           style={[
             styles.sheet,
             {
@@ -122,6 +120,7 @@ const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
     justifyContent: 'flex-end',
+    position: 'relative',
     zIndex: 1,
     elevation: 1,
   },
@@ -134,3 +133,4 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
 });
+

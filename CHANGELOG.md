@@ -2,6 +2,12 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.0.4] - 2026-10-26
+
+### Mejorado
+
+- Cierre animado del `BottomSheetModal` con desmontaje posterior y backdrop sincronizado.
+
 ## [1.0.3] - 2026-10-21
 
 Primera versión formal documentada del producto. Consolida el trabajo implementado

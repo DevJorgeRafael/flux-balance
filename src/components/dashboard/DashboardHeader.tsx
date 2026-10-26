@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, type ViewInstance } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
 import { Sun, Moon, Settings, RotateCcw, Sparkles, Languages } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { useColors } from '@/components/ui/theme';
@@ -10,7 +10,7 @@ interface DashboardHeaderProps {
   isDevMode: boolean;
   isDark: boolean;
   language: 'es' | 'en';
-  themeButtonRef: React.RefObject<ViewInstance | null>;
+  themeButtonRef?: React.RefObject<any> | null;
   toggleSettings: () => void;
   closeSettings: () => void;
   toggleTheme: () => void;

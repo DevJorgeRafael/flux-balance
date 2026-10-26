@@ -6,7 +6,6 @@ import * as SystemUI from 'expo-system-ui';
 
 import { StatusBar } from 'expo-status-bar';
 import {
-  ThemeTransitionProvider,
   UIProvider,
   useColors,
   useThemeMode,
@@ -56,16 +55,14 @@ function RootWithTheme() {
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <ThemeProvider value={navigationTheme}>
-        <ThemeTransitionProvider>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              animation: 'slide_from_right',
-              gestureEnabled: true,
-              contentStyle: { backgroundColor: colors.background },
-            }}
-          />
-        </ThemeTransitionProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            animation: 'slide_from_right',
+            gestureEnabled: true,
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        />
       </ThemeProvider>
     </>
   );
