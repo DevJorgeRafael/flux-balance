@@ -78,6 +78,7 @@ export function AccountCarousel({
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={styles.horizontalCardsScroll}
           contentContainerStyle={styles.horizontalCardsTrack}
         >
           {/* Chip/Tarjeta "Todas" */}
@@ -258,6 +259,9 @@ const styles = StyleSheet.create({
   createAccountPrimaryBtnText: {
     fontSize: 15,
     fontWeight: '800',
+  },
+  horizontalCardsScroll: {
+    flexGrow: 0,
   },
   horizontalCardsTrack: {
     paddingRight: 8,

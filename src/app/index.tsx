@@ -13,6 +13,7 @@ import { useAccountFilters } from '@/hooks/useAccountFilters';
 import { useThemeDropdown } from '@/hooks/useThemeDropdown';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { DashboardHero } from '@/components/dashboard/DashboardHero';
+import { DashboardSummaryCard } from '@/components/dashboard/DashboardSummaryCard';
 import { QuickActionsGrid } from '@/components/dashboard/QuickActionsGrid';
 import { AccountCarousel } from '@/components/dashboard/AccountCarousel';
 import { RecentTransactionsList } from '@/components/dashboard/RecentTransactionsList';
@@ -63,6 +64,10 @@ export default function DashboardScreen() {
   const [isAccountModalVisible, setIsAccountModalVisible] = useState(false);
   const [isTxModalVisible, setIsTxModalVisible] = useState(false);
   const [txType, setTxType] = useState<TransactionType>('EXPENSE');
+  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+
+  const heroColor = isDark ? '#0F1B3D' : '#1F4FD8';
+  const sheetColor = isDark ? '#1C2230' : '#E6E9EF';
 
   const handleOpenTransactionModal = (type: TransactionType) => {
     setTxType(type);
@@ -83,37 +88,56 @@ export default function DashboardScreen() {
   }
 
   return (
-    <View style={[styles.screen, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+    <View style={[styles.screen, { backgroundColor: heroColor, paddingTop: insets.top }]}>
       <BlurTargetView ref={blurTarget} style={styles.blurTarget}>
         <ScrollView
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]}
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
           }
         >
-        {/* Balance Consolidado y Métricas */}
-        <DashboardHero totalBalance={totalBalance} monthlyTotals={monthlyTotals} />
+          <View style={[styles.heroZone, { backgroundColor: heroColor }]}>
+            <DashboardHero
+              totalBalance={totalBalance}
+              isBalanceVisible={isBalanceVisible}
+              onToggleBalanceVisibility={() => setIsBalanceVisible((visible) => !visible)}
+            />
+          </View>
 
-        {/* Acciones Rápidas (+ Ingreso / - Gasto con Moti feedback) */}
-        <QuickActionsGrid onOpenTransactionModal={handleOpenTransactionModal} />
+          <View style={styles.sheetStack}>
+            <DashboardSummaryCard
+              monthlyTotals={monthlyTotals}
+              isBalanceVisible={isBalanceVisible}
+            />
 
-        {/* Carrusel de Cuentas */}
-        <AccountCarousel
-          accounts={accounts}
-          totalBalance={totalBalance}
-          selectedFilterAccountId={selectedFilterAccountId}
-          onSelectAccountFilter={handleSelectAccountFilter}
-          onOpenCreateAccountModal={() => setIsAccountModalVisible(true)}
-        />
+            <View
+              style={[
+                styles.sheet,
+                {
+                  backgroundColor: sheetColor,
+                  paddingBottom: insets.bottom + 40,
+                },
+              ]}
+            >
+              <QuickActionsGrid onOpenTransactionModal={handleOpenTransactionModal} />
 
-        {/* Últimos Movimientos con Stagger */}
-        <RecentTransactionsList
-          transactions={accounts.length === 0 ? [] : transactions}
-          selectedFilterAccountId={selectedFilterAccountId}
-          selectedAccountName={selectedAccountName}
-          defaultAccountId={accounts[0]?.id}
-        />
+              <AccountCarousel
+                accounts={accounts}
+                totalBalance={totalBalance}
+                selectedFilterAccountId={selectedFilterAccountId}
+                onSelectAccountFilter={handleSelectAccountFilter}
+                onOpenCreateAccountModal={() => setIsAccountModalVisible(true)}
+              />
+
+              <RecentTransactionsList
+                transactions={accounts.length === 0 ? [] : transactions}
+                selectedFilterAccountId={selectedFilterAccountId}
+                selectedAccountName={selectedAccountName}
+                defaultAccountId={accounts[0]?.id}
+              />
+            </View>
+          </View>
         </ScrollView>
       </BlurTargetView>
 
@@ -168,11 +192,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 8,
+    flexGrow: 1,
   },
   blurTarget: {
     flex: 1,
+  },
+  heroZone: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 80,
+  },
+  sheetStack: {
+    flexGrow: 1,
+    marginTop: -72,
+  },
+  sheet: {
+    position: 'relative',
+    zIndex: 1,
+    flexGrow: 1,
+    marginTop: -40,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingHorizontal: 24,
+    paddingTop: 64,
   },
   headerOverlay: {
     position: 'absolute',
