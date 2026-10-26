@@ -4,6 +4,8 @@ export const translations = {
   es: {
     home: 'Inicio',
     accountsTab: 'Cuentas',
+    stats: 'Stats',
+    comingSoon: 'Próximamente',
     newMovement: 'Nuevo movimiento',
     consolidatedBalance: 'Balance consolidado',
     income: 'Ingresos',
@@ -89,6 +91,8 @@ export const translations = {
   en: {
     home: 'Home',
     accountsTab: 'Accounts',
+    stats: 'Stats',
+    comingSoon: 'Coming soon',
     newMovement: 'New movement',
     consolidatedBalance: 'Consolidated balance',
     income: 'Income',
