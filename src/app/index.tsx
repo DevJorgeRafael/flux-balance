@@ -25,7 +25,7 @@ import { BackdropBlur } from '@/components/ui/BackdropBlur';
 export default function DashboardScreen() {
   const colors = useColors();
   const insets = useInsets();
-  const blurTarget = useRef<View>(null);
+  const blurTarget = useRef<React.ComponentRef<typeof View>>(null);
 
   // Custom Hooks
   const {
@@ -121,7 +121,7 @@ export default function DashboardScreen() {
         <BackdropBlur visible={isSettingsOpen} onPress={closeSettings} blurTarget={blurTarget} />
       )}
 
-      <View style={styles.headerOverlay} pointerEvents="box-none">
+      <View style={[styles.headerOverlay, { top: insets.top }]} pointerEvents="box-none">
         <DashboardHeader
           isSettingsOpen={isSettingsOpen}
           isDevMode={isDevMode}

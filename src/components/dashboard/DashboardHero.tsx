@@ -25,7 +25,7 @@ export function DashboardHero({ totalBalance, monthlyTotals }: DashboardHeroProp
     <MotiView
       from={{ opacity: 0, translateY: 15 }}
       animate={{ opacity: 1, translateY: 0 }}
-      transition={{ type: 'timing', duration: 500 }}
+      transition={{ type: 'timing', duration: 500 } as any}
       style={styles.heroContainer}
     >
       <View style={styles.heroLabelRow}>

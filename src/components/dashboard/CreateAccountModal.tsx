@@ -28,7 +28,7 @@ interface CreateAccountModalProps {
   visible: boolean;
   onClose: () => void;
   onAccountCreated: () => void;
-  blurTarget: React.RefObject<View | null>;
+  blurTarget: React.RefObject<React.ComponentRef<typeof View> | null>;
 }
 
 const accountRepo = new SqliteAccountRepository();
@@ -173,7 +173,7 @@ export function CreateAccountModal({
             translateY: isAnimatingIn ? 0 : 400,
             opacity: isAnimatingIn ? 1 : 0,
           }}
-          transition={{ type: 'timing', duration: 220 }}
+          transition={{ type: 'timing', duration: 220 } as any}
           layout={LinearTransition.duration(200).easing(Easing.out(Easing.quad))}
           style={[
             styles.modalSheet,

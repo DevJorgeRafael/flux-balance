@@ -27,7 +27,7 @@ interface CreateTransactionModalProps {
   categories: Category[];
   onClose: () => void;
   onTransactionCreated: () => void;
-  blurTarget: React.RefObject<View | null>;
+  blurTarget: React.RefObject<React.ComponentRef<typeof View> | null>;
 }
 
 const transactionRepo = new SqliteTransactionRepository();
@@ -167,7 +167,7 @@ export function CreateTransactionModal({
             translateY: isAnimatingIn ? 0 : 400,
             opacity: isAnimatingIn ? 1 : 0,
           }}
-          transition={{ type: 'timing', duration: 220 }}
+          transition={{ type: 'timing', duration: 220 } as any}
           style={[styles.modalSheet, { backgroundColor: colors.surface, paddingBottom: insets.bottom + 24 }]}
         >
           <View style={styles.modalTopBar}>

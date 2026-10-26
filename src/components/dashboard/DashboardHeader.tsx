@@ -64,7 +64,7 @@ export function DashboardHeader({
               scale: isSettingsOpen ? 1 : 0.82,
               translateY: isSettingsOpen ? 0 : -8,
             }}
-            transition={{ type: 'spring', damping: 18, stiffness: 260, mass: 0.7 }}
+            transition={{ type: 'spring', damping: 18, stiffness: 260, mass: 0.7 } as any}
             style={[styles.settingsPopover, { backgroundColor: colors.surface, borderColor: colors.border }]}
             pointerEvents={isSettingsOpen ? 'auto' : 'none'}
           >

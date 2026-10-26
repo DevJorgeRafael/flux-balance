@@ -28,7 +28,7 @@ export function QuickActionsGrid({ onOpenTransactionModal }: QuickActionsGridPro
         transition={{
           type: 'timing',
           duration: 100,
-        }}
+        } as any}
         onPress={() => onOpenTransactionModal('INCOME')}
       >
         <View style={styles.actionIconCircle}>
@@ -50,7 +50,7 @@ export function QuickActionsGrid({ onOpenTransactionModal }: QuickActionsGridPro
         transition={{
           type: 'timing',
           duration: 100,
-        }}
+        } as any}
         onPress={() => onOpenTransactionModal('EXPENSE')}
       >
         <View style={styles.actionIconCircle}>

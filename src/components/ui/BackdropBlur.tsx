@@ -7,7 +7,7 @@ import { useThemeMode } from '@/components/ui/theme';
 interface BackdropBlurProps {
   visible: boolean;
   onPress: () => void;
-  blurTarget?: React.RefObject<View | null>;
+  blurTarget?: React.RefObject<React.ComponentRef<typeof View> | null>;
 }
 
 export function BackdropBlur({ visible, onPress, blurTarget }: BackdropBlurProps) {
@@ -17,7 +17,7 @@ export function BackdropBlur({ visible, onPress, blurTarget }: BackdropBlurProps
   return (
     <MotiView
       animate={{ opacity: visible ? 1 : 0 }}
-      transition={{ type: 'timing', duration: 250 }}
+      transition={{ type: 'timing', duration: 250 } as any}
       style={[
         styles.container,
         {

@@ -90,7 +90,7 @@ export function RecentTransactionsList({
                 key={tx.id}
                 from={{ opacity: 0, translateY: 10 }}
                 animate={{ opacity: 1, translateY: 0 }}
-                transition={{ type: 'timing', duration: 350, delay: idx * 50 }}
+                transition={{ type: 'timing', duration: 350, delay: idx * 50 } as any}
               >
                 <TouchableOpacity
                   style={[

@@ -36,7 +36,11 @@
       ],
       "expo-sqlite",
       "expo-localization",
-      "expo-system-ui"
+      "expo-system-ui",
+      "expo-font",
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

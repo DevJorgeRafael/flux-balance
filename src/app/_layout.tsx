@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, LogBox, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as SystemUI from 'expo-system-ui';
 
@@ -8,6 +8,11 @@ import { StatusBar } from 'expo-status-bar';
 import { UIProvider, useColors, useThemeMode } from '@/components/ui/theme';
 import { initDatabase } from '@/infrastructure/database/db';
 import { TranslationProvider } from '@/core/i18n/useTranslation';
+
+LogBox.ignoreLogs([
+  'SafeAreaView has been deprecated',
+  '[Reanimated] Dependencies should only be used on the web',
+]);
 
 function RootNavigator() {
   const insets = useSafeAreaInsets();
