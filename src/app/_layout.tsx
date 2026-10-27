@@ -6,6 +6,7 @@ import * as SystemUI from 'expo-system-ui';
 
 import { StatusBar } from 'expo-status-bar';
 import {
+  darkPalette,
   UIProvider,
   useColors,
   useThemeMode,
@@ -88,8 +89,15 @@ export default function RootLayout() {
 
   if (!isDbReady) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a' }}>
-        <ActivityIndicator size="large" color="#3b82f6" />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: darkPalette.background,
+        }}
+      >
+        <ActivityIndicator size="large" color={darkPalette.primary} />
       </View>
     );
   }

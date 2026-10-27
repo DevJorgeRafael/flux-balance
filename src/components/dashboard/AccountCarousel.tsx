@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { CreditCard, Plus, Layers } from 'lucide-react-native';
 import { Account } from '@/core/models/account';
-import { useColors } from '@/components/ui/theme';
+import { useColors, useThemeMode } from '@/components/ui/theme';
 import { formatCurrency } from '@/core/utils/currency';
 import { AccountCard } from './AccountCard';
 import { useTranslation } from '@/core/i18n/useTranslation';
@@ -37,6 +37,7 @@ export function AccountCarousel({
   onPressAccount,
 }: AccountCarouselProps) {
   const colors = useColors();
+  const { isDark } = useThemeMode();
   const { t } = useTranslation();
 
   return (
@@ -45,14 +46,14 @@ export function AccountCarousel({
         <View style={styles.sectionHeaderRow}>
           <View style={styles.titleWithBadge}>
             <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('accounts')}</Text>
-            <View style={[styles.counterBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[styles.counterBadge, { backgroundColor: colors.cardRaised, borderColor: colors.border }]}>
               <Text style={[styles.counterBadgeText, { color: colors.textLight }]}>{accounts.length}</Text>
             </View>
           </View>
 
           {showNewAccount && (
             <TouchableOpacity
-              style={[styles.addAccountHeaderBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              style={[styles.addAccountHeaderBtn, { backgroundColor: colors.cardRaised, borderColor: colors.border }]}
               onPress={onOpenCreateAccountModal}
               activeOpacity={0.7}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -98,9 +99,22 @@ export function AccountCarousel({
               style={[
                 styles.modernAccountCard,
                 {
-                  backgroundColor: colors.surface,
-                  borderColor: selectedFilterAccountId === null ? colors.primary : colors.border,
-                  borderWidth: selectedFilterAccountId === null ? 2 : 1,
+                  backgroundColor:
+                    selectedFilterAccountId === null ? colors.cardRaised : colors.surface,
+                  borderColor:
+                    selectedFilterAccountId === null ? colors.cardRaised : colors.border,
+                  borderWidth: 1,
+                  shadowColor: colors.shadow,
+                  shadowOpacity:
+                    selectedFilterAccountId === null
+                      ? isDark
+                        ? 0.35
+                        : 0.16
+                      : isDark
+                        ? 0.2
+                        : 0.08,
+                  shadowRadius: selectedFilterAccountId === null ? 14 : 8,
+                  elevation: selectedFilterAccountId === null ? 6 : 2,
                 },
               ]}
               onPress={() => onSelectAccountFilter?.(null)}
@@ -115,7 +129,9 @@ export function AccountCarousel({
                   styles.tnaBadge,
                   {
                     backgroundColor:
-                      selectedFilterAccountId === null ? colors.primarySoft : colors.background,
+                      selectedFilterAccountId === null
+                        ? colors.primarySoft
+                        : colors.surfaceMuted,
                   },
                 ]}
               >
@@ -140,7 +156,15 @@ export function AccountCarousel({
               </Text>
             </View>
 
-            <Text style={[styles.accountCardBalance, { color: colors.text }]}>
+            <Text
+              style={[
+                styles.accountCardBalance,
+                {
+                  color:
+                    selectedFilterAccountId === null ? colors.primaryText : colors.text,
+                },
+              ]}
+            >
               {formatCurrency(totalBalance, false)}
             </Text>
 
@@ -149,7 +173,9 @@ export function AccountCarousel({
                 styles.filterNoticeBadge,
                 {
                   backgroundColor:
-                    selectedFilterAccountId === null ? colors.primarySoft : colors.background,
+                    selectedFilterAccountId === null
+                      ? colors.primarySoft
+                      : colors.surfaceMuted,
                 },
               ]}
             >
@@ -292,11 +318,7 @@ const styles = StyleSheet.create({
     width: 220,
     borderRadius: 28,
     padding: 18,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
   },
   accountCardHeader: {
     flexDirection: 'row',

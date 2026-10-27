@@ -107,6 +107,32 @@ export const shadow: Record<'none' | 'sm' | 'md' | 'lg', ShadowStyle> = {
   },
 };
 
+export interface HeroGradientToken {
+  colors: readonly [string, string, ...string[]];
+  locations: readonly [number, number, ...number[]];
+  start: { x: number; y: number };
+  end: { x: number; y: number };
+}
+
+/**
+ * Fondos del balance del Dashboard. El modo oscuro mantiene un azul marino
+ * profundo casi plano hasta el 72% de la altura; el último tramo se oscurece
+ * apenas para fundirse con la hoja, sin llegar al negro.
+ */
+export const heroGradientLight: HeroGradientToken = {
+  colors: ['#2A5BE0', '#1A46C4'],
+  locations: [0, 1],
+  start: { x: 0.5, y: 0 },
+  end: { x: 0.5, y: 1 },
+};
+
+export const heroGradientDark: HeroGradientToken = {
+  colors: ['#17399A', '#153690', '#112A72', '#0D2158'],
+  locations: [0, 0.72, 0.86, 1],
+  start: { x: 0.5, y: 0 },
+  end: { x: 0.5, y: 1 },
+};
+
 export const tokens = {
   spacing,
   radius,
@@ -116,6 +142,8 @@ export const tokens = {
   duration,
   shadow,
   categoryPalettes: CATEGORY_COLOR_PALETTES,
+  heroGradientLight,
+  heroGradientDark,
 };
 
 export type Tokens = typeof tokens;

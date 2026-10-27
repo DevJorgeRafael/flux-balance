@@ -13,7 +13,7 @@ import { X } from 'lucide-react-native';
 import { TransactionType } from '@/core/models/transaction';
 import { Account } from '@/core/models/account';
 import { Category } from '@/core/models/category';
-import { isHexColor, useColors } from '@/components/ui/theme';
+import { isHexColor, useColors, useThemeMode } from '@/components/ui/theme';
 import { SqliteTransactionRepository } from '@/infrastructure/repositories';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
@@ -40,6 +40,7 @@ export function CreateTransactionModal({
   blurTarget,
 }: CreateTransactionModalProps) {
   const colors = useColors();
+  const { isDark } = useThemeMode();
   const { t } = useTranslation();
 
   const [txType, setTxType] = useState<TransactionType>(initialType);
@@ -136,7 +137,7 @@ export function CreateTransactionModal({
         contentContainerStyle={{ paddingBottom: 8 }}
       >
         {/* Segmented Control de Tipo */}
-          <View style={[styles.typeSegmentedControl, { backgroundColor: colors.background, borderColor: colors.border }]}>
+          <View style={[styles.typeSegmentedControl, { backgroundColor: colors.surfaceMuted, borderColor: colors.border }]}>
             <TouchableOpacity
               style={[
                 styles.typeSegmentOption,
@@ -225,7 +226,11 @@ export function CreateTransactionModal({
                       styles.selectionChip,
                       {
                         backgroundColor:
-                          selectedCategoryId === cat.id ? colors.primary : colors.inputBackground,
+                          selectedCategoryId === cat.id
+                            ? colors.primary
+                            : isDark
+                              ? colors.surfaceMuted
+                              : colors.inputBackground,
                         borderColor: colors.border,
                       },
                     ]}
@@ -265,7 +270,11 @@ export function CreateTransactionModal({
                       styles.selectionChip,
                       {
                         backgroundColor:
-                          selectedAccountId === acc.id ? colors.primary : colors.inputBackground,
+                          selectedAccountId === acc.id
+                            ? colors.primary
+                            : isDark
+                              ? colors.surfaceMuted
+                              : colors.inputBackground,
                         borderColor: colors.border,
                       },
                     ]}
@@ -300,9 +309,18 @@ export function CreateTransactionModal({
             disabled={isSubmitting}
           >
             {isSubmitting ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator
+                color={txType === 'INCOME' ? colors.onSuccess : colors.onPrimary}
+              />
             ) : (
-              <Text style={styles.submitTransactionButtonText}>{t('saveMovement')}</Text>
+              <Text
+                style={[
+                  styles.submitTransactionButtonText,
+                  { color: txType === 'INCOME' ? colors.onSuccess : colors.onPrimary },
+                ]}
+              >
+                {t('saveMovement')}
+              </Text>
             )}
           </TouchableOpacity>
       </ScrollView>
@@ -389,7 +407,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   submitTransactionButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '800',
   },

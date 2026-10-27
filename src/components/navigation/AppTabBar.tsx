@@ -9,24 +9,22 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
-import { useColors, useThemeMode } from '@/components/ui/theme';
+import { useColors, useThemeMode, withAlpha } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useDashboard } from '@/context/DashboardContext';
 import { TAB_BAR_HEIGHT, TAB_BAR_OVERHANG } from './tabBarLayout';
 
-const TAB_BAR_DARK_SURFACE = '#24242a';
-
-function getSurfaceShadow(isDark: boolean): ViewStyle {
+function getSurfaceShadow(isDark: boolean, shadowColor: string): ViewStyle {
   if (Platform.OS === 'android') {
     return {
       boxShadow: isDark
-        ? '0px -8px 24px rgba(0, 0, 0, 0.55)'
-        : '0px -6px 18px rgba(0, 0, 0, 0.12)',
+        ? `0px -8px 24px ${withAlpha(shadowColor, 0.55)}`
+        : `0px -6px 18px ${withAlpha(shadowColor, 0.12)}`,
     };
   }
 
   return {
-    shadowColor: '#000',
+    shadowColor,
     shadowOffset: { width: 0, height: -6 },
     shadowOpacity: isDark ? 0.55 : 0.12,
     shadowRadius: 18,
@@ -109,11 +107,11 @@ export function AppTabBar({ state, navigateToTab, insets }: BottomTabBarProps) {
         pointerEvents="auto"
         style={[
           styles.surface,
-          getSurfaceShadow(isDark),
+          getSurfaceShadow(isDark, colors.shadow),
           {
             top: TAB_BAR_OVERHANG,
             height: surfaceHeight,
-            backgroundColor: isDark ? TAB_BAR_DARK_SURFACE : colors.surface,
+            backgroundColor: colors.surface,
           },
         ]}
       >
@@ -141,6 +139,7 @@ export function AppTabBar({ state, navigateToTab, insets }: BottomTabBarProps) {
             styles.plusButton,
             {
               backgroundColor: colors.primary,
+              shadowColor: colors.shadow,
               shadowOpacity: isDark ? 0.5 : 0.24,
               transform: [{ scale: pressed ? 0.96 : 1 }],
             },
@@ -206,7 +205,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowRadius: 12,
     elevation: 12,

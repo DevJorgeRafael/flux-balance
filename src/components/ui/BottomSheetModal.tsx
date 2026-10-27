@@ -102,7 +102,7 @@ export function BottomSheetModal({
           style={[
             styles.sheet,
             {
-              backgroundColor: colors.surface,
+              backgroundColor: colors.modal,
               paddingBottom: insets.bottom + bottomPaddingExtra,
               maxHeight,
             },

@@ -151,8 +151,9 @@ function ActionButton({
   label: string;
   onPress: () => void;
 }) {
+  const colors = useColors();
   const accent = CATEGORY_TYPE_ACCENTS[type];
-  const labelColor = bestTextColor(accent, '#ffffff', '#000000');
+  const labelColor = bestTextColor(accent, colors.white, colors.black);
 
   return (
     <Pressable

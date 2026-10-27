@@ -67,7 +67,14 @@ export function DashboardHeader({
               translateY: isSettingsOpen ? 0 : -8,
             }}
             transition={{ type: 'spring', damping: 18, stiffness: 260, mass: 0.7 } as any}
-            style={[styles.settingsPopover, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            style={[
+              styles.settingsPopover,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                shadowColor: colors.shadow,
+              },
+            ]}
             pointerEvents={isSettingsOpen ? 'auto' : 'none'}
           >
             <Text style={[styles.menuTitle, { color: colors.text }]}>{t('settings')}</Text>
@@ -170,7 +177,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.22,
     shadowRadius: 18,

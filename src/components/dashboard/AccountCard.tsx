@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Zap, Calendar } from 'lucide-react-native';
 import { Account, AccountType } from '@/core/models/account';
-import { useColors } from '@/components/ui/theme';
+import { useColors, useThemeMode } from '@/components/ui/theme';
 import { formatCurrency } from '@/core/utils/currency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
@@ -14,6 +14,7 @@ interface AccountCardProps {
 
 export function AccountCard({ account, isSelected, onPress }: AccountCardProps) {
   const colors = useColors();
+  const { isDark } = useThemeMode();
   const { t } = useTranslation();
   const getAccountTypeLabel = (type: AccountType) => {
     switch (type) {
@@ -35,9 +36,13 @@ export function AccountCard({ account, isSelected, onPress }: AccountCardProps) 
       style={[
         styles.modernAccountCard,
         {
-          backgroundColor: colors.surface,
-          borderColor: isSelected ? colors.primary : colors.border,
-          borderWidth: isSelected ? 2 : 1,
+          backgroundColor: isSelected ? colors.cardRaised : colors.surface,
+          borderColor: isSelected ? colors.cardRaised : colors.border,
+          borderWidth: 1,
+          shadowColor: colors.shadow,
+          shadowOpacity: isSelected ? (isDark ? 0.35 : 0.16) : isDark ? 0.2 : 0.08,
+          shadowRadius: isSelected ? 14 : 8,
+          elevation: isSelected ? 6 : 2,
         },
       ]}
       onPress={onPress}
@@ -50,7 +55,7 @@ export function AccountCard({ account, isSelected, onPress }: AccountCardProps) 
 
         {isSelected ? (
           <View style={[styles.tnaBadge, { backgroundColor: colors.primarySoft }]}>
-            <Text style={[styles.tnaBadgeText, { color: colors.primaryText }]}>{t('filtering')}</Text>
+            <Text style={[styles.tnaBadgeText, { color: colors.primaryText }]}>{t('active')}</Text>
           </View>
         ) : isFlexible && account.annualRate ? (
           <View style={[styles.tnaBadge, { backgroundColor: colors.primarySoft }]}>
@@ -69,7 +74,12 @@ export function AccountCard({ account, isSelected, onPress }: AccountCardProps) 
         {account.name}
       </Text>
 
-      <Text style={[styles.accountCardBalance, { color: colors.text }]}>
+      <Text
+        style={[
+          styles.accountCardBalance,
+          { color: isSelected ? colors.primaryText : colors.text },
+        ]}
+      >
         {formatCurrency(account.balance, false)}
       </Text>
 
@@ -91,7 +101,7 @@ export function AccountCard({ account, isSelected, onPress }: AccountCardProps) 
         <View
           style={[
             styles.fixedDateBadge,
-            { backgroundColor: colors.surface, borderColor: colors.border },
+            { backgroundColor: colors.cardRaised, borderColor: colors.border },
           ]}
         >
           <Calendar size={12} color={colors.textLight} strokeWidth={2} />
@@ -109,11 +119,7 @@ const styles = StyleSheet.create({
     width: 220,
     borderRadius: 28,
     padding: 18,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
   },
   accountCardHeader: {
     flexDirection: 'row',

@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { Text, View } from 'react-native';
+import { neutral } from '../theme/palettes';
 import type { IconName, IconRenderProps } from './types';
 
 /**
@@ -144,7 +145,7 @@ const Circle = memo(
           <Text
             allowFontScaling={false}
             style={{
-              color: filled ? '#fff' : color,
+              color: filled ? neutral.white : color,
               fontSize: size * 0.62,
               lineHeight: size * 0.74,
               fontWeight: '700',

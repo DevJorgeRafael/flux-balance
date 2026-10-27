@@ -111,7 +111,7 @@ export function TransactionDetailCard({
           {transaction.description || (isIncome ? 'Ingreso General' : 'Gasto General')}
         </Text>
 
-        <View style={[styles.statusChip, { backgroundColor: colors.background, borderColor: colors.border }]}>
+        <View style={[styles.statusChip, { backgroundColor: colors.surfaceMuted, borderColor: colors.border }]}>
           <CircleCheck size={14} color={colors.successText} strokeWidth={2.5} />
           <Text style={[styles.statusChipText, { color: colors.textLight }]}>Confirmado en cuenta</Text>
         </View>
@@ -146,7 +146,7 @@ export function TransactionDetailCard({
         <View style={[styles.rowDivider, { backgroundColor: colors.border }]} />
 
         <View style={styles.detailRow}>
-          <View style={[styles.detailIconBox, { backgroundColor: colors.background }]}>
+          <View style={[styles.detailIconBox, { backgroundColor: colors.surfaceMuted }]}>
             <Calendar size={18} color={colors.text} strokeWidth={2.2} />
           </View>
           <View style={styles.detailTextContainer}>
@@ -160,7 +160,7 @@ export function TransactionDetailCard({
         <View style={[styles.rowDivider, { backgroundColor: colors.border }]} />
 
         <View style={styles.detailRow}>
-          <View style={[styles.detailIconBox, { backgroundColor: colors.background }]}>
+          <View style={[styles.detailIconBox, { backgroundColor: colors.surfaceMuted }]}>
             <Clock size={18} color={colors.text} strokeWidth={2.2} />
           </View>
           <View style={styles.detailTextContainer}>
@@ -177,7 +177,7 @@ export function TransactionDetailCard({
 
       <View style={[styles.detailsGroupCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View style={styles.detailRow}>
-          <View style={[styles.detailIconBox, { backgroundColor: colors.background }]}>
+          <View style={[styles.detailIconBox, { backgroundColor: colors.surfaceMuted }]}>
             <FileText size={18} color={colors.textLight} strokeWidth={2.2} />
           </View>
           <View style={styles.detailTextContainer}>
@@ -191,7 +191,7 @@ export function TransactionDetailCard({
         <View style={[styles.rowDivider, { backgroundColor: colors.border }]} />
 
         <View style={styles.detailRow}>
-          <View style={[styles.detailIconBox, { backgroundColor: colors.background }]}>
+          <View style={[styles.detailIconBox, { backgroundColor: colors.surfaceMuted }]}>
             <Receipt size={18} color={colors.textLight} strokeWidth={2.2} />
           </View>
           <View style={styles.detailTextContainer}>
