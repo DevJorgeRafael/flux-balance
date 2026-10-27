@@ -2,6 +2,51 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.2.0] - 2026-10-26
+
+Categorías de ingresos y gastos separadas, editables y con color propio.
+
+### Añadido
+
+- Sección **Categorías** en Ajustes con accesos a ingresos y gastos.
+- Listado, creación y edición de categorías por tipo.
+- Paletas de 54 colores: azul para ingresos y naranja para gastos.
+- Validación de nombre obligatorio, sin duplicados por tipo y sin espacios sobrantes.
+- Eliminación de categorías personalizadas con confirmación y conteo de movimientos.
+- Traslado automático de movimientos a **Sin categoría** al eliminar su categoría.
+- Orden estable para categorías predeterminadas.
+- Migración automática de categorías legacy con respaldo previo.
+- Pruebas de paletas, validación, resolución por tipo, migración, borrado y datos demo.
+- Script de pruebas con soporte para TypeScript.
+
+### Cambiado
+
+- Las categorías se almacenan en tablas separadas: `income_categories` y `expense_categories`.
+- Las categorías heredadas se migran sin perder movimientos ni divisiones.
+- Las categorías predeterminadas se siembran de forma idempotente.
+- Los colores predeterminados usan la nueva paleta y conservan los colores personalizados.
+- El selector de movimientos muestra solo categorías del tipo activo y su color.
+- Stats usa el color real de cada categoría.
+- Stats trata categorías faltantes o de otro tipo como **Sin categoría**.
+- Ajustes actualiza los datos al volver a enfocarse.
+- Los mensajes de eliminación interpolan la cantidad de movimientos.
+- Las pantallas nuevas respetan ES/EN y los temas claro/oscuro.
+- `package.json` y `app.json` quedan en la versión `1.2.0`.
+
+### Corregido
+
+- Se impide eliminar categorías predeterminadas.
+- Se evita reutilizar el mismo nombre dentro de un tipo.
+- Se evita asignar categorías de ingresos a gastos y viceversa.
+- Se admiten movimientos sin categoría sin errores de integridad.
+- Se conservan los colores elegidos durante la migración.
+
+### Compatibilidad
+
+- La migración es idempotente y crea un respaldo en `categories_backup_v1`.
+- Las categorías personalizadas heredadas se conservan en ambos tipos para no romper referencias.
+- La navegación, cuentas, movimientos, temas e idiomas siguen funcionando.
+
 ## [1.1.2] - 2026-10-26
 
 La pestaña **Stats** pasa a ser funcional con análisis mensual de movimientos.

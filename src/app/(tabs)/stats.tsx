@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { useColors, useInsets } from '@/components/ui/theme';
+import { isHexColor, useColors, useInsets } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useDashboard } from '@/context/DashboardContext';
 import { SqliteTransactionRepository } from '@/infrastructure/repositories';
@@ -101,18 +101,17 @@ export default function StatsScreen() {
 
   const activeBreakdown = selectedType === 'INCOME' ? monthlyStats.income : monthlyStats.expense;
 
-  const donutSlices = useMemo<CategoryDonutSlice[]>(() => {
-    let categoryIndex = 0;
-
-    return activeBreakdown.slices.map((slice) => {
-      const color =
-        slice.kind === 'other'
-          ? colors.chartOther
-          : colors.chartCategories[categoryIndex++] ?? colors.chartOther;
-
-      return { ...slice, color };
-    });
-  }, [activeBreakdown.slices, colors.chartCategories, colors.chartOther]);
+  const donutSlices = useMemo<CategoryDonutSlice[]>(
+    () =>
+      activeBreakdown.slices.map((slice) => ({
+        ...slice,
+        color:
+          slice.kind === 'category' && isHexColor(slice.color)
+            ? slice.color
+            : colors.chartOther,
+      })),
+    [activeBreakdown.slices, colors.chartOther]
+  );
 
   const activeSelectedSliceId =
     selectedSliceId && activeBreakdown.slices.some((slice) => slice.id === selectedSliceId)

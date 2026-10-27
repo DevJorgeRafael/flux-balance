@@ -1,6 +1,6 @@
-import { DEFAULT_CATEGORIES } from './schema.sql';
 import { getDatabase } from './db';
 import { buildDemoDataSet } from './demoData';
+import { seedDefaultCategories } from './seedDefaultCategories';
 
 export interface DemoSeedResult {
   accounts: number;
@@ -11,20 +11,7 @@ export async function seedDemoData(loadedAt: Date = new Date()): Promise<DemoSee
   const db = await getDatabase();
   const data = buildDemoDataSet(loadedAt);
 
-  for (const category of DEFAULT_CATEGORIES) {
-    await db.runAsync(
-      `INSERT OR IGNORE INTO categories (id, name, type, icon, color, is_default)
-       VALUES (?, ?, ?, ?, ?, ?);`,
-      [
-        category.id,
-        category.name,
-        category.type,
-        category.icon || '',
-        category.color || '',
-        category.is_default,
-      ]
-    );
-  }
+  await seedDefaultCategories(db);
 
   await db.execAsync(`
     DELETE FROM transactions

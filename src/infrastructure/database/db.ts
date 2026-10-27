@@ -1,5 +1,7 @@
 import * as SQLite from 'expo-sqlite';
-import { SCHEMA_DDL, DEFAULT_CATEGORIES } from './schema.sql';
+import { SCHEMA_DDL } from './schema.sql';
+import { migrateCategories } from './migrateCategories';
+import { seedDefaultCategories } from './seedDefaultCategories';
 
 let dbInstance: SQLite.SQLiteDatabase | null = null;
 let initPromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -41,20 +43,9 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
     // Creación de tablas e índices
     await db.execAsync(SCHEMA_DDL);
 
-    // Sembrado de categorías por defecto si está vacía
-    const result = await db.getFirstAsync<{ count: number }>(
-      'SELECT COUNT(*) as count FROM categories'
-    );
-
-    if (!result || result.count === 0) {
-      for (const cat of DEFAULT_CATEGORIES) {
-        await db.runAsync(
-          `INSERT OR IGNORE INTO categories (id, name, type, icon, color, is_default)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [cat.id, cat.name, cat.type, cat.icon || '', cat.color || '', cat.is_default]
-        );
-      }
-    }
+    // Migración incremental de categorías y seed idempotente de defaults
+    await migrateCategories(db);
+    await seedDefaultCategories(db);
 
     dbInstance = db;
     return db;
@@ -73,15 +64,10 @@ export async function resetDatabase(): Promise<void> {
     DELETE FROM transactions;
     DELETE FROM fixed_term_deposits;
     DELETE FROM accounts;
-    DELETE FROM categories;
+    DELETE FROM income_categories;
+    DELETE FROM expense_categories;
   `);
 
-  for (const cat of DEFAULT_CATEGORIES) {
-    await db.runAsync(
-      `INSERT OR IGNORE INTO categories (id, name, type, icon, color, is_default)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [cat.id, cat.name, cat.type, cat.icon || '', cat.color || '', cat.is_default]
-    );
-  }
+  await seedDefaultCategories(db);
 }
 

@@ -1,10 +1,27 @@
-export { spacing, radius, fontSize, fontWeight, lineHeight, duration, shadow, tokens } from './tokens';
-export type { Tokens } from './tokens';
+export {
+  spacing,
+  radius,
+  fontSize,
+  fontWeight,
+  lineHeight,
+  duration,
+  shadow,
+  categoryPalettes,
+  tokens,
+} from './tokens';
+export type { CategoryColorPalette, Tokens } from './tokens';
 export { lightPalette, darkPalette } from './palettes';
 export type { ThemeColors } from './palettes';
 export { createTheme, defaultTheme } from './createTheme';
 export type { Theme, ThemePair, ThemeOverrides, BrandAccent, DeepPartial } from './types';
-export { deriveAccent, contrast, luminance, AA_CONTRAST } from './colors';
+export {
+  deriveAccent,
+  contrast,
+  luminance,
+  bestTextColor,
+  isHexColor,
+  AA_CONTRAST,
+} from './colors';
 export type { AccentRoles } from './colors';
 export { defaultLabels } from './labels';
 export type { Labels } from './labels';

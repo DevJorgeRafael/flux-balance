@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_CATEGORIES } from './schema.sql.ts';
+import { isPaletteColor } from '../../core/constants/categoryPalettes.ts';
 import { DEMO_ACCOUNT_IDS, buildDemoDataSet } from './demoData.ts';
 
 const loadedAt = new Date('2026-10-26T18:30:00.000Z');
@@ -36,6 +37,24 @@ test('uses only matching default categories for every movement', () => {
   }
 
   assert.equal(new Set(data.transactions.map((transaction) => transaction.split.categoryId)).size, 10);
+});
+
+test('uses a distinct palette color for every default category of each type', () => {
+  for (const type of ['INCOME', 'EXPENSE']) {
+    const categories = DEFAULT_CATEGORIES.filter((category) => category.type === type);
+
+    assert.equal(
+      new Set(categories.map((category) => category.color)).size,
+      categories.length
+    );
+
+    for (const category of categories) {
+      assert.ok(
+        isPaletteColor(type, category.color),
+        `${category.id} color is outside the ${type} palette`
+      );
+    }
+  }
 });
 
 test('sets balances from the opening balance plus the seeded movements', () => {

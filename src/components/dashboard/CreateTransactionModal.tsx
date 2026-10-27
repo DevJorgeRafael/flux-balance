@@ -13,7 +13,7 @@ import { X } from 'lucide-react-native';
 import { TransactionType } from '@/core/models/transaction';
 import { Account } from '@/core/models/account';
 import { Category } from '@/core/models/category';
-import { useColors } from '@/components/ui/theme';
+import { isHexColor, useColors } from '@/components/ui/theme';
 import { SqliteTransactionRepository } from '@/infrastructure/repositories';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
@@ -48,6 +48,7 @@ export function CreateTransactionModal({
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const typeCategories = categories.filter((category) => category.type === txType);
 
   const [prevVisible, setPrevVisible] = useState(visible);
   if (visible !== prevVisible) {
@@ -81,10 +82,9 @@ export function CreateTransactionModal({
     }
 
     const catId =
-      selectedCategoryId ||
-      categories.find((c) => c.type === txType)?.id ||
-      categories[0]?.id ||
-      'cat-default';
+      typeCategories.find((category) => category.id === selectedCategoryId)?.id ??
+      typeCategories[0]?.id ??
+      '';
 
     try {
       setIsSubmitting(true);
@@ -142,7 +142,10 @@ export function CreateTransactionModal({
                 styles.typeSegmentOption,
                 txType === 'INCOME' && { backgroundColor: colors.success, borderRadius: 10 },
               ]}
-              onPress={() => setTxType('INCOME')}
+              onPress={() => {
+                setTxType('INCOME');
+                setSelectedCategoryId('');
+              }}
             >
               <Text
                 style={[
@@ -158,7 +161,10 @@ export function CreateTransactionModal({
                 styles.typeSegmentOption,
                 txType === 'EXPENSE' && { backgroundColor: colors.error, borderRadius: 10 },
               ]}
-              onPress={() => setTxType('EXPENSE')}
+              onPress={() => {
+                setTxType('EXPENSE');
+                setSelectedCategoryId('');
+              }}
             >
               <Text
                 style={[
@@ -208,37 +214,41 @@ export function CreateTransactionModal({
           />
 
           {/* Selector de Categoría */}
-          {categories.length > 0 && (
+          {typeCategories.length > 0 && (
             <>
               <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14 }]}>{t('category')}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
-                {categories
-                  .filter((c) => (txType === 'INCOME' ? c.type === 'INCOME' : c.type === 'EXPENSE'))
-                  .map((cat) => (
-                    <TouchableOpacity
-                      key={cat.id}
+                {typeCategories.map((cat) => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[
+                      styles.selectionChip,
+                      {
+                        backgroundColor:
+                          selectedCategoryId === cat.id ? colors.primary : colors.inputBackground,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                    onPress={() => setSelectedCategoryId(cat.id)}
+                  >
+                    <View
                       style={[
-                        styles.selectionChip,
+                        styles.categoryColorDot,
+                        { backgroundColor: isHexColor(cat.color) ? cat.color : colors.chartOther },
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        styles.selectionChipText,
                         {
-                          backgroundColor:
-                            selectedCategoryId === cat.id ? colors.primary : colors.inputBackground,
-                          borderColor: colors.border,
+                          color: selectedCategoryId === cat.id ? colors.onPrimary : colors.text,
                         },
                       ]}
-                      onPress={() => setSelectedCategoryId(cat.id)}
                     >
-                      <Text
-                        style={[
-                          styles.selectionChipText,
-                          {
-                            color: selectedCategoryId === cat.id ? colors.onPrimary : colors.text,
-                          },
-                        ]}
-                      >
-                        {cat.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                      {cat.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </ScrollView>
             </>
           )}
@@ -353,11 +363,19 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   selectionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
     marginRight: 8,
+  },
+  categoryColorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   selectionChipText: {
     fontSize: 14,

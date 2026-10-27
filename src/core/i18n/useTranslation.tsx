@@ -3,11 +3,22 @@ import { getLocales } from 'expo-localization';
 import { getDatabase } from '@/infrastructure/database/db';
 import { Language, TranslationKey, translations } from './translations';
 
+type TranslationParams = Record<string, string | number>;
+
 interface TranslationContextValue {
   language: Language;
   setLanguage: (language: Language) => void;
   toggleLanguage: () => void;
-  t: (key: TranslationKey) => string;
+  t: (key: TranslationKey, params?: TranslationParams) => string;
+}
+
+function formatTranslation(template: string, params?: TranslationParams): string {
+  if (!params) return template;
+
+  return Object.entries(params).reduce(
+    (text, [key, value]) => text.split(`{{${key}}}`).join(String(value)),
+    template
+  );
 }
 
 const TranslationContext = createContext<TranslationContextValue | null>(null);
@@ -69,7 +80,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
       language,
       setLanguage,
       toggleLanguage,
-      t: (key) => translations[language][key],
+      t: (key, params) => formatTranslation(translations[language][key], params),
     }),
     [language, setLanguage, toggleLanguage]
   );

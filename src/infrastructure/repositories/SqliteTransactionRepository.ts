@@ -6,6 +6,7 @@ import {
   CreateTransactionDTO,
   TransactionFilterDTO,
 } from '@/core/models/transaction';
+import { categoryTableForType } from '@/core/services/category-resolution';
 import { getDatabase } from '../database/db';
 
 interface TransactionRow {
@@ -25,9 +26,9 @@ interface SplitRow {
   amount: number;
   notes: string | null;
   account_name?: string;
-  category_name?: string;
-  category_icon?: string;
-  category_color?: string;
+  category_name?: string | null;
+  category_icon?: string | null;
+  category_color?: string | null;
 }
 
 export class SqliteTransactionRepository implements ITransactionRepository {
@@ -84,10 +85,17 @@ export class SqliteTransactionRepository implements ITransactionRepository {
 
     const txIds = txRows.map((r) => `'${r.id}'`).join(',');
     const splitRows = await db.getAllAsync<SplitRow>(`
-      SELECT s.*, a.name as account_name, c.name as category_name, c.icon as category_icon, c.color as category_color
+      SELECT
+        s.*,
+        a.name AS account_name,
+        CASE WHEN t.type = 'INCOME' THEN ic.name WHEN t.type = 'EXPENSE' THEN ec.name END AS category_name,
+        CASE WHEN t.type = 'INCOME' THEN ic.icon WHEN t.type = 'EXPENSE' THEN ec.icon END AS category_icon,
+        CASE WHEN t.type = 'INCOME' THEN ic.color WHEN t.type = 'EXPENSE' THEN ec.color END AS category_color
       FROM transaction_splits s
+      INNER JOIN transactions t ON t.id = s.transaction_id
       LEFT JOIN accounts a ON a.id = s.account_id
-      LEFT JOIN categories c ON c.id = s.category_id
+      LEFT JOIN income_categories ic ON t.type = 'INCOME' AND ic.id = s.category_id
+      LEFT JOIN expense_categories ec ON t.type = 'EXPENSE' AND ec.id = s.category_id
       WHERE s.transaction_id IN (${txIds})
     `);
 
@@ -102,9 +110,9 @@ export class SqliteTransactionRepository implements ITransactionRepository {
         amount: s.amount,
         notes: s.notes,
         accountName: s.account_name,
-        categoryName: s.category_name,
-        categoryIcon: s.category_icon,
-        categoryColor: s.category_color,
+        categoryName: s.category_name ?? undefined,
+        categoryIcon: s.category_icon ?? undefined,
+        categoryColor: s.category_color ?? undefined,
       });
     }
 
@@ -129,10 +137,17 @@ export class SqliteTransactionRepository implements ITransactionRepository {
     if (!tx) return null;
 
     const splitRows = await db.getAllAsync<SplitRow>(`
-      SELECT s.*, a.name as account_name, c.name as category_name, c.icon as category_icon, c.color as category_color
+      SELECT
+        s.*,
+        a.name AS account_name,
+        CASE WHEN t.type = 'INCOME' THEN ic.name WHEN t.type = 'EXPENSE' THEN ec.name END AS category_name,
+        CASE WHEN t.type = 'INCOME' THEN ic.icon WHEN t.type = 'EXPENSE' THEN ec.icon END AS category_icon,
+        CASE WHEN t.type = 'INCOME' THEN ic.color WHEN t.type = 'EXPENSE' THEN ec.color END AS category_color
       FROM transaction_splits s
+      INNER JOIN transactions t ON t.id = s.transaction_id
       LEFT JOIN accounts a ON a.id = s.account_id
-      LEFT JOIN categories c ON c.id = s.category_id
+      LEFT JOIN income_categories ic ON t.type = 'INCOME' AND ic.id = s.category_id
+      LEFT JOIN expense_categories ec ON t.type = 'EXPENSE' AND ec.id = s.category_id
       WHERE s.transaction_id = ?
     `, [id]);
 
@@ -144,9 +159,9 @@ export class SqliteTransactionRepository implements ITransactionRepository {
       amount: s.amount,
       notes: s.notes,
       accountName: s.account_name,
-      categoryName: s.category_name,
-      categoryIcon: s.category_icon,
-      categoryColor: s.category_color,
+      categoryName: s.category_name ?? undefined,
+      categoryIcon: s.category_icon ?? undefined,
+      categoryColor: s.category_color ?? undefined,
     }));
 
     return {
@@ -164,6 +179,29 @@ export class SqliteTransactionRepository implements ITransactionRepository {
     const db = await getDatabase();
     const txId = `tx_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const now = new Date().toISOString();
+    const splits = data.splits.map((split) => ({
+      ...split,
+      categoryId: split.categoryId?.trim() ?? '',
+    }));
+
+    if (data.type === 'INCOME' || data.type === 'EXPENSE') {
+      const table = categoryTableForType(data.type);
+
+      for (const split of splits) {
+        if (!split.categoryId) continue;
+
+        const category = await db.getFirstAsync<{ id: string }>(
+          `SELECT id FROM ${table} WHERE id = ?`,
+          [split.categoryId]
+        );
+
+        if (!category) {
+          throw new Error(
+            `La categoría ${split.categoryId} no existe para movimientos ${data.type}.`
+          );
+        }
+      }
+    }
 
     // 1. Insertar transacción principal
     if (data.description) {
@@ -181,7 +219,7 @@ export class SqliteTransactionRepository implements ITransactionRepository {
     }
 
     // 2. Insertar cada división (split) y actualizar saldo de la cuenta correspondiente
-    for (const split of data.splits) {
+    for (const split of splits) {
       const splitId = `sp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       if (split.notes) {
         await db.runAsync(

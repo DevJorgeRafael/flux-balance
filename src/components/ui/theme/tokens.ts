@@ -1,4 +1,11 @@
 import { Platform, type ViewStyle } from 'react-native';
+import {
+  CATEGORY_COLOR_PALETTES,
+  type CategoryColorPalette,
+} from '@/core/constants/categoryPalettes';
+
+export { CATEGORY_COLOR_PALETTES as categoryPalettes };
+export type { CategoryColorPalette };
 
 // Las escalas numéricas se tipan explícitamente como `number` (no `as const`):
 // createTheme() debe poder sobreescribir cualquier valor con otro número
@@ -108,6 +115,7 @@ export const tokens = {
   lineHeight,
   duration,
   shadow,
+  categoryPalettes: CATEGORY_COLOR_PALETTES,
 };
 
 export type Tokens = typeof tokens;

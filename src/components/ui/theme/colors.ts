@@ -32,6 +32,10 @@ export interface AccentRoles {
 
 const HEX = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
 
+export function isHexColor(value: string | null | undefined): value is string {
+  return typeof value === 'string' && HEX.test(value.trim());
+}
+
 export function hexToRgb(hex: string): Rgb {
   const match = HEX.exec(hex.trim());
   if (!match) {
@@ -120,6 +124,14 @@ export function contrast(a: string, b: string): number {
 function bestOnColor(background: string, light: string, dark: string): string {
   if (contrast(background, light) >= AA_CONTRAST) return light;
   return contrast(background, dark) >= contrast(background, light) ? dark : light;
+}
+
+export function bestTextColor(
+  background: string,
+  light = '#ffffff',
+  dark = '#000000'
+): string {
+  return bestOnColor(background, light, dark);
 }
 
 /**

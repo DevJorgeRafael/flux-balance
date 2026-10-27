@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { contrast, useColors } from '@/components/ui/theme';
+import { bestTextColor, useColors } from '@/components/ui/theme';
 import { formatCurrency } from '@/core/utils/currency';
 import type { CategoryDonutSlice } from './CategoryDonut';
 
@@ -20,10 +20,7 @@ export function CategoryBreakdownList({
   return (
     <View style={styles.list}>
       {items.map((item) => {
-        const chipTextColor =
-          contrast(item.color, colors.white) >= contrast(item.color, colors.black)
-            ? colors.white
-            : colors.black;
+        const chipTextColor = bestTextColor(item.color, colors.white, colors.black);
 
         return (
           <Pressable

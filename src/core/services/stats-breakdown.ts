@@ -1,5 +1,6 @@
 import type { Category } from '@/core/models/category';
 import type { Transaction, TransactionType } from '@/core/models/transaction';
+import { resolveCategoryForType } from './category-resolution';
 
 export type StatsTransactionType = Extract<TransactionType, 'INCOME' | 'EXPENSE'>;
 
@@ -12,6 +13,7 @@ export interface CategorySlice {
   amount: number;
   percentage: number;
   kind: 'category' | 'uncategorized' | 'other';
+  color?: string | null;
 }
 
 export interface CategoryBreakdown {
@@ -41,6 +43,7 @@ interface CategoryBucket {
   name: string;
   amount: number;
   kind: CategorySlice['kind'];
+  color?: string | null;
 }
 
 const EMPTY_BREAKDOWN: CategoryBreakdown = { total: 0, slices: [] };
@@ -59,7 +62,8 @@ function addAmount(
   key: string,
   name: string,
   amount: number,
-  kind: CategorySlice['kind']
+  kind: CategorySlice['kind'],
+  color?: string | null
 ) {
   if (amount <= 0) return;
 
@@ -69,7 +73,7 @@ function addAmount(
     return;
   }
 
-  buckets.set(key, { id: key, name, amount, kind });
+  buckets.set(key, { id: key, name, amount, kind, color });
 }
 
 function sortBuckets(a: CategoryBucket, b: CategoryBucket) {
@@ -147,7 +151,6 @@ export function buildMonthlyStats({
   labels,
   maxCategorySlices = 6,
 }: BuildMonthlyStatsOptions): MonthlyStats {
-  const categoryById = new Map(categories.map((category) => [category.id, category]));
   const incomeBuckets = new Map<string, CategoryBucket>();
   const expenseBuckets = new Map<string, CategoryBucket>();
 
@@ -169,14 +172,18 @@ export function buildMonthlyStats({
 
     for (const split of splits) {
       const amount = Math.abs(split.amount);
-      const category = split.categoryId ? categoryById.get(split.categoryId) : undefined;
+      const category = resolveCategoryForType(
+        split.categoryId,
+        transaction.type,
+        categories
+      );
 
       if (!category || !category.name.trim()) {
         addAmount(buckets, UNCATEGORIZED_SLICE_ID, labels.uncategorized, amount, 'uncategorized');
         continue;
       }
 
-      addAmount(buckets, category.id, category.name, amount, 'category');
+      addAmount(buckets, category.id, category.name, amount, 'category', category.color);
     }
   }
 

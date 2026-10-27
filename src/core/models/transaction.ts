@@ -26,7 +26,7 @@ export interface Transaction {
 
 export interface CreateTransactionSplitDTO {
   accountId: string;
-  categoryId: string;
+  categoryId?: string;
   amount: number;
   notes?: string;
 }
