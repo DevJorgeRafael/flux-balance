@@ -14,6 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 import { useColors, useInsets, useThemeMode } from '@/components/ui/theme';
+import { IS_DEVELOPMENT_MODE } from '@/core/constants/environment';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useDashboard } from '@/context/DashboardContext';
@@ -153,23 +154,27 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={[styles.sectionLabel, { color: colors.textLight }]}>
-          {t('data')}
-        </Text>
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <SettingsRow
-            icon={Sparkles}
-            label={t('demoMode')}
-            onPress={() => void handleSeedDemoData()}
-          />
-          <SettingsRow
-            icon={RotateCcw}
-            label={t('resetData')}
-            destructive
-            isLast
-            onPress={() => void handleResetAllData()}
-          />
-        </View>
+        {IS_DEVELOPMENT_MODE && (
+          <>
+            <Text style={[styles.sectionLabel, { color: colors.textLight }]}>
+              {t('developerMode')}
+            </Text>
+            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <SettingsRow
+                icon={Sparkles}
+                label={t('demoMode')}
+                onPress={() => void handleSeedDemoData()}
+              />
+              <SettingsRow
+                icon={RotateCcw}
+                label={t('resetData')}
+                destructive
+                isLast
+                onPress={() => void handleResetAllData()}
+              />
+            </View>
+          </>
+        )}
       </ScrollView>
     </View>
   );
