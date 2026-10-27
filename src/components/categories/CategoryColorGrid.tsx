@@ -42,8 +42,8 @@ export function CategoryColorGrid({
                 ]}
               >
                 {isSelected ? (
-                  <View style={styles.checkBadge}>
-                    <Check size={14} color="#ffffff" strokeWidth={4} />
+                  <View style={[styles.checkBadge, { backgroundColor: colors.swatchBadge }]}>
+                    <Check size={14} color={colors.white} strokeWidth={4} />
                   </View>
                 ) : null}
               </Pressable>
@@ -80,7 +80,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   pressed: {
     opacity: 0.75,

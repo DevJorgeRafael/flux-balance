@@ -50,6 +50,12 @@ export function hexToRgb(hex: string): Rgb {
   };
 }
 
+/** Aplica una opacidad 0–1 a un color hex y devuelve el `rgba()` equivalente. */
+export function withAlpha(hex: string, alpha: number): string {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 const toHexPair = (value: number) => Math.round(clamp(value, 0, 255)).toString(16).padStart(2, '0');
 
 export function rgbToHex({ r, g, b }: Rgb): string {

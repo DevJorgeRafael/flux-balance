@@ -2,6 +2,40 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.2.1] - 2026-10-27
+
+Fondos y tema oscuro renovados en el Dashboard y sus pantallas relacionadas.
+
+### Cambiado
+
+- El tema oscuro usa una paleta azul marino con niveles de elevación.
+- El fondo nativo oscuro pasa a `#0A0E1A`.
+- La hoja del Dashboard usa `#101626`.
+- Las tarjetas usan `#18203A`; las superficies elevadas, `#212B4A`.
+- El héroe claro usa un degradado de `#2A5BE0` a `#1A46C4`.
+- El héroe oscuro usa un degradado de `#17399A` a `#0D2158`.
+- El tramo principal del héroe oscuro permanece casi plano hasta el 72%.
+- El último tramo se oscurece de forma leve hacia la hoja.
+- La barra inferior usa las superficies y sombras del tema.
+- Los modales, el blur y los velos usan tokens de fondo.
+- El detalle de movimiento y las pantallas de categorías usan las nuevas superficies.
+- Los textos e íconos del héroe usan el token `onHero`.
+- Se añadió `expo-linear-gradient` para el fondo del héroe.
+
+### Corregido
+
+- La barra de estado queda cubierta por el color del héroe.
+- La barra inferior ya no usa un fondo oscuro fijo.
+- La tarjeta resumen mantiene contraste en oscuro.
+- El héroe respeta el área segura en ambos temas.
+- Se reemplazaron varios colores hex sueltos por tokens.
+
+### Compatibilidad
+
+- `package.json` y `app.json` quedan sincronizados en `1.2.1`.
+- El modo claro conserva su paleta y sus superficies.
+- Navegación, persistencia, idiomas y datos no cambian.
+
 ## [1.2.0] - 2026-10-26
 
 Categorías de ingresos y gastos separadas, editables y con color propio.

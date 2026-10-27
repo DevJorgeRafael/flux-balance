@@ -6,7 +6,14 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import { useColors, useInsets, useThemeMode } from '@/components/ui/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import {
+  heroGradientDark,
+  heroGradientLight,
+  useColors,
+  useInsets,
+  useThemeMode,
+} from '@/components/ui/theme';
 import { DashboardHero } from '@/components/dashboard/DashboardHero';
 import { DashboardSummaryCard } from '@/components/dashboard/DashboardSummaryCard';
 import { AccountCarousel } from '@/components/dashboard/AccountCarousel';
@@ -34,8 +41,7 @@ export default function DashboardScreen() {
 
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
 
-  const heroColor = isDark ? '#0F1B3D' : '#1F4FD8';
-  const sheetColor = isDark ? '#1C2230' : '#E6E9EF';
+  const heroGradient = isDark ? heroGradientDark : heroGradientLight;
 
   if (isLoading) {
     return (
@@ -46,7 +52,7 @@ export default function DashboardScreen() {
   }
 
   return (
-    <View style={[styles.screen, { backgroundColor: heroColor, paddingTop: insets.top }]}>
+    <View style={[styles.screen, { backgroundColor: heroGradient.colors[0] }]}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -54,13 +60,20 @@ export default function DashboardScreen() {
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
         }
       >
-        <View style={[styles.heroZone, { backgroundColor: heroColor }]}>
+        <LinearGradient
+          colors={heroGradient.colors}
+          locations={heroGradient.locations}
+          start={heroGradient.start}
+          end={heroGradient.end}
+          dither
+          style={[styles.heroZone, { paddingTop: insets.top + 12 }]}
+        >
           <DashboardHero
             totalBalance={totalBalance}
             isBalanceVisible={isBalanceVisible}
             onToggleBalanceVisibility={() => setIsBalanceVisible((visible) => !visible)}
           />
-        </View>
+        </LinearGradient>
 
         <View style={styles.sheetStack}>
           <DashboardSummaryCard
@@ -72,7 +85,7 @@ export default function DashboardScreen() {
             style={[
               styles.sheet,
               {
-                backgroundColor: sheetColor,
+                backgroundColor: colors.sheet,
                 paddingBottom: insets.bottom + TAB_BAR_CONTENT_OFFSET + TAB_BAR_CONTENT_GAP,
               },
             ]}
@@ -95,6 +108,14 @@ export default function DashboardScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <View
+        pointerEvents="none"
+        style={[
+          styles.statusBarOverlay,
+          { height: insets.top, backgroundColor: heroGradient.colors[0] },
+        ]}
+      />
     </View>
   );
 }
@@ -102,6 +123,13 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+  },
+  statusBarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
   },
   centered: {
     flex: 1,
@@ -113,7 +141,6 @@ const styles = StyleSheet.create({
   },
   heroZone: {
     paddingHorizontal: 24,
-    paddingTop: 12,
     paddingBottom: 80,
   },
   sheetStack: {

@@ -23,8 +23,10 @@ export function DashboardSummaryCard({
       style={[
         styles.card,
         {
-          backgroundColor: isDark ? '#2A3550' : colors.surface,
-          shadowOpacity: isDark ? 0.5 : 0.18,
+          backgroundColor: colors.cardRaised,
+          shadowColor: colors.shadow,
+          shadowOpacity: isDark ? 0.35 : 0.18,
+          elevation: isDark ? 10 : 14,
         },
       ]}
     >
@@ -92,7 +94,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowRadius: 22,
   },

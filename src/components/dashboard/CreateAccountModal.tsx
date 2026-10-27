@@ -12,7 +12,7 @@ import {
 import { X, CreditCard, TrendingUp, Calendar } from 'lucide-react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { AccountType } from '@/core/models/account';
-import { useColors } from '@/components/ui/theme';
+import { useColors, useThemeMode } from '@/components/ui/theme';
 import { SqliteAccountRepository } from '@/infrastructure/repositories';
 import {
   calculateDailyProjection,
@@ -38,6 +38,7 @@ export function CreateAccountModal({
   blurTarget,
 }: CreateAccountModalProps) {
   const colors = useColors();
+  const { isDark } = useThemeMode();
   const { t } = useTranslation();
 
   const [accName, setAccName] = useState('');
@@ -139,7 +140,8 @@ export function CreateAccountModal({
                 style={[
                   styles.accountTypeCardOption,
                   {
-                    backgroundColor: accType === 'CHECKING' ? colors.primarySoft : colors.background,
+                    backgroundColor:
+                      accType === 'CHECKING' ? colors.primarySoft : colors.surfaceMuted,
                     borderColor: accType === 'CHECKING' ? colors.primary : colors.border,
                   },
                 ]}
@@ -157,7 +159,8 @@ export function CreateAccountModal({
                 style={[
                   styles.accountTypeCardOption,
                   {
-                    backgroundColor: accType === 'FLEXIBLE_SAVINGS' ? colors.primarySoft : colors.background,
+                    backgroundColor:
+                      accType === 'FLEXIBLE_SAVINGS' ? colors.primarySoft : colors.surfaceMuted,
                     borderColor: accType === 'FLEXIBLE_SAVINGS' ? colors.primary : colors.border,
                   },
                 ]}
@@ -175,7 +178,8 @@ export function CreateAccountModal({
                 style={[
                   styles.accountTypeCardOption,
                   {
-                    backgroundColor: accType === 'FIXED_TERM' ? colors.warningSoft : colors.background,
+                    backgroundColor:
+                      accType === 'FIXED_TERM' ? colors.warningSoft : colors.surfaceMuted,
                     borderColor: accType === 'FIXED_TERM' ? colors.warning : colors.border,
                   },
                 ]}
@@ -254,7 +258,12 @@ export function CreateAccountModal({
                       style={[
                         styles.termMonthPill,
                         {
-                          backgroundColor: accTermMonths === m ? colors.primary : colors.inputBackground,
+                          backgroundColor:
+                            accTermMonths === m
+                              ? colors.primary
+                              : isDark
+                                ? colors.surfaceMuted
+                                : colors.inputBackground,
                           borderColor: accTermMonths === m ? colors.primary : colors.border,
                         },
                       ]}

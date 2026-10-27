@@ -41,6 +41,18 @@ export interface ThemeColors {
   black: string;
   background: string;
   surface: string;
+  /** Superficie de la hoja inferior del Dashboard. */
+  sheet: string;
+  /** Superficie elevada: resumen, chips, botones secundarios y cuenta activa. */
+  cardRaised: string;
+  /**
+   * Controles internos (chips, cajas de íconos, opciones sin seleccionar).
+   * En claro conserva el gris de fondo; en oscuro sube a cardRaised para no
+   * quedar más oscuro que la tarjeta que lo contiene.
+   */
+  surfaceMuted: string;
+  /** Superficie de hojas modales. En oscuro comparte el nivel de `sheet`. */
+  modal: string;
   text: string;
   textLight: string;
   border: string;
@@ -51,9 +63,21 @@ export interface ThemeColors {
   /** Fondo de placeholder mientras carga una imagen. */
   skeleton: string;
   chartOther: string;
+  /** Color base de las sombras; los componentes lo aplican con su opacidad. */
+  shadow: string;
+  /** Texto e íconos que se dibujan sobre el héroe del Dashboard. */
+  onHero: string;
+  /** Tinte del fondo detrás de un modal. */
+  backdrop: string;
+  /** Velo adicional que oscurece el backdrop en modo oscuro. */
+  backdropVeil: string;
+  /** Fondo del check sobre una muestra de color de categoría. */
+  swatchBadge: string;
+  /** Velo translúcido sobre botones de acento (círculos de íconos). */
+  onAccentMuted: string;
 }
 
-const neutral = {
+export const neutral = {
   white: '#ffffff',
   black: '#000000',
 };
@@ -89,6 +113,10 @@ export const lightPalette: ThemeColors = {
   // Gris cálido stone-50
   background: '#fafaf9',
   surface: '#ffffff',
+  sheet: '#E6E9EF',
+  cardRaised: '#ffffff',
+  surfaceMuted: '#fafaf9',
+  modal: '#ffffff',
   text: '#1c1917',
   textLight: '#78716c',
   border: '#e7e5e4',
@@ -97,6 +125,12 @@ export const lightPalette: ThemeColors = {
   scrim: 'rgba(250,250,249,0.85)',
   skeleton: '#e7e5e4',
   chartOther: '#6E727A',
+  shadow: '#000000',
+  onHero: '#ffffff',
+  backdrop: 'rgba(255,255,255,0.12)',
+  backdropVeil: 'transparent',
+  swatchBadge: 'rgba(0,0,0,0.3)',
+  onAccentMuted: 'rgba(255,255,255,0.22)',
 };
 
 export const darkPalette: ThemeColors = {
@@ -129,15 +163,25 @@ export const darkPalette: ThemeColors = {
   warningSoft: 'rgba(251, 191, 36, 0.15)',
   warningText: '#fcd34d',
 
-  // Gris muy oscuro zinc-950
-  background: '#09090b',
-  surface: '#18181b',
-  text: '#fafafa',
-  textLight: '#a1a1aa',
-  border: '#27272a',
-  inputBackground: '#121215',
-  overlay: 'rgba(0,0,0,0.7)',
-  scrim: 'rgba(9,9,11,0.85)',
-  skeleton: '#27272a',
-  chartOther: '#9A9CA3',
+  // Familia azul marino: la luminosidad sube con cada nivel de elevación.
+  background: '#0A0E1A',
+  surface: '#18203A',
+  sheet: '#101626',
+  cardRaised: '#212B4A',
+  surfaceMuted: '#212B4A',
+  modal: '#101626',
+  text: '#F2F4F8',
+  textLight: '#8F9BB8',
+  border: '#2A3555',
+  inputBackground: '#18203A',
+  overlay: 'rgba(3, 6, 15, 0.72)',
+  scrim: 'rgba(10, 14, 26, 0.85)',
+  skeleton: '#1B2440',
+  chartOther: '#8F9BB8',
+  shadow: '#000000',
+  onHero: '#F2F4F8',
+  backdrop: 'rgba(4, 8, 18, 0.24)',
+  backdropVeil: 'rgba(4, 8, 18, 0.45)',
+  swatchBadge: 'rgba(0,0,0,0.3)',
+  onAccentMuted: 'rgba(255,255,255,0.22)',
 };

@@ -28,7 +28,7 @@ export function DashboardHero({
       style={styles.heroContainer}
     >
       <View style={styles.heroLabelRow}>
-        <Text style={[styles.heroLabel, { color: colors.white }]}>
+        <Text style={[styles.heroLabel, { color: colors.onHero }]}>
           {t('consolidatedBalance').toUpperCase()}
         </Text>
         <Pressable
@@ -40,15 +40,15 @@ export function DashboardHero({
           accessibilityLabel={isBalanceVisible ? 'Hide balance' : 'Show balance'}
         >
           {isBalanceVisible ? (
-            <Eye size={18} color={colors.white} strokeWidth={2} />
+            <Eye size={18} color={colors.onHero} strokeWidth={2} />
           ) : (
-            <EyeOff size={18} color={colors.white} strokeWidth={2} />
+            <EyeOff size={18} color={colors.onHero} strokeWidth={2} />
           )}
         </Pressable>
       </View>
 
       <Text
-        style={[styles.heroAmount, { color: colors.white }]}
+        style={[styles.heroAmount, { color: colors.onHero }]}
         adjustsFontSizeToFit
         numberOfLines={1}
       >

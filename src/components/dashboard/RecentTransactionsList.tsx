@@ -10,7 +10,7 @@ import { router } from 'expo-router';
 import { ChevronRight, Plus, Minus } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { Transaction } from '@/core/models/transaction';
-import { useColors } from '@/components/ui/theme';
+import { useColors, useThemeMode } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { formatCurrency } from '@/core/utils/currency';
 
@@ -28,6 +28,7 @@ export function RecentTransactionsList({
   defaultAccountId,
 }: RecentTransactionsListProps) {
   const colors = useColors();
+  const { isDark } = useThemeMode();
   const { t } = useTranslation();
 
   const handleSeeMore = () => {
@@ -57,7 +58,7 @@ export function RecentTransactionsList({
 
         {/* Botón Ver más */}
         <TouchableOpacity
-          style={[styles.seeMoreBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          style={[styles.seeMoreBtn, { backgroundColor: colors.cardRaised, borderColor: colors.border }]}
           onPress={handleSeeMore}
           activeOpacity={0.7}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -76,10 +77,18 @@ export function RecentTransactionsList({
           </Text>
         </View>
       ) : (
-        <View style={[styles.transactionsCardContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View
+          style={[
+            styles.transactionsCardContainer,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              shadowColor: colors.shadow,
+            },
+          ]}
+        >
           {transactions.map((tx, idx) => {
             const isIncome = tx.type === 'INCOME';
-            const isLast = idx === transactions.length - 1;
             const dateFormatted = new Date(tx.date).toLocaleDateString('es-ES', {
               day: 'numeric',
               month: 'short',
@@ -93,10 +102,7 @@ export function RecentTransactionsList({
                 transition={{ type: 'timing', duration: 350, delay: idx * 50 } as any}
               >
                 <TouchableOpacity
-                  style={[
-                    styles.transactionItemRow,
-                    !isLast && { borderBottomWidth: 1, borderBottomColor: colors.border },
-                  ]}
+                  style={[styles.transactionItemRow, isDark && styles.transactionItemRowDark]}
                   onPress={() => {
                     router.push({
                       pathname: '/transaction/[id]',
@@ -192,7 +198,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     borderWidth: 1,
     overflow: 'hidden',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -204,6 +209,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 18,
     gap: 14,
+  },
+  transactionItemRowDark: {
+    minHeight: 72,
+    paddingVertical: 18,
   },
   transactionIconContainer: {
     width: 40,

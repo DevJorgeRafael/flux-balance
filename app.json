@@ -2,12 +2,12 @@
   "expo": {
     "name": "flux-balance",
     "slug": "flux-balance",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "fluxbalance",
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#09090b",
+    "backgroundColor": "#0A0E1A",
     "ios": {
       "icon": "./assets/expo.icon"
     },

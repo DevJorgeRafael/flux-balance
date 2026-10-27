@@ -219,7 +219,7 @@ export default function CategoryFormScreen() {
 
   const title = category ? t('editCategory') : t('newCategory');
   const accent = type ? CATEGORY_TYPE_ACCENTS[type] : colors.primary;
-  const accentText = bestTextColor(accent, '#ffffff', '#000000');
+  const accentText = bestTextColor(accent, colors.white, colors.black);
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background, paddingTop: insets.top }]}>

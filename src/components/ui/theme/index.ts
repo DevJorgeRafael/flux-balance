@@ -7,9 +7,11 @@ export {
   duration,
   shadow,
   categoryPalettes,
+  heroGradientLight,
+  heroGradientDark,
   tokens,
 } from './tokens';
-export type { CategoryColorPalette, Tokens } from './tokens';
+export type { CategoryColorPalette, HeroGradientToken, Tokens } from './tokens';
 export { lightPalette, darkPalette } from './palettes';
 export type { ThemeColors } from './palettes';
 export { createTheme, defaultTheme } from './createTheme';
@@ -20,6 +22,7 @@ export {
   luminance,
   bestTextColor,
   isHexColor,
+  withAlpha,
   AA_CONTRAST,
 } from './colors';
 export type { AccentRoles } from './colors';
