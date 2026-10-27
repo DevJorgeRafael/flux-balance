@@ -2,6 +2,28 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.3.2] - 2026-10-27
+
+Modo desarrollador en Ajustes y limpieza de variables de entorno.
+
+### Añadido
+
+- Bandera `IS_DEVELOPMENT_MODE` basada en `NODE_ENV`.
+- Sección **Modo desarrollador** en Ajustes.
+
+### Cambiado
+
+- La sección **Datos** de Ajustes ahora se llama **Modo desarrollador**.
+- **Modo desarrollador** solo aparece cuando `NODE_ENV` no es `production`.
+- El menú del Inicio usa la misma regla para datos demo y reinicio.
+- `package.json` y `app.json` suben a `1.3.2`.
+
+### Compatibilidad
+
+- La base de datos, los modelos y los cálculos financieros no cambian.
+- No se agregaron dependencias nativas.
+- Expo CLI reemplaza `NODE_ENV` por el modo del comando en SDK 58.
+
 ## [1.3.1] - 2026-10-27
 
 Configuración de moneda y limpieza de los importes mostrados en el Inicio.
