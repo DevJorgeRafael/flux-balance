@@ -12,7 +12,7 @@ import { MotiView } from 'moti';
 import { Transaction } from '@/core/models/transaction';
 import { useColors, useThemeMode } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 
 interface RecentTransactionsListProps {
   transactions: Transaction[];
@@ -29,6 +29,7 @@ export function RecentTransactionsList({
 }: RecentTransactionsListProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
+  const { format } = useCurrency();
   const { t } = useTranslation();
 
   const handleSeeMore = () => {
@@ -139,7 +140,10 @@ export function RecentTransactionsList({
                       { color: isIncome ? colors.successText : colors.text },
                     ]}
                   >
-                    {isIncome ? '+' : '-'}{formatCurrency(tx.totalAmount, false)}
+                    {format(isIncome ? tx.totalAmount : -tx.totalAmount, {
+                      showSign: isIncome,
+                      showCurrency: false,
+                    })}
                   </Text>
                 </TouchableOpacity>
               </MotiView>

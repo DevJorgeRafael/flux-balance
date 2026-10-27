@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useColors, useThemeMode } from '@/components/ui/theme';
 import { MonthlyTotals } from '@/core/repositories/ITransactionRepository';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface DashboardSummaryCardProps {
@@ -16,6 +16,7 @@ export function DashboardSummaryCard({
 }: DashboardSummaryCardProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
+  const { format } = useCurrency();
   const { t } = useTranslation();
 
   return (
@@ -42,7 +43,11 @@ export function DashboardSummaryCard({
           numberOfLines={1}
           adjustsFontSizeToFit
         >
-          {formatCurrency(monthlyTotals.totalIncome, true, isBalanceVisible)}
+          {format(monthlyTotals.totalIncome, {
+            showSign: true,
+            showCurrency: false,
+            hidden: !isBalanceVisible,
+          })}
         </Text>
       </View>
 
@@ -58,7 +63,11 @@ export function DashboardSummaryCard({
           numberOfLines={1}
           adjustsFontSizeToFit
         >
-          {formatCurrency(monthlyTotals.totalExpense, true, isBalanceVisible)}
+          {format(monthlyTotals.totalExpense, {
+            showSign: true,
+            showCurrency: false,
+            hidden: !isBalanceVisible,
+          })}
         </Text>
       </View>
 
@@ -74,7 +83,11 @@ export function DashboardSummaryCard({
           numberOfLines={1}
           adjustsFontSizeToFit
         >
-          {formatCurrency(monthlyTotals.netSavings, true, isBalanceVisible)}
+          {format(monthlyTotals.netSavings, {
+            showSign: true,
+            showCurrency: false,
+            hidden: !isBalanceVisible,
+          })}
         </Text>
       </View>
     </View>

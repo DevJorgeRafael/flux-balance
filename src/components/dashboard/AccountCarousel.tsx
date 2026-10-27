@@ -9,7 +9,7 @@ import {
 import { CreditCard, Plus, Layers } from 'lucide-react-native';
 import { Account } from '@/core/models/account';
 import { useColors, useThemeMode } from '@/components/ui/theme';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { AccountCard } from './AccountCard';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
@@ -38,6 +38,7 @@ export function AccountCarousel({
 }: AccountCarouselProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
+  const { format } = useCurrency();
   const { t } = useTranslation();
 
   return (
@@ -165,7 +166,7 @@ export function AccountCarousel({
                 },
               ]}
             >
-              {formatCurrency(totalBalance, false)}
+              {format(totalBalance)}
             </Text>
 
             <View

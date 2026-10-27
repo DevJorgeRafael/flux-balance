@@ -2,6 +2,44 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.3.1] - 2026-10-27
+
+Configuración de moneda y limpieza de los importes mostrados en el Inicio.
+
+### Añadido
+
+- Selector de moneda en Ajustes con 15 divisas.
+- Preferencia de moneda guardada en la base de datos local.
+- Pantalla `/settings/currency` con el nombre de la divisa en ES/EN.
+- Formato de montos por moneda y por idioma.
+- Decimales propios para JPY y CLP, sin centavos.
+- Opción `showCurrency` para mostrar montos sin el código de divisa.
+- Pruebas unitarias del formateo de moneda.
+
+### Cambiado
+
+- Todos los montos de la app usan la moneda elegida.
+- Se eliminó el prefijo fijo `$ USD` en Inicio, Cuentas, Stats y movimientos.
+- Capital, saldo inicial y monto muestran la moneda vigente.
+- El héroe del Inicio conserva el código de divisa.
+- Ingresos, gastos y neto ya no repiten el código de divisa.
+- Los últimos movimientos ya no repiten el código de divisa.
+- Ajustes separa las opciones en **Sistema** y **Datos**.
+- Los datos demo y el reinicio ya no están ocultos en desarrollo.
+- `package.json` y `app.json` suben a `1.3.1`.
+
+### Corregido
+
+- El signo se mantiene delante del monto cuando no hay código de divisa.
+- Los importes ocultos siguen mostrando los puntos de ocultamiento.
+
+### Compatibilidad
+
+- La moneda solo cambia el formato; no se convierten valores.
+- La base de datos, los modelos y los cálculos financieros no cambian.
+- No se agregaron dependencias nativas.
+- La moneda por defecto es USD.
+
 ## [1.3.0] - 2026-10-27
 
 Rediseño completo de la pestaña **Cuentas** y ajustes visuales en el detalle de cuenta.

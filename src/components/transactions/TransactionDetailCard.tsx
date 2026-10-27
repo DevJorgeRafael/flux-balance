@@ -14,7 +14,7 @@ import {
 } from 'lucide-react-native';
 import { Transaction } from '@/core/models/transaction';
 import { useColors } from '@/components/ui/theme';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 
 interface TransactionDetailCardProps {
   transaction: Transaction;
@@ -28,6 +28,7 @@ export function TransactionDetailCard({
   onDelete,
 }: TransactionDetailCardProps) {
   const colors = useColors();
+  const { format } = useCurrency();
 
   const isIncome = transaction.type === 'INCOME';
   const primarySplit = transaction.splits?.[0];
@@ -104,7 +105,7 @@ export function TransactionDetailCard({
           adjustsFontSizeToFit
           numberOfLines={1}
         >
-          {isIncome ? '+' : '-'}{formatCurrency(transaction.totalAmount)}
+          {format(isIncome ? transaction.totalAmount : -transaction.totalAmount, { showSign: isIncome })}
         </Text>
 
         <Text style={[styles.heroDescription, { color: colors.text }]}>
@@ -230,7 +231,7 @@ export function TransactionDetailCard({
                       )}
                     </View>
                     <Text style={[styles.splitAmount, { color: isIncome ? colors.successText : colors.text }]}>
-                      {isIncome ? '+' : '-'}{formatCurrency(split.amount)}
+                      {format(isIncome ? split.amount : -split.amount, { showSign: isIncome })}
                     </Text>
                   </View>
                   {!isLastSplit && (

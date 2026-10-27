@@ -9,7 +9,7 @@ import {
 } from 'lucide-react-native';
 import type { Account, AccountType, FixedTermDeposit } from '@/core/models/account';
 import { calculateDailyProjection } from '@/core/services/interest-calculator';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { shadow, useColors, useThemeMode } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
@@ -101,6 +101,7 @@ export function AccountRowCard({
 }: AccountRowCardProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
+  const { format } = useCurrency();
   const { t } = useTranslation();
 
   const visuals: Record<
@@ -170,7 +171,7 @@ export function AccountRowCard({
           numberOfLines={1}
           adjustsFontSizeToFit
         >
-          {formatCurrency(account.balance, false, isBalanceVisible)}
+          {format(account.balance, { hidden: !isBalanceVisible })}
         </Text>
       </View>
 
@@ -187,8 +188,7 @@ export function AccountRowCard({
             style={[styles.performanceText, { color: colors.successText }]}
             numberOfLines={1}
           >
-            {isBalanceVisible ? '+' : ''}
-            {formatCurrency(flexibleYield, false, isBalanceVisible)}
+            {format(flexibleYield, { showSign: isBalanceVisible, hidden: !isBalanceVisible })}
           </Text>
           <View style={[styles.estimatedTag, { backgroundColor: colors.surface }]}>
             <Text style={[styles.estimatedText, { color: colors.successText }]}>

@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { Receipt, Plus, Minus } from 'lucide-react-native';
 import { Transaction } from '@/core/models/transaction';
 import { shadow, useColors, useThemeMode } from '@/components/ui/theme';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface AccountTransactionsListProps {
@@ -17,6 +17,7 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
   const [filterType, setFilterType] = useState<FilterType>('ALL');
   const colors = useColors();
   const { isDark } = useThemeMode();
+  const { format } = useCurrency();
   const { t } = useTranslation();
 
   const filteredTransactions = transactions.filter((tx) => {
@@ -168,7 +169,7 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
                     { color: isIncome ? colors.successText : colors.text },
                   ]}
                 >
-                  {isIncome ? '+' : '-'}{formatCurrency(tx.totalAmount)}
+                  {format(isIncome ? tx.totalAmount : -tx.totalAmount, { showSign: isIncome })}
                 </Text>
               </TouchableOpacity>
             );

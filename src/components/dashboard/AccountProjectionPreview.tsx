@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { AccountType } from '@/core/models/account';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { useColors } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
@@ -17,6 +17,7 @@ export function AccountProjectionPreview({
   finalAmount,
 }: AccountProjectionPreviewProps) {
   const colors = useColors();
+  const { format } = useCurrency();
   const { t } = useTranslation();
   const isFixed = accountType === 'FIXED_TERM';
 
@@ -37,7 +38,7 @@ export function AccountProjectionPreview({
       </View>
       <View style={styles.row}>
         <Text style={[styles.label, { color: colors.textLight }]}>{t('estimatedFinalAmount')}</Text>
-        <Text style={[styles.value, { color: colors.primaryText }]}>{formatCurrency(finalAmount)}</Text>
+        <Text style={[styles.value, { color: colors.primaryText }]}>{format(finalAmount)}</Text>
       </View>
       <Text style={[styles.hint, { color: colors.textLight }]}>
         {isFixed

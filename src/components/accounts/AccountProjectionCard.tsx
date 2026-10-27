@@ -7,7 +7,7 @@ import {
   calculateFixedTermMaturity,
   calculateMonthlyGain,
 } from '@/core/services/interest-calculator';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { useColors } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
@@ -17,6 +17,7 @@ interface AccountProjectionCardProps {
 
 export function AccountProjectionCard({ account }: AccountProjectionCardProps) {
   const colors = useColors();
+  const { format } = useCurrency();
   const { t } = useTranslation();
   const isFlexible = account.type === 'FLEXIBLE_SAVINGS';
   const isFixed = account.type === 'FIXED_TERM';
@@ -73,14 +74,14 @@ export function AccountProjectionCard({ account }: AccountProjectionCardProps) {
       <View style={styles.metricsRow}>
         <View style={styles.metric}>
           <Text style={[styles.label, { color: colors.textLight }]}>{t('monthlyGeneration')}</Text>
-          <Text style={[styles.value, { color: colors.text }]}>{formatCurrency(monthlyGain)}</Text>
+          <Text style={[styles.value, { color: colors.text }]}>{format(monthlyGain)}</Text>
         </View>
         <View style={styles.metric}>
           <Text style={[styles.label, { color: colors.textLight }]}>
             {isFixed ? t('maturityAmount') : t('estimatedYearAmount')}
           </Text>
           <Text style={[styles.value, { color: colors.primaryText }]}>
-            {formatCurrency(fixedMaturity ?? flexibleYearEnd)}
+            {format(fixedMaturity ?? flexibleYearEnd)}
           </Text>
         </View>
       </View>
@@ -88,7 +89,7 @@ export function AccountProjectionCard({ account }: AccountProjectionCardProps) {
       <Text style={[styles.note, { color: colors.textLight }]}>
         {isFixed
           ? t('simpleInterestCapital')
-          : `${t('accumulatedReturn')} ${formatCurrency(
+          : `${t('accumulatedReturn')} ${format(
               flexibleYearEnd - account.balance
             )}.`}
       </Text>

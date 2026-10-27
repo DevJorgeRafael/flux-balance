@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { getLocales } from 'expo-localization';
-import { getDatabase } from '@/infrastructure/database/db';
+import { getAppSetting, setAppSetting } from '@/infrastructure/database/appSettings';
 import { Language, TranslationKey, translations } from './translations';
 
 type TranslationParams = Record<string, string | number>;
@@ -28,23 +28,12 @@ function getDeviceLanguage(): Language {
 }
 
 async function loadSavedLanguage(): Promise<Language | null> {
-  const db = await getDatabase();
-  await db.runAsync(
-    'CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)'
-  );
-  const row = await db.getFirstAsync<{ value: string }>(
-    'SELECT value FROM app_settings WHERE key = ?',
-    ['language']
-  );
-  return row?.value === 'es' || row?.value === 'en' ? row.value : null;
+  const saved = await getAppSetting('language');
+  return saved === 'es' || saved === 'en' ? saved : null;
 }
 
 async function saveLanguage(language: Language): Promise<void> {
-  const db = await getDatabase();
-  await db.runAsync(
-    'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
-    ['language', language]
-  );
+  await setAppSetting('language', language);
 }
 
 export function TranslationProvider({ children }: { children: React.ReactNode }) {
