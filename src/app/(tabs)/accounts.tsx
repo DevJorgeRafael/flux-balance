@@ -7,6 +7,7 @@ import { AccountsHeader } from '@/components/accounts/AccountsHeader';
 import { AccountsDistributionCard } from '@/components/accounts/AccountsDistributionCard';
 import { AccountGroupSection } from '@/components/accounts/AccountGroupSection';
 import { AccountsEmptyState } from '@/components/accounts/AccountsEmptyState';
+import { BottomFade } from '@/components/ui/BottomFade';
 import { useMonthlyAccountMovementCounts } from '@/hooks/useMonthlyAccountMovementCounts';
 import { buildAccountDistribution } from '@/core/services/account-distribution';
 import { useTranslation } from '@/core/i18n/useTranslation';
@@ -111,6 +112,8 @@ export default function AccountsScreen() {
           </>
         )}
       </ScrollView>
+
+      <BottomFade />
     </View>
   );
 }

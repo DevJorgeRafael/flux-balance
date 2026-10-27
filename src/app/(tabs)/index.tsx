@@ -18,6 +18,7 @@ import { DashboardHero } from '@/components/dashboard/DashboardHero';
 import { DashboardSummaryCard } from '@/components/dashboard/DashboardSummaryCard';
 import { AccountCarousel } from '@/components/dashboard/AccountCarousel';
 import { RecentTransactionsList } from '@/components/dashboard/RecentTransactionsList';
+import { BottomFade } from '@/components/ui/BottomFade';
 import { useDashboard } from '@/context/DashboardContext';
 import { TAB_BAR_CONTENT_GAP, TAB_BAR_CONTENT_OFFSET } from '@/components/navigation/tabBarLayout';
 
@@ -116,6 +117,8 @@ export default function DashboardScreen() {
           { height: insets.top, backgroundColor: heroGradient.colors[0] },
         ]}
       />
+
+      <BottomFade color={colors.sheet} />
     </View>
   );
 }

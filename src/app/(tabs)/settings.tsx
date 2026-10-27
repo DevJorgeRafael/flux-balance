@@ -14,6 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 import { useColors, useInsets, useThemeMode } from '@/components/ui/theme';
+import { BottomFade } from '@/components/ui/BottomFade';
 import { IS_DEVELOPMENT_MODE } from '@/core/constants/environment';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
@@ -176,6 +177,8 @@ export default function SettingsScreen() {
           </>
         )}
       </ScrollView>
+
+      <BottomFade />
     </View>
   );
 }

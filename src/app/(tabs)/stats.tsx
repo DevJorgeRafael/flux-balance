@@ -11,6 +11,7 @@ import { StatsTypeSelector } from '@/components/stats/StatsTypeSelector';
 import { CategoryDonut, type CategoryDonutSlice } from '@/components/stats/CategoryDonut';
 import { CategoryBreakdownList } from '@/components/stats/CategoryBreakdownList';
 import { StatsEmptyState } from '@/components/stats/StatsEmptyState';
+import { BottomFade } from '@/components/ui/BottomFade';
 import { TAB_BAR_CONTENT_GAP, TAB_BAR_CONTENT_OFFSET } from '@/components/navigation/tabBarLayout';
 
 const transactionRepo = new SqliteTransactionRepository();
@@ -206,6 +207,8 @@ export default function StatsScreen() {
           </>
         )}
       </ScrollView>
+
+      <BottomFade />
     </View>
   );
 }
