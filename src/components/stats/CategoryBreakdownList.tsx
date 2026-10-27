@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { bestTextColor, useColors } from '@/components/ui/theme';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import type { CategoryDonutSlice } from './CategoryDonut';
 
 interface CategoryBreakdownListProps {
@@ -16,6 +16,7 @@ export function CategoryBreakdownList({
   onSelect,
 }: CategoryBreakdownListProps) {
   const colors = useColors();
+  const { format } = useCurrency();
 
   return (
     <View style={styles.list}>
@@ -27,7 +28,7 @@ export function CategoryBreakdownList({
             key={item.id}
             onPress={() => onSelect(item.id)}
             accessibilityRole="button"
-            accessibilityLabel={`${item.name}, ${item.percentage}%, ${formatCurrency(item.amount)}`}
+            accessibilityLabel={`${item.name}, ${item.percentage}%, ${format(item.amount)}`}
             accessibilityState={{ selected: selectedId === item.id }}
             style={({ pressed }) => [
               styles.row,
@@ -46,7 +47,7 @@ export function CategoryBreakdownList({
             </Text>
 
             <Text style={[styles.amount, { color: colors.text }]} numberOfLines={1}>
-              {formatCurrency(item.amount)}
+              {format(item.amount)}
             </Text>
           </Pressable>
         );

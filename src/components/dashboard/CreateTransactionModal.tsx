@@ -16,6 +16,7 @@ import { Category } from '@/core/models/category';
 import { isHexColor, useColors, useThemeMode } from '@/components/ui/theme';
 import { SqliteTransactionRepository } from '@/infrastructure/repositories';
 import { useTranslation } from '@/core/i18n/useTranslation';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 
 interface CreateTransactionModalProps {
@@ -41,6 +42,7 @@ export function CreateTransactionModal({
 }: CreateTransactionModalProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
+  const { currency } = useCurrency();
   const { t } = useTranslation();
 
   const [txType, setTxType] = useState<TransactionType>(initialType);
@@ -179,7 +181,9 @@ export function CreateTransactionModal({
           </View>
 
           {/* Input de Monto */}
-          <Text style={[styles.formLabel, { color: colors.textLight }]}>{t('amount')}</Text>
+          <Text style={[styles.formLabel, { color: colors.textLight }]}>
+            {t('amount', { currency })}
+          </Text>
           <TextInput
             style={[
               styles.largeAmountInput,

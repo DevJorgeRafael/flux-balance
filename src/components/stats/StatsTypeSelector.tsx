@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useColors } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import type { StatsTransactionType } from '@/core/services/stats-breakdown';
 
 interface StatsTypeSelectorProps {
@@ -28,6 +28,7 @@ export function StatsTypeSelector({
 }: StatsTypeSelectorProps) {
   const colors = useColors();
   const { t } = useTranslation();
+  const { format } = useCurrency();
 
   const options: TypeOption[] = [
     {
@@ -50,7 +51,7 @@ export function StatsTypeSelector({
     <View style={[styles.container, { backgroundColor: colors.inputBackground }]}>
       {options.map((option) => {
         const isSelected = selectedType === option.type;
-        const formattedTotal = formatCurrency(option.total);
+        const formattedTotal = format(option.total);
 
         return (
           <Pressable

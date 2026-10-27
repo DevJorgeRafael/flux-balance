@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
 import { useColors } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import type { CategorySlice } from '@/core/services/stats-breakdown';
 
 export interface CategoryDonutSlice extends CategorySlice {
@@ -26,6 +26,7 @@ const SEGMENT_GAP = 3;
 export function CategoryDonut({ slices, total, selectedId }: CategoryDonutProps) {
   const colors = useColors();
   const { t } = useTranslation();
+  const { format } = useCurrency();
   const circumference = 2 * Math.PI * RADIUS;
   const segmentLengths = slices.map((slice) => (slice.amount / total) * circumference);
 
@@ -33,7 +34,7 @@ export function CategoryDonut({ slices, total, selectedId }: CategoryDonutProps)
     <View
       style={styles.container}
       accessible
-      accessibilityLabel={`${t('total')} ${formatCurrency(total)}`}
+      accessibilityLabel={`${t('total')} ${format(total)}`}
     >
       <Svg width={SIZE} height={SIZE}>
         <Circle
@@ -86,7 +87,7 @@ export function CategoryDonut({ slices, total, selectedId }: CategoryDonutProps)
           adjustsFontSizeToFit
           minimumFontScale={0.62}
         >
-          {formatCurrency(total)}
+          {format(total)}
         </Text>
       </View>
     </View>

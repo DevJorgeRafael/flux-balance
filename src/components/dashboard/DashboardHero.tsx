@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { useColors } from '@/components/ui/theme';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface DashboardHeroProps {
@@ -18,6 +18,7 @@ export function DashboardHero({
   onToggleBalanceVisibility,
 }: DashboardHeroProps) {
   const colors = useColors();
+  const { format } = useCurrency();
   const { t } = useTranslation();
 
   return (
@@ -52,7 +53,7 @@ export function DashboardHero({
         adjustsFontSizeToFit
         numberOfLines={1}
       >
-        {formatCurrency(totalBalance, false, isBalanceVisible)}
+        {format(totalBalance, { hidden: !isBalanceVisible })}
       </Text>
     </MotiView>
   );

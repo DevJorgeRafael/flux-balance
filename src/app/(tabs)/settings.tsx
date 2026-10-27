@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import {
   ChevronRight,
+  Coins,
   Languages,
   Moon,
   RotateCcw,
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react-native';
 import { useColors, useInsets, useThemeMode } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { useDashboard } from '@/context/DashboardContext';
 import { TAB_BAR_CONTENT_GAP, TAB_BAR_CONTENT_OFFSET } from '@/components/navigation/tabBarLayout';
 
@@ -76,8 +78,8 @@ export default function SettingsScreen() {
   const insets = useInsets();
   const { isDark, toggleTheme } = useThemeMode();
   const { language, toggleLanguage, t } = useTranslation();
+  const { currency } = useCurrency();
   const { handleSeedDemoData, handleResetAllData, handleRefresh } = useDashboard();
-  const isDevMode = __DEV__;
 
   useFocusEffect(
     useCallback(() => {
@@ -125,7 +127,17 @@ export default function SettingsScreen() {
           />
         </View>
 
+        <Text style={[styles.sectionLabel, { color: colors.textLight }]}>
+          {t('system')}
+        </Text>
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <SettingsRow
+            icon={Coins}
+            label={t('currency')}
+            value={currency}
+            showChevron
+            onPress={() => router.push('/settings/currency')}
+          />
           <SettingsRow
             icon={isDark ? Moon : Sun}
             label={t('theme')}
@@ -141,22 +153,23 @@ export default function SettingsScreen() {
           />
         </View>
 
-        {isDevMode && (
-          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <SettingsRow
-              icon={Sparkles}
-              label={t('demoMode')}
-              onPress={() => void handleSeedDemoData()}
-            />
-            <SettingsRow
-              icon={RotateCcw}
-              label={t('resetData')}
-              destructive
-              isLast
-              onPress={() => void handleResetAllData()}
-            />
-          </View>
-        )}
+        <Text style={[styles.sectionLabel, { color: colors.textLight }]}>
+          {t('data')}
+        </Text>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <SettingsRow
+            icon={Sparkles}
+            label={t('demoMode')}
+            onPress={() => void handleSeedDemoData()}
+          />
+          <SettingsRow
+            icon={RotateCcw}
+            label={t('resetData')}
+            destructive
+            isLast
+            onPress={() => void handleResetAllData()}
+          />
+        </View>
       </ScrollView>
     </View>
   );

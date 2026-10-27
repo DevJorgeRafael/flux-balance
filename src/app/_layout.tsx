@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/theme';
 import { initDatabase } from '@/infrastructure/database/db';
 import { TranslationProvider } from '@/core/i18n/useTranslation';
+import { CurrencyProvider } from '@/core/currency/useCurrency';
 
 LogBox.ignoreLogs([
   'SafeAreaView has been deprecated',
@@ -23,9 +24,11 @@ function RootNavigator() {
   const insets = useSafeAreaInsets();
   return (
     <TranslationProvider>
-      <UIProvider insets={insets}>
-        <RootWithTheme />
-      </UIProvider>
+      <CurrencyProvider>
+        <UIProvider insets={insets}>
+          <RootWithTheme />
+        </UIProvider>
+      </CurrencyProvider>
     </TranslationProvider>
   );
 }

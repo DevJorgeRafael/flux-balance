@@ -3,7 +3,7 @@ import { StyleSheet, View, Text } from 'react-native';
 import { Plus, Minus, Zap, TrendingUp, Clock, Calendar } from 'lucide-react-native';
 import { Account, AccountType } from '@/core/models/account';
 import { useColors } from '@/components/ui/theme';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface AccountDetailHeroProps {
@@ -14,6 +14,7 @@ interface AccountDetailHeroProps {
 
 export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailHeroProps) {
   const colors = useColors();
+  const { format } = useCurrency();
   const { t } = useTranslation();
 
   const getAccountTypeLabel = (type: AccountType) => {
@@ -58,7 +59,7 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
 
         {/* Saldo Masivo */}
         <Text style={[styles.heroBalanceText, { color: colors.text }]} adjustsFontSizeToFit numberOfLines={1}>
-          {formatCurrency(account.balance)}
+          {format(account.balance)}
         </Text>
 
         {/* Tarjeta de Resumen Rápido de Flujos */}
@@ -70,7 +71,7 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
             <View>
               <Text style={[styles.flowLabel, { color: colors.textLight }]}>{t('totalIncome')}</Text>
               <Text style={[styles.flowValue, { color: colors.successText }]}>
-                {formatCurrency(totalIn)}
+                {format(totalIn)}
               </Text>
             </View>
           </View>
@@ -84,7 +85,7 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
             <View>
               <Text style={[styles.flowLabel, { color: colors.textLight }]}>{t('totalSpent')}</Text>
               <Text style={[styles.flowValue, { color: colors.errorText }]}>
-                {formatCurrency(totalOut)}
+                {format(totalOut)}
               </Text>
             </View>
           </View>
@@ -117,14 +118,14 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
             <View style={styles.yieldStatCol}>
               <Text style={[styles.yieldStatLabel, { color: colors.textLight }]}>{t('dailyEstimated')}</Text>
               <Text style={[styles.yieldStatNumber, { color: colors.successText }]}>
-                +{formatCurrency((account.balance * account.annualRate) / 365)}
+                {format((account.balance * account.annualRate) / 365, { showSign: true })}
               </Text>
             </View>
 
             <View style={styles.yieldStatCol}>
               <Text style={[styles.yieldStatLabel, { color: colors.textLight }]}>{t('monthlyEstimated')}</Text>
               <Text style={[styles.yieldStatNumber, { color: colors.primaryText }]}>
-                +{formatCurrency((account.balance * account.annualRate) / 12)}
+                {format((account.balance * account.annualRate) / 12, { showSign: true })}
               </Text>
             </View>
           </View>
@@ -147,7 +148,7 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <TrendingUp size={16} color={colors.warningText} />
                   <Text style={[styles.depositCapital, { color: colors.text }]}>
-                    {formatCurrency(dep.principalAmount)}
+                    {format(dep.principalAmount)}
                   </Text>
                 </View>
                 <View style={[styles.depositBadge, { backgroundColor: colors.warningSoft }]}>

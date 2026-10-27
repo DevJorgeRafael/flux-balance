@@ -20,6 +20,7 @@ import {
 } from '@/core/services/interest-calculator';
 import { AccountProjectionPreview } from '@/components/dashboard/AccountProjectionPreview';
 import { useTranslation } from '@/core/i18n/useTranslation';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 
 interface CreateAccountModalProps {
@@ -39,6 +40,7 @@ export function CreateAccountModal({
 }: CreateAccountModalProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
+  const { currency } = useCurrency();
   const { t } = useTranslation();
 
   const [accName, setAccName] = useState('');
@@ -209,7 +211,9 @@ export function CreateAccountModal({
 
             {/* Saldo Inicial / Capital */}
             <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14 }]}>
-              {accType === 'FIXED_TERM' ? t('investedCapital') : t('initialBalance')}
+              {accType === 'FIXED_TERM'
+                ? t('investedCapital', { currency })
+                : t('initialBalance', { currency })}
             </Text>
             <TextInput
               style={[

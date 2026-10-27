@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Plus } from 'lucide-react-native';
 import { shadow, useColors, useThemeMode } from '@/components/ui/theme';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface AccountsHeaderProps {
@@ -20,6 +20,7 @@ export function AccountsHeader({
 }: AccountsHeaderProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
+  const { format } = useCurrency();
   const { t } = useTranslation();
 
   const accountCountLabel =
@@ -58,7 +59,7 @@ export function AccountsHeader({
         numberOfLines={1}
         adjustsFontSizeToFit
       >
-        {formatCurrency(totalBalance, false, isBalanceVisible)}
+        {format(totalBalance, { hidden: !isBalanceVisible })}
       </Text>
       <Text style={[styles.accountCount, { color: colors.textLight }]}>
         {accountCountLabel}
