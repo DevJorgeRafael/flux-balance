@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { Receipt, Plus, Minus } from 'lucide-react-native';
 import { Transaction } from '@/core/models/transaction';
-import { useColors } from '@/components/ui/theme';
+import { shadow, useColors, useThemeMode } from '@/components/ui/theme';
 import { formatCurrency } from '@/core/utils/currency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
@@ -16,6 +16,7 @@ type FilterType = 'ALL' | 'INCOME' | 'EXPENSE';
 export function AccountTransactionsList({ transactions }: AccountTransactionsListProps) {
   const [filterType, setFilterType] = useState<FilterType>('ALL');
   const colors = useColors();
+  const { isDark } = useThemeMode();
   const { t } = useTranslation();
 
   const filteredTransactions = transactions.filter((tx) => {
@@ -113,10 +114,9 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
           </Text>
         </View>
       ) : (
-        <View style={[styles.transactionsCardContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          {filteredTransactions.map((tx, idx) => {
+        <View style={styles.transactionsList}>
+          {filteredTransactions.map((tx) => {
             const isIncome = tx.type === 'INCOME';
-            const isLast = idx === filteredTransactions.length - 1;
             const dateFormatted = new Date(tx.date).toLocaleDateString('es-ES', {
               weekday: 'short',
               day: 'numeric',
@@ -129,7 +129,8 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
                 key={tx.id}
                 style={[
                   styles.transactionItemRow,
-                  !isLast && { borderBottomWidth: 1, borderBottomColor: colors.border },
+                  { backgroundColor: colors.surface },
+                  !isDark && shadow.sm,
                 ]}
                 onPress={() => {
                   router.push({
@@ -225,10 +226,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
   },
-  transactionsCardContainer: {
-    borderRadius: 24,
-    borderWidth: 1,
-    overflow: 'hidden',
+  transactionsList: {
+    gap: 10,
   },
   transactionItemRow: {
     flexDirection: 'row',
@@ -236,6 +235,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     gap: 12,
+    borderRadius: 20,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
   },
   transactionIconContainer: {
     width: 36,

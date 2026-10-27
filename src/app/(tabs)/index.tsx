@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   View,
@@ -31,6 +31,8 @@ export default function DashboardScreen() {
     monthlyTotals,
     isLoading,
     isRefreshing,
+    isBalanceVisible,
+    toggleBalanceVisibility,
     transactions,
     selectedFilterAccountId,
     selectedAccountName,
@@ -38,8 +40,6 @@ export default function DashboardScreen() {
     handleRefresh,
     openAccountModal,
   } = useDashboard();
-
-  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
 
   const heroGradient = isDark ? heroGradientDark : heroGradientLight;
 
@@ -71,7 +71,7 @@ export default function DashboardScreen() {
           <DashboardHero
             totalBalance={totalBalance}
             isBalanceVisible={isBalanceVisible}
-            onToggleBalanceVisibility={() => setIsBalanceVisible((visible) => !visible)}
+            onToggleBalanceVisibility={toggleBalanceVisibility}
           />
         </LinearGradient>
 

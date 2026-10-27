@@ -17,6 +17,8 @@ interface DashboardContextValue {
   totalBalance: number;
   isLoading: boolean;
   isRefreshing: boolean;
+  isBalanceVisible: boolean;
+  toggleBalanceVisibility: () => void;
   selectedFilterAccountId: string | null;
   transactions: Transaction[];
   selectedAccountName?: string;
@@ -35,6 +37,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const [isAccountModalVisible, setIsAccountModalVisible] = useState(false);
   const [isTransactionModalVisible, setIsTransactionModalVisible] = useState(false);
   const [transactionType, setTransactionType] = useState<TransactionType>('EXPENSE');
+  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
 
   const {
     accounts,
@@ -81,6 +84,10 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     setIsAccountModalVisible(true);
   }, []);
 
+  const toggleBalanceVisibility = useCallback(() => {
+    setIsBalanceVisible((visible) => !visible);
+  }, []);
+
   const value = useMemo<DashboardContextValue>(
     () => ({
       accounts,
@@ -89,6 +96,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       totalBalance,
       isLoading,
       isRefreshing,
+      isBalanceVisible,
+      toggleBalanceVisibility,
       selectedFilterAccountId,
       transactions,
       selectedAccountName,
@@ -106,6 +115,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       totalBalance,
       isLoading,
       isRefreshing,
+      isBalanceVisible,
+      toggleBalanceVisibility,
       selectedFilterAccountId,
       transactions,
       selectedAccountName,

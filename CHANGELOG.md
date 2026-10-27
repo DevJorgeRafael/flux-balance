@@ -2,6 +2,50 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.3.0] - 2026-10-27
+
+Rediseño completo de la pestaña **Cuentas** y ajustes visuales en el detalle de cuenta.
+
+### Añadido
+
+- Encabezado con total consolidado, número de cuentas y chip **Nueva cuenta**.
+- Barra de distribución apilada de 12 px con hasta cinco segmentos.
+- Leyenda con color, nombre y porcentaje por cuenta.
+- Agrupación del resto de cuentas en **Otras**, con color gris.
+- Porcentajes enteros por mayor resto; siempre suman `100%`.
+- Grupos **Corrientes**, **Ahorro flexible** y **Plazo fijo**, solo si tienen cuentas.
+- Tarjeta por cuenta con ícono, nombre en una línea, saldo y movimientos del mes.
+- Rendimiento flexible estimado con etiqueta **estimado**, solo si hay tasa.
+- Plazo fijo con **Vence en N días** y barra fina de progreso.
+- Estado vacío con mensaje y botón **Crear cuenta**.
+- Visibilidad de saldos compartida entre Inicio y Cuentas.
+- Traducciones ES/EN para distribución, grupos, conteo, vencimiento y estado vacío.
+- Servicio puro `account-distribution` y su prueba unitaria.
+- Hook `useMonthlyAccountMovementCounts` para el conteo mensual por cuenta.
+- La prueba de distribución se agregó al script `test`.
+
+### Cambiado
+
+- La pestaña Cuentas reemplaza el carrusel por una lista agrupada por tipo.
+- Los saldos ocultos en Inicio también se ocultan en Cuentas.
+- Cada movimiento del detalle se muestra en una tarjeta con espacio vertical.
+- Los nombres largos se ajustan para mostrarse completos en una línea.
+- El Inicio solo comparte el estado de visibilidad; su diseño no cambia.
+- `package.json` y `app.json` suben a `1.3.0`.
+
+### Corregido
+
+- Se eliminaron las líneas divisorias del historial de movimientos.
+- Se conserva la navegación de cada cuenta a su pantalla de detalle.
+
+### Compatibilidad
+
+- La base de datos, los modelos y los cálculos financieros no cambian.
+- Los totales de Inicio y Cuentas provienen del mismo balance consolidado.
+- Los temas claro y oscuro usan los tokens y superficies existentes.
+- No se agregaron dependencias nativas.
+- El carrusel del Inicio se mantiene intacto.
+
 ## [1.2.1] - 2026-10-27
 
 Fondos y tema oscuro renovados en el Dashboard y sus pantallas relacionadas.
