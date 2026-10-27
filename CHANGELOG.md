@@ -2,6 +2,45 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.4.0] - 2026-10-27
+
+Barra de navegación inferior flotante, tipo píldora.
+
+### Añadido
+
+- Configuración única de tabs en `tabConfig.ts`.
+- Componente `BottomFade` con degradado inferior de 24px.
+- Degradado inferior en Inicio, Cuentas, Stats y Ajustes.
+- Píldora de fondo en el tab activo con ícono y etiqueta.
+- Etiqueta accesible en cada tab, aunque no se vea.
+- La barra se oculta cuando aparece el teclado.
+- Lectores de pantalla anuncian el tab seleccionado.
+
+### Cambiado
+
+- La barra deja de ser una franja fija y pasa a ser una píldora flotante.
+- La barra mide 64px de alto, con radio 999 y sombra suave.
+- Sin borde de 1px.
+- Margen lateral de 16px y margen inferior de 12px más el safe area.
+- Los tabs inactivos muestran solo el ícono en gris.
+- El ＋ es un círculo de 56px, con 12px de separación de la barra.
+- El ＋ comparte el margen inferior con la barra.
+- El ＋ sigue abriendo el modal de movimiento.
+- La píldora activa se expande en 220ms al cambiar de tab.
+- El tab activo usa el color de acento para ícono y etiqueta.
+- En oscuro la barra usa `surface` al 94% y la píldora `cardRaised`.
+- En claro la barra es blanca al 94% y la píldora un tinte del acento al 15%.
+- Las pantallas dejan 20px de aire entre el contenido y la barra.
+- `package.json` y `app.json` suben a `1.4.0`.
+
+### Compatibilidad
+
+- No cambian rutas, datos ni el contenido de las pantallas.
+- El modal de movimiento sigue igual.
+- No se agregaron dependencias.
+- No se usa `expo-blur` en la barra.
+- La animación usa `react-native-reanimated`, ya instalado.
+
 ## [1.3.2] - 2026-10-27
 
 Modo desarrollador en Ajustes y limpieza de variables de entorno.

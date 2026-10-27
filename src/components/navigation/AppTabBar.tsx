@@ -1,153 +1,214 @@
-import React from 'react';
-import { Platform, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import {
-  ChartColumn,
-  CreditCard,
-  Home,
-  Plus,
-  Settings as SettingsIcon,
-  type LucideIcon,
-} from 'lucide-react-native';
+  Keyboard,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type ViewStyle,
+} from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import { Plus, type LucideIcon } from 'lucide-react-native';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors, useThemeMode, withAlpha } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useDashboard } from '@/context/DashboardContext';
-import { TAB_BAR_HEIGHT, TAB_BAR_OVERHANG } from './tabBarLayout';
+import { APP_TABS } from './tabConfig';
+import {
+  TAB_BAR_ACTION_GAP,
+  TAB_BAR_ACTION_SIZE,
+  TAB_BAR_BOTTOM_MARGIN,
+  TAB_BAR_CONTENT_OFFSET,
+  TAB_BAR_HEIGHT,
+  TAB_BAR_HORIZONTAL_MARGIN,
+} from './tabBarLayout';
 
-function getSurfaceShadow(isDark: boolean, shadowColor: string): ViewStyle {
+const BAR_OPACITY = 0.94;
+/** Tinte del acento para la píldora del tab activo en modo claro. */
+const ACTIVE_PILL_TINT = 0.15;
+const KEYBOARD_ANIMATION_DURATION = 180;
+const PILL_ANIMATION_DURATION = 220;
+
+function getFloatingShadow(isDark: boolean, shadowColor: string): ViewStyle {
   if (Platform.OS === 'android') {
     return {
       boxShadow: isDark
-        ? `0px -8px 24px ${withAlpha(shadowColor, 0.55)}`
-        : `0px -6px 18px ${withAlpha(shadowColor, 0.12)}`,
+        ? `0px 6px 18px ${withAlpha(shadowColor, 0.6)}`
+        : `0px 6px 16px ${withAlpha(shadowColor, 0.16)}`,
     };
   }
 
   return {
     shadowColor,
-    shadowOffset: { width: 0, height: -6 },
-    shadowOpacity: isDark ? 0.55 : 0.12,
-    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: isDark ? 0.5 : 0.16,
+    shadowRadius: 16,
   };
-}
-
-type TabName = 'index' | 'accounts' | 'stats' | 'settings';
-
-interface TabDefinition {
-  name: TabName;
-  label: string;
-  icon: LucideIcon;
 }
 
 interface TabButtonProps {
   label: string;
   icon: LucideIcon;
   focused: boolean;
-  color: string;
+  accentColor: string;
+  inactiveColor: string;
+  pillColor: string;
   onPress: () => void;
 }
 
-function TabButton({ label, icon: Icon, focused, color, onPress }: TabButtonProps) {
+function TabButton({
+  label,
+  icon: Icon,
+  focused,
+  accentColor,
+  inactiveColor,
+  pillColor,
+  onPress,
+}: TabButtonProps) {
   return (
-    <Pressable
-      style={styles.tabButton}
-      onPress={onPress}
-      accessibilityRole="tab"
-      accessibilityLabel={label}
-      accessibilityState={{ selected: focused }}
-      hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
-    >
-      <Icon size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
-      <Text style={[styles.tabLabel, { color }]} numberOfLines={1}>
-        {label}
-      </Text>
-    </Pressable>
+    <Animated.View layout={LinearTransition.duration(PILL_ANIMATION_DURATION)} style={styles.tab}>
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="tab"
+        accessibilityLabel={label}
+        accessibilityState={{ selected: focused }}
+        hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+        style={({ pressed }) => [styles.tabPressable, pressed && styles.tabPressed]}
+      >
+        {focused && (
+          <Animated.View
+            entering={FadeIn.duration(160)}
+            exiting={FadeOut.duration(140)}
+            style={[styles.tabPill, { backgroundColor: pillColor }]}
+          />
+        )}
+
+        <View style={styles.tabContent}>
+          <Icon
+            size={21}
+            color={focused ? accentColor : inactiveColor}
+            strokeWidth={focused ? 2.4 : 2}
+          />
+
+          {focused && (
+            <Animated.Text
+              entering={FadeIn.duration(180)}
+              exiting={FadeOut.duration(120)}
+              numberOfLines={1}
+              style={[styles.tabLabel, { color: accentColor }]}
+            >
+              {label}
+            </Animated.Text>
+          )}
+        </View>
+      </Pressable>
+    </Animated.View>
   );
 }
 
-export function AppTabBar({ state, navigateToTab, insets }: BottomTabBarProps) {
+export function AppTabBar({ state, navigateToTab }: BottomTabBarProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
   const { t } = useTranslation();
   const { openTransactionModal } = useDashboard();
-
-  const tabs: TabDefinition[] = [
-    { name: 'index', label: t('home'), icon: Home },
-    { name: 'accounts', label: t('accountsTab'), icon: CreditCard },
-    { name: 'stats', label: t('stats'), icon: ChartColumn },
-    { name: 'settings', label: t('settings'), icon: SettingsIcon },
-  ];
+  const insets = useSafeAreaInsets();
 
   const activeRouteName = state.routes[state.index]?.name;
-  const surfaceHeight = TAB_BAR_HEIGHT + insets.bottom;
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const translateY = useSharedValue(0);
+  const opacity = useSharedValue(1);
 
-  const renderTab = (tab: TabDefinition) => {
-    const route = state.routes.find((item) => item.name === tab.name);
-    if (!route) return null;
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setIsKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setIsKeyboardVisible(false);
+    });
 
-    const focused = activeRouteName === tab.name;
-    return (
-      <TabButton
-        key={tab.name}
-        label={tab.label}
-        icon={tab.icon}
-        focused={focused}
-        color={focused ? colors.primaryText : colors.textLight}
-        onPress={() => navigateToTab(route.key)}
-      />
-    );
-  };
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    const hiddenOffset = TAB_BAR_CONTENT_OFFSET + insets.bottom;
+    translateY.value = withTiming(isKeyboardVisible ? hiddenOffset : 0, {
+      duration: KEYBOARD_ANIMATION_DURATION,
+    });
+    opacity.value = withTiming(isKeyboardVisible ? 0 : 1, {
+      duration: KEYBOARD_ANIMATION_DURATION,
+    });
+  }, [insets.bottom, isKeyboardVisible, opacity, translateY]);
+
+  const animatedRowStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  const pillColor = isDark ? colors.cardRaised : withAlpha(colors.primary, ACTIVE_PILL_TINT);
+  const barColor = withAlpha(colors.surface, BAR_OPACITY);
 
   return (
-    <View
-      pointerEvents="box-none"
-      style={[styles.overlay, { height: TAB_BAR_OVERHANG + surfaceHeight }]}
-    >
-      <View
-        pointerEvents="auto"
+    <View pointerEvents="box-none" style={styles.overlay}>
+      <Animated.View
+        pointerEvents="box-none"
         style={[
-          styles.surface,
-          getSurfaceShadow(isDark, colors.shadow),
-          {
-            top: TAB_BAR_OVERHANG,
-            height: surfaceHeight,
-            backgroundColor: colors.surface,
-          },
+          styles.row,
+          { paddingBottom: insets.bottom + TAB_BAR_BOTTOM_MARGIN },
+          animatedRowStyle,
         ]}
       >
-        <View style={[styles.row, { height: surfaceHeight, paddingBottom: insets.bottom }]}>
-          <View style={styles.sideGroup}>
-            {renderTab(tabs[0])}
-            {renderTab(tabs[1])}
-          </View>
+        <View
+          style={[
+            styles.bar,
+            { backgroundColor: barColor },
+            getFloatingShadow(isDark, colors.shadow),
+          ]}
+        >
+          {APP_TABS.map((tab) => {
+            const route = state.routes.find((item) => item.name === tab.route);
+            if (!route) return null;
 
-          <View style={styles.centerSpacer} />
-
-          <View style={styles.sideGroup}>
-            {renderTab(tabs[2])}
-            {renderTab(tabs[3])}
-          </View>
+            return (
+              <TabButton
+                key={tab.route}
+                label={t(tab.labelKey)}
+                icon={tab.icon}
+                focused={activeRouteName === tab.route}
+                accentColor={colors.primaryText}
+                inactiveColor={colors.textLight}
+                pillColor={pillColor}
+                onPress={() => navigateToTab(route.key)}
+              />
+            );
+          })}
         </View>
-      </View>
 
-      <View pointerEvents="box-none" style={styles.plusLayer}>
         <Pressable
           onPress={() => openTransactionModal('EXPENSE')}
           accessibilityRole="button"
           accessibilityLabel={t('newMovement')}
+          hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
           style={({ pressed }) => [
-            styles.plusButton,
-            {
-              backgroundColor: colors.primary,
-              shadowColor: colors.shadow,
-              shadowOpacity: isDark ? 0.5 : 0.24,
-              transform: [{ scale: pressed ? 0.96 : 1 }],
-            },
+            styles.action,
+            { backgroundColor: colors.primary },
+            getFloatingShadow(isDark, colors.shadow),
+            pressed && styles.actionPressed,
           ]}
         >
-          <Plus size={28} color={colors.onPrimary} strokeWidth={2.5} />
+          <Plus size={28} color={colors.onPrimary} strokeWidth={2.6} />
         </Pressable>
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -161,52 +222,61 @@ const styles = StyleSheet.create({
     zIndex: 20,
     elevation: 20,
   },
-  surface: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-  },
   row: {
     flexDirection: 'row',
-    alignItems: 'stretch',
+    alignItems: 'flex-end',
+    gap: TAB_BAR_ACTION_GAP,
+    paddingHorizontal: TAB_BAR_HORIZONTAL_MARGIN,
   },
-  sideGroup: {
+  bar: {
     flex: 1,
+    height: TAB_BAR_HEIGHT,
+    borderRadius: 999,
     flexDirection: 'row',
-  },
-  centerSpacer: {
-    width: 76,
-  },
-  tabButton: {
-    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    paddingTop: 2,
+    justifyContent: 'space-between',
+    paddingHorizontal: 6,
   },
-  tabLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: -0.1,
+  tab: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  plusLayer: {
+  tabPressable: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 44,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+  },
+  tabPill: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    alignItems: 'center',
+    bottom: 0,
+    borderRadius: 999,
   },
-  plusButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  tabPressed: {
+    opacity: 0.7,
+  },
+  tabContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  tabLabel: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    letterSpacing: -0.1,
+  },
+  action: {
+    width: TAB_BAR_ACTION_SIZE,
+    height: TAB_BAR_ACTION_SIZE,
+    borderRadius: TAB_BAR_ACTION_SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 12,
-    elevation: 12,
+  },
+  actionPressed: {
+    transform: [{ scale: 0.94 }],
   },
 });
