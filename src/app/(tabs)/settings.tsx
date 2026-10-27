@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
 import {
+  ChevronRight,
   Languages,
   Moon,
   RotateCcw,
   Sparkles,
   Sun,
+  TrendingDown,
+  TrendingUp,
   type LucideIcon,
 } from 'lucide-react-native';
 import { useColors, useInsets, useThemeMode } from '@/components/ui/theme';
@@ -19,6 +23,7 @@ interface SettingsRowProps {
   value?: string;
   destructive?: boolean;
   isLast?: boolean;
+  showChevron?: boolean;
   onPress: () => void;
 }
 
@@ -28,6 +33,7 @@ function SettingsRow({
   value,
   destructive = false,
   isLast = false,
+  showChevron = false,
   onPress,
 }: SettingsRowProps) {
   const colors = useColors();
@@ -57,6 +63,10 @@ function SettingsRow({
           <Text style={[styles.valueText, { color: colors.primaryText }]}>{value}</Text>
         </View>
       ) : null}
+
+      {showChevron ? (
+        <ChevronRight size={17} color={colors.textLight} strokeWidth={2.4} />
+      ) : null}
     </Pressable>
   );
 }
@@ -66,8 +76,14 @@ export default function SettingsScreen() {
   const insets = useInsets();
   const { isDark, toggleTheme } = useThemeMode();
   const { language, toggleLanguage, t } = useTranslation();
-  const { handleSeedDemoData, handleResetAllData } = useDashboard();
+  const { handleSeedDemoData, handleResetAllData, handleRefresh } = useDashboard();
   const isDevMode = __DEV__;
+
+  useFocusEffect(
+    useCallback(() => {
+      handleRefresh();
+    }, [handleRefresh])
+  );
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background, paddingTop: insets.top }]}>
@@ -79,6 +95,35 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={[styles.title, { color: colors.text }]}>{t('settings')}</Text>
+
+        <Text style={[styles.sectionLabel, { color: colors.textLight }]}>
+          {t('categories')}
+        </Text>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <SettingsRow
+            icon={TrendingUp}
+            label={t('incomeCategories')}
+            showChevron
+            onPress={() =>
+              router.push({
+                pathname: '/settings/categories/[type]',
+                params: { type: 'INCOME' },
+              })
+            }
+          />
+          <SettingsRow
+            icon={TrendingDown}
+            label={t('expenseCategories')}
+            showChevron
+            isLast
+            onPress={() =>
+              router.push({
+                pathname: '/settings/categories/[type]',
+                params: { type: 'EXPENSE' },
+              })
+            }
+          />
+        </View>
 
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <SettingsRow
@@ -130,6 +175,13 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: -0.8,
     marginBottom: 24,
+  },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    marginBottom: 8,
   },
   card: {
     borderRadius: 24,

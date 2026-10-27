@@ -8,12 +8,14 @@ import {
 
 const labels = { uncategorized: 'Sin categoría', other: 'Otros' };
 
-function category(id, name, type = 'EXPENSE') {
+function category(id, name, type = 'EXPENSE', color = null) {
   return {
     id,
     name,
     type,
+    color,
     isDefault: true,
+    sortOrder: 0,
     createdAt: '2026-01-01T00:00:00.000Z',
   };
 }
@@ -70,9 +72,9 @@ function build(transactions, categories, overrides = {}) {
 
 test('groups the selected month and type, sorts by amount and sums percentages to 100', () => {
   const categories = [
-    category('food', 'Alimentación'),
-    category('transport', 'Transporte'),
-    category('salary', 'Salario', 'INCOME'),
+    category('food', 'Alimentación', 'EXPENSE', '#B45D22'),
+    category('transport', 'Transporte', 'EXPENSE', '#B44922'),
+    category('salary', 'Salario', 'INCOME', '#2767B0'),
   ];
   const transactions = [
     transaction({ id: 'tx-food', splits: [split('tx-food', 'food', 100)] }),
@@ -100,10 +102,13 @@ test('groups the selected month and type, sorts by amount and sums percentages t
     ]
   );
   assert.equal(result.expense.slices.reduce((sum, slice) => sum + slice.percentage, 0), 100);
+  assert.equal(result.expense.slices[0]?.color, '#B44922');
+  assert.equal(result.expense.slices[1]?.color, '#B45D22');
 
   assert.equal(result.income.total, 500);
   assert.equal(result.income.slices[0]?.id, 'salary');
   assert.equal(result.income.slices[0]?.percentage, 100);
+  assert.equal(result.income.slices[0]?.color, '#2767B0');
 });
 
 test('groups missing or unknown categories as uncategorized', () => {
@@ -118,6 +123,7 @@ test('groups missing or unknown categories as uncategorized', () => {
   const result = build(transactions, categories);
 
   assert.equal(result.expense.total, 100);
+  assert.equal(result.expense.slices[0]?.color, undefined);
   assert.deepEqual(
     result.expense.slices.map(({ id, name, amount, percentage, kind }) => ({
       id,
@@ -135,6 +141,25 @@ test('groups missing or unknown categories as uncategorized', () => {
         kind: 'uncategorized',
       },
     ]
+  );
+});
+
+test('does not use a category from the opposite movement type', () => {
+  const categories = [category('food', 'Alimentación', 'EXPENSE')];
+  const transactions = [
+    transaction({
+      id: 'tx-wrong-type',
+      type: 'INCOME',
+      splits: [split('tx-wrong-type', 'food', 90)],
+    }),
+  ];
+
+  const result = build(transactions, categories);
+
+  assert.equal(result.income.total, 90);
+  assert.deepEqual(
+    result.income.slices.map(({ id, amount, kind }) => ({ id, amount, kind })),
+    [{ id: UNCATEGORIZED_SLICE_ID, amount: 90, kind: 'uncategorized' }]
   );
 });
 
@@ -208,5 +233,6 @@ test('shows six categories and groups the rest into Other', () => {
   assert.equal(other.name, 'Otros');
   assert.equal(other.amount, 300);
   assert.equal(other.kind, 'other');
+  assert.equal(other.color, undefined);
   assert.equal(result.expense.slices.reduce((sum, slice) => sum + slice.percentage, 0), 100);
 });
