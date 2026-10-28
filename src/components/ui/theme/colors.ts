@@ -3,6 +3,8 @@
  * roles (relleno / encima / tenue / legible) a partir de un solo hex de marca.
  */
 
+import { lightPalette, readableTextCandidates } from './palettes';
+
 /** Contraste mínimo AA para texto normal. */
 export const AA_CONTRAST = 4.5;
 
@@ -138,6 +140,137 @@ export function bestTextColor(
   dark = '#000000'
 ): string {
   return bestOnColor(background, light, dark);
+}
+
+interface ReadableOnColor {
+  color: string;
+  ratio: number;
+}
+
+function readableOn(background: string): ReadableOnColor {
+  const lightRatio = contrast(background, readableTextCandidates.light);
+  const darkRatio = contrast(background, readableTextCandidates.dark);
+  return lightRatio >= darkRatio
+    ? { color: readableTextCandidates.light, ratio: lightRatio }
+    : { color: readableTextCandidates.dark, ratio: darkRatio };
+}
+
+/**
+ * Devuelve blanco o el oscuro de tokens, el que más contraste dé sobre el
+ * fondo. Si el hex es inválido, cae en el color de texto normal del tema.
+ */
+export function getReadableTextColor(
+  backgroundHex: string,
+  fallbackTextColor: string = lightPalette.text
+): string {
+  if (!isHexColor(backgroundHex)) return fallbackTextColor;
+  return readableOn(backgroundHex).color;
+}
+
+/**
+ * Ajusta solo la luminosidad del fondo —conservando el matiz— cuando ningún
+ * candidato alcanza AA. Devuelve el mismo color si ya era legible.
+ */
+export function getReadableBackgroundColor(backgroundHex: string): string {
+  if (!isHexColor(backgroundHex)) return backgroundHex;
+  if (readableOn(backgroundHex).ratio >= AA_CONTRAST) return backgroundHex;
+
+  const hsl = toHsl(backgroundHex);
+
+  for (let delta = 0.01; delta <= 1; delta += 0.01) {
+    const candidates = [
+      toHex({ ...hsl, l: clamp(hsl.l - delta, 0, 1) }),
+      toHex({ ...hsl, l: clamp(hsl.l + delta, 0, 1) }),
+    ];
+    let best: ReadableOnColor | null = null;
+    let bestBackground: string | null = null;
+
+    for (const candidate of candidates) {
+      const readable = readableOn(candidate);
+      if (readable.ratio >= AA_CONTRAST && (!best || readable.ratio > best.ratio)) {
+        best = readable;
+        bestBackground = candidate;
+      }
+    }
+
+    if (bestBackground) return bestBackground;
+  }
+
+  return backgroundHex;
+}
+
+export interface ReadableChipColors {
+  backgroundColor: string;
+  textColor: string;
+  isSoft: boolean;
+}
+
+const MAX_SOLID_LIGHTNESS_DROP = 0.25;
+const SOFT_BACKGROUND_ALPHA = 0.17;
+
+function darkenUntilContrast(hsl: Hsl, against: string): { hex: string; lightness: number } {
+  for (let lightness = hsl.l; lightness >= 0; lightness -= 0.005) {
+    const hex = toHex({ ...hsl, l: lightness });
+    if (contrast(hex, against) >= AA_CONTRAST) return { hex, lightness };
+  }
+
+  return { hex: '#000000', lightness: 0 };
+}
+
+function tintUntilContrast(hsl: Hsl, against: string, isDark: boolean): string {
+  const step = isDark ? 0.005 : -0.005;
+
+  for (let lightness = hsl.l; lightness >= 0 && lightness <= 1; lightness += step) {
+    const candidate = toHex({ ...hsl, l: lightness });
+    if (contrast(candidate, against) >= AA_CONTRAST) return candidate;
+  }
+
+  return isDark ? '#ffffff' : '#000000';
+}
+
+function blendHex(foreground: string, background: string, alpha: number): string {
+  const fg = hexToRgb(foreground);
+  const bg = hexToRgb(background);
+  return rgbToHex({
+    r: fg.r * alpha + bg.r * (1 - alpha),
+    g: fg.g * alpha + bg.g * (1 - alpha),
+    b: fg.b * alpha + bg.b * (1 - alpha),
+  });
+}
+
+/**
+ * Fondo y texto legibles para un chip sobre una card. Usa texto blanco y
+ * oscurece el color; si haría falta bajar más de 25 puntos de luminosidad,
+ * pasa a un fondo tenue con texto del mismo matiz.
+ */
+export function getReadableChipColors(
+  categoryHex: string,
+  cardBackgroundHex: string,
+  isDark: boolean,
+  fallbackTextColor: string = lightPalette.text
+): ReadableChipColors {
+  if (!isHexColor(categoryHex) || !isHexColor(cardBackgroundHex)) {
+    return { backgroundColor: categoryHex, textColor: fallbackTextColor, isSoft: false };
+  }
+
+  const hsl = toHsl(categoryHex);
+  const solid = darkenUntilContrast(hsl, readableTextCandidates.light);
+
+  if (hsl.l - solid.lightness <= MAX_SOLID_LIGHTNESS_DROP) {
+    return {
+      backgroundColor: solid.hex,
+      textColor: readableTextCandidates.light,
+      isSoft: false,
+    };
+  }
+
+  const backgroundColor = blendHex(categoryHex, cardBackgroundHex, SOFT_BACKGROUND_ALPHA);
+
+  return {
+    backgroundColor,
+    textColor: tintUntilContrast(hsl, backgroundColor, isDark),
+    isSoft: true,
+  };
 }
 
 /**

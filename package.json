@@ -1,7 +1,7 @@
 {
   "name": "flux-balance",
   "main": "expo-router/entry",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "dependencies": {
     "@expo/ui": "~58.0.23",
     "expo": "^58.0.19",
@@ -49,7 +49,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import=./scripts/test-ts-resolver.mjs --test src/core/constants/categoryPalettes.test.mjs src/core/services/stats-breakdown.test.mjs src/core/services/account-distribution.test.mjs src/core/services/category-resolution.test.mjs src/core/services/category-management.test.mjs src/core/utils/money.test.mjs src/core/preferences/preferences.test.mjs src/infrastructure/database/demoData.test.mjs src/infrastructure/database/categoryMigration.test.mjs src/infrastructure/database/categoryManagement.test.mjs",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import=./scripts/test-ts-resolver.mjs --test src/core/constants/categoryPalettes.test.mjs src/core/services/stats-breakdown.test.mjs src/core/services/account-distribution.test.mjs src/core/services/category-resolution.test.mjs src/core/services/category-management.test.mjs src/core/utils/money.test.mjs src/core/preferences/preferences.test.mjs src/components/ui/theme/colors.test.mjs src/infrastructure/database/demoData.test.mjs src/infrastructure/database/categoryMigration.test.mjs src/infrastructure/database/categoryManagement.test.mjs",
     "prepare": "husky"
   },
   "lint-staged": {

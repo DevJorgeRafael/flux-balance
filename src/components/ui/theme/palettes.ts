@@ -88,6 +88,12 @@ export const neutral = {
   black: '#000000',
 };
 
+/** Candidatos de texto para fondos de color arbitrarios (categorías). */
+export const readableTextCandidates = {
+  light: '#ffffff',
+  dark: '#0b1020',
+} as const;
+
 export const lightPalette: ThemeColors = {
   ...neutral,
 
