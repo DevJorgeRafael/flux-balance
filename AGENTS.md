@@ -1,41 +1,62 @@
-This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+Expo SDK 58 · React Native 0.88 · React 19 · TypeScript strict · pnpm. Offline-first app: all state lives in local SQLite (`expo-sqlite`); there is no backend or API layer.
 
-## Expo has changed — do not trust your training data
+## Expo SDK changes
 
-Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
-
-1. Read the major version of the `expo` package in `package.json`.
-2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v<major>.0.0/`
-3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+Expo ships breaking changes every release. Before writing code that touches Expo/EAS/React Native APIs, check the `expo` major in `package.json` and read `https://docs.expo.dev/versions/v58.0.0/`; use https://docs.expo.dev/llms.txt to find the right page instead of answering from memory. Router docs: https://docs.expo.dev/router/introduction.md
 
 ## Commands
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
-
 ```bash
-npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
-npx expo start              # start the dev server
-npx expo lint               # lint
-npx tsc --noEmit            # typecheck
-npx expo-doctor             # diagnose dependency and config issues
-npx expo install --fix      # fix incompatible package versions
+pnpm install
+pnpm start
+pnpm run lint
+pnpm exec tsc --noEmit
+pnpm test
+pnpm expo install <pkg>   # for new deps: resolves SDK-compatible versions
 ```
 
-Run lint and typecheck before declaring any task done.
+Run lint, typecheck and tests before declaring a task done. On Windows/PowerShell the `.ps1` shims are blocked by execution policy, so bare `pnpm`/`npx` may fail — use `pnpm.cmd` / `npx.cmd`.
 
-## Navigation & Routing
+Single test file (node:test takes the file path, no pattern flag):
 
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
+```bash
+pnpm exec node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import=./scripts/test-ts-resolver.mjs --test src/core/utils/money.test.mjs
+```
 
-## Building with EAS
+## Tests
 
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
-Docs: https://docs.expo.dev/eas/index.md
+- `node:test`, not Jest. Tests are `*.test.mjs` colocated with the module they cover.
+- `package.json`'s `test` script lists every test file by hand: a new `*.test.mjs` will not run until you add it there.
+- Tests import the implementation with an explicit `.ts` extension (`./money.ts`); `scripts/test-ts-resolver.mjs` only fills in missing extensions for relative imports.
+- Anything importing `react-native` or `expo-*` cannot run under `node --test`. DB code is still testable because migrations/seeds accept a structural `Pick<SQLiteDatabase, …>`; tests run them against `new DatabaseSync(':memory:')` from `node:sqlite` (see `src/infrastructure/database/categoryMigration.test.mjs`).
 
-## Rules
+## Structure
 
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+- `src/app/` — Expo Router routes only (thin screens). `src/app/(tabs)/_layout.tsx` mounts `DashboardProvider`; screens mostly compose components.
+- `src/components/<feature>/` — feature UI. `src/components/ui/` — design system (`Card`, `BottomSheetModal`, `BottomFade`) plus `theme/` (palettes, tokens, `UIProvider`).
+- `src/core/` — models, repository interfaces (`repositories/I*.ts`), pure services, constants, currency, i18n. Keep it renderer-free.
+- `src/infrastructure/` — `expo-sqlite` implementation: `database/` (DDL, migrations, seeds) and `repositories/Sqlite*.ts`.
+- `src/context/DashboardContext.tsx` + `src/hooks/` — dashboard/global data state and its fetching hooks.
+- Alias: `@/*` → `src/*`, `@/assets/*` → `assets/*`. `example/` is the unused starter template (git- and tsconfig-ignored).
+
+## Conventions that differ from defaults
+
+- UI copy and code comments are **Spanish**; identifiers stay English. Every user-facing string belongs in `src/core/i18n/translations.ts` under both `es` and `en` — `TranslationKey` derives from `en`, so a key present in only one language breaks typecheck.
+- Never format money by hand: use `useCurrency().format()` or `formatMoney` in `src/core/utils/money.ts`; locale and currency come from providers.
+- Wrap surfaces in `Card` and take colors/spacing/radii from `src/components/ui/theme` (`useColors()`, `spacing`, `radius`, `cardShadow`). 1.5.0 deliberately removed ad-hoc radii and shadows from cards — don't reintroduce them.
+- Tabs are data-driven: edit `src/components/navigation/tabConfig.ts`. The layout imports `Tabs` from `expo-router/js-tabs` (not `expo-router`) and renders the custom `AppTabBar`.
+- `eslint.config.js` fails files longer than **450 non-blank, non-comment lines** — split components before they grow. Husky + lint-staged run `eslint --max-warnings=0` on staged TS/TSX.
+- Release convention: `CHANGELOG.md` entries are in Spanish and the version is bumped in both `package.json` and `app.json`.
+
+## Database
+
+- Schema lives in `src/infrastructure/database/schema.sql.ts` and is re-applied on every launch with `CREATE TABLE IF NOT EXISTS` (`db.ts`).
+- Editing that DDL does not update installed databases. Add an idempotent migration invoked from `initDatabase()`, following `migrateCategories.ts` (runs in a transaction and verifies row counts).
+- Default categories are seeded on each start; keep seeds idempotent (`INSERT OR IGNORE`).
+- When `NODE_ENV !== 'production'` (see `src/core/constants/environment.ts`), the header menu exposes demo-data seeding and full reset for manual testing.
+
+## Native / builds
+
+- `ios/` and `android/` do not exist and are generated (Continuous Native Generation). Never create or edit them; configure native behavior in `app.json` and config plugins.
+- Expo Go only contains bundled native modules. A library with native code needs a development build (`pnpm expo run:android` / `run:ios`) before the app will start.
+- `app.json` enables `typedRoutes` (`.expo/types/` is generated by the dev server) and `reactCompiler`.

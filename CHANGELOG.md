@@ -2,6 +2,28 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.5.1] - 2026-10-27
+
+Espaciado uniforme y sombras compactas en el inicio.
+
+### Añadido
+
+- Token `cardShadowSm` con la sombra compacta para cards pequeñas.
+- Prop `shadowSize` en `Card` (`sm` o `md`) para elegir el tamaño de la sombra de la variante `raised`.
+
+### Cambiado
+
+- La separación entre los títulos de sección del inicio y sus cards queda en 16px (antes variaba entre 14px y 56px).
+- El carrusel de cuentas reserva 16px verticales para que la sombra de la card activa no se recorte.
+- Las cards del carrusel bajan de 160px a 144px de alto, con padding de 16px y márgenes internos más ajustados.
+- La card activa del carrusel usa la sombra compacta (`cardShadowSm`) en lugar de la difusa.
+- `AGENTS.md` documenta los comandos, la arquitectura y las convenciones del proyecto.
+
+### Compatibilidad
+
+- No cambian rutas, datos, lógica ni textos.
+- No se agregaron dependencias.
+
 ## [1.5.0] - 2026-10-27
 
 Estilo visual de cards unificado en toda la app.

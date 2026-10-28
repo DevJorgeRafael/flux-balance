@@ -222,7 +222,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: spacing.sm,
   },
   titleWithBadge: {
     flexDirection: 'row',
@@ -261,6 +260,7 @@ const styles = StyleSheet.create({
     padding: 28,
     alignItems: 'center',
     textAlign: 'center',
+    marginTop: spacing.lg,
     marginBottom: spacing.lg,
   },
   emptyHeading: {
@@ -297,7 +297,9 @@ const styles = StyleSheet.create({
   horizontalCardsTrack: {
     // Margen de reposo: la primera y la última card alinean con el resto.
     paddingHorizontal: 24,
-    paddingVertical: spacing.sm,
+    // 16px verticales: aire para la sombra (offsetY 2 + blur 6) para que el
+    // ScrollView no la recorte y el ritmo entre secciones siga en 16px.
+    paddingVertical: spacing.lg,
     gap: 14,
   },
   allAccountsPressable: {
