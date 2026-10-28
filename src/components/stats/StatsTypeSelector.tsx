@@ -51,7 +51,7 @@ export function StatsTypeSelector({
   return (
     <Card
       variant="flat"
-      backgroundColor={colors.inputBackground}
+      backgroundColor={colors.controlTrack}
       style={styles.container}
     >
       {options.map((option) => {

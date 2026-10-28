@@ -51,6 +51,12 @@ export interface ThemeColors {
    * quedar más oscuro que la tarjeta que lo contiene.
    */
   surfaceMuted: string;
+  /**
+   * Fondo de controles segmentados (por ejemplo, el selector Ingresos/Gastos).
+   * En claro es más oscuro que `inputBackground` para que el control no parezca
+   * deshabilitado; en oscuro mantiene la superficie elevada.
+   */
+  controlTrack: string;
   /** Superficie de hojas modales. En oscuro comparte el nivel de `sheet`. */
   modal: string;
   text: string;
@@ -116,6 +122,7 @@ export const lightPalette: ThemeColors = {
   sheet: '#E6E9EF',
   cardRaised: '#ffffff',
   surfaceMuted: '#fafaf9',
+  controlTrack: '#e7e5e4',
   modal: '#ffffff',
   text: '#1c1917',
   textLight: '#78716c',
@@ -169,6 +176,7 @@ export const darkPalette: ThemeColors = {
   sheet: '#101626',
   cardRaised: '#212B4A',
   surfaceMuted: '#212B4A',
+  controlTrack: '#18203A',
   modal: '#101626',
   text: '#F2F4F8',
   textLight: '#8F9BB8',
