@@ -2,16 +2,18 @@
   "expo": {
     "name": "flux-balance",
     "slug": "flux-balance",
-    "version": "1.5.3",
+    "version": "1.5.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "fluxbalance",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#0A0E1A",
     "ios": {
+      "buildNumber": "1",
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

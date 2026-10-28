@@ -16,6 +16,7 @@ import {
 import { useColors, useInsets, useThemeMode } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { BottomFade } from '@/components/ui/BottomFade';
+import { AboutSection } from '@/components/settings/AboutSection';
 import { IS_DEVELOPMENT_MODE } from '@/core/constants/environment';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
@@ -179,6 +180,8 @@ export default function SettingsScreen() {
             </Card>
           </>
         )}
+
+        <AboutSection />
       </ScrollView>
 
       <BottomFade />
