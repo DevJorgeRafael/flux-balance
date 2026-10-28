@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { bestTextColor, useColors } from '@/components/ui/theme';
+import { getReadableChipColors, useColors, useThemeMode } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { useCurrency } from '@/core/currency/useCurrency';
 import type { CategoryDonutSlice } from './CategoryDonut';
@@ -17,12 +17,13 @@ export function CategoryBreakdownList({
   onSelect,
 }: CategoryBreakdownListProps) {
   const colors = useColors();
+  const { isDark } = useThemeMode();
   const { format } = useCurrency();
 
   return (
     <View style={styles.list}>
       {items.map((item) => {
-        const chipTextColor = bestTextColor(item.color, colors.white, colors.black);
+        const chip = getReadableChipColors(item.color, colors.surface, isDark, colors.text);
 
         return (
           <Pressable
@@ -34,8 +35,8 @@ export function CategoryBreakdownList({
             style={({ pressed }) => [pressed && styles.pressed]}
           >
             <Card style={styles.row}>
-              <View style={[styles.chip, { backgroundColor: item.color }]}>
-                <Text style={[styles.chipText, { color: chipTextColor }]}>
+              <View style={[styles.chip, { backgroundColor: chip.backgroundColor }]}>
+                <Text style={[styles.chipText, { color: chip.textColor }]}>
                   {item.percentage}%
                 </Text>
               </View>

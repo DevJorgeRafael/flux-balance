@@ -43,7 +43,7 @@ export function CreateTransactionModal({
 }: CreateTransactionModalProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
-  const { currency } = useCurrency();
+  const { currency, format } = useCurrency();
   const { t } = useTranslation();
 
   const [txType, setTxType] = useState<TransactionType>(initialType);
@@ -197,7 +197,7 @@ export function CreateTransactionModal({
                 borderColor: colors.border,
               },
             ]}
-            placeholder="0.00"
+            placeholder={format(0, { showCurrency: false })}
             placeholderTextColor={colors.textLight}
             keyboardType="decimal-pad"
             value={txAmount}

@@ -2,6 +2,20 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.5.3] - 2026-10-28
+
+Contraste AA en chips de Stats y ajustes visuales.
+
+### Corregido
+
+- Chips de porcentaje de Stats con texto blanco y fondo oscurecido hasta contraste AA; el donut mantiene el color original.
+- Check del selector de color de categorías legible sobre cualquier muestra.
+
+### Cambiado
+
+- El total del donut se ajusta al diámetro interior.
+- El placeholder de importe usa el separador decimal del idioma (`0,00` / `0.00`).
+
 ## [1.5.2] - 2026-10-27
 
 Tema e idioma persistentes con opción Sistema.
