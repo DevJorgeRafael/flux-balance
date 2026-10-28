@@ -1,15 +1,27 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { getLocales } from 'expo-localization';
-import { getAppSetting, setAppSetting } from '@/infrastructure/database/appSettings';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { useLocales } from 'expo-localization';
+import {
+  DEFAULT_LANGUAGE_PREFERENCE,
+  resolveLanguage,
+  type LanguagePreference,
+} from '@/core/preferences/preferences';
+import { saveLanguagePreference } from '@/core/preferences/preferencesStorage';
 import { Language, TranslationKey, translations } from './translations';
 
 type TranslationParams = Record<string, string | number>;
 
 interface TranslationContextValue {
   language: Language;
+  languagePreference: LanguagePreference;
   setLanguage: (language: Language) => void;
+  setLanguagePreference: (preference: LanguagePreference) => void;
   toggleLanguage: () => void;
   t: (key: TranslationKey, params?: TranslationParams) => string;
+}
+
+interface TranslationProviderProps {
+  children: React.ReactNode;
+  initialPreference?: LanguagePreference;
 }
 
 function formatTranslation(template: string, params?: TranslationParams): string {
@@ -23,55 +35,42 @@ function formatTranslation(template: string, params?: TranslationParams): string
 
 const TranslationContext = createContext<TranslationContextValue | null>(null);
 
-function getDeviceLanguage(): Language {
-  return getLocales()[0]?.languageCode === 'es' ? 'es' : 'en';
-}
+export function TranslationProvider({
+  children,
+  initialPreference = DEFAULT_LANGUAGE_PREFERENCE,
+}: TranslationProviderProps) {
+  const locales = useLocales();
+  const [languagePreference, setLanguagePreferenceState] =
+    useState<LanguagePreference>(initialPreference);
 
-async function loadSavedLanguage(): Promise<Language | null> {
-  const saved = await getAppSetting('language');
-  return saved === 'es' || saved === 'en' ? saved : null;
-}
+  const language = resolveLanguage(languagePreference, locales[0]?.languageCode);
 
-async function saveLanguage(language: Language): Promise<void> {
-  await setAppSetting('language', language);
-}
-
-export function TranslationProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>(getDeviceLanguage);
-
-  useEffect(() => {
-    let cancelled = false;
-    void loadSavedLanguage()
-      .then((savedLanguage) => {
-        if (!cancelled && savedLanguage) setLanguageState(savedLanguage);
-      })
-      .catch((error) => {
-        console.error('Error loading language preference:', error);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const setLanguage = useCallback((nextLanguage: Language) => {
-    setLanguageState(nextLanguage);
-    void saveLanguage(nextLanguage).catch((error) => {
+  const setLanguagePreference = useCallback((nextPreference: LanguagePreference) => {
+    setLanguagePreferenceState(nextPreference);
+    void saveLanguagePreference(nextPreference).catch((error) => {
       console.error('Error saving language preference:', error);
     });
   }, []);
 
+  const setLanguage = useCallback(
+    (nextLanguage: Language) => setLanguagePreference(nextLanguage),
+    [setLanguagePreference]
+  );
+
   const toggleLanguage = useCallback(() => {
-    setLanguage(language === 'es' ? 'en' : 'es');
-  }, [language, setLanguage]);
+    setLanguagePreference(language === 'es' ? 'en' : 'es');
+  }, [language, setLanguagePreference]);
 
   const value = useMemo<TranslationContextValue>(
     () => ({
       language,
+      languagePreference,
       setLanguage,
+      setLanguagePreference,
       toggleLanguage,
       t: (key, params) => formatTranslation(translations[language][key], params),
     }),
-    [language, setLanguage, toggleLanguage]
+    [language, languagePreference, setLanguage, setLanguagePreference, toggleLanguage]
   );
 
   return <TranslationContext.Provider value={value}>{children}</TranslationContext.Provider>;
