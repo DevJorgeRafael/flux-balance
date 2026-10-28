@@ -79,8 +79,8 @@ function SettingsRow({
 export default function SettingsScreen() {
   const colors = useColors();
   const insets = useInsets();
-  const { isDark, toggleTheme } = useThemeMode();
-  const { language, toggleLanguage, t } = useTranslation();
+  const { isDark, mode } = useThemeMode();
+  const { language, languagePreference, t } = useTranslation();
   const { currency } = useCurrency();
   const { handleSeedDemoData, handleResetAllData, handleRefresh } = useDashboard();
 
@@ -144,15 +144,17 @@ export default function SettingsScreen() {
           <SettingsRow
             icon={isDark ? Moon : Sun}
             label={t('theme')}
-            value={isDark ? t('dark') : t('light')}
-            onPress={toggleTheme}
+            value={mode === 'system' ? t('system') : t(mode)}
+            showChevron
+            onPress={() => router.push('/settings/theme')}
           />
           <SettingsRow
             icon={Languages}
             label={t('language')}
-            value={language.toUpperCase()}
+            value={languagePreference === 'system' ? t('system') : language.toUpperCase()}
+            showChevron
             isLast
-            onPress={toggleLanguage}
+            onPress={() => router.push('/settings/language')}
           />
         </Card>
 

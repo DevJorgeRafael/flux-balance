@@ -1,31 +1,51 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import { ActivityIndicator, LogBox, View } from 'react-native';
+import { LogBox } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as SystemUI from 'expo-system-ui';
+import * as SplashScreen from 'expo-splash-screen';
 
 import { StatusBar } from 'expo-status-bar';
 import {
-  darkPalette,
   UIProvider,
   useColors,
   useThemeMode,
+  type ThemeMode,
 } from '@/components/ui/theme';
 import { initDatabase } from '@/infrastructure/database/db';
 import { TranslationProvider } from '@/core/i18n/useTranslation';
 import { CurrencyProvider } from '@/core/currency/useCurrency';
+import {
+  loadStoredPreferences,
+  saveThemePreference,
+  type StoredPreferences,
+} from '@/core/preferences/preferencesStorage';
+import type { ThemePreference } from '@/core/preferences/preferences';
+
+SplashScreen.preventAutoHideAsync();
 
 LogBox.ignoreLogs([
   'SafeAreaView has been deprecated',
   '[Reanimated] Dependencies should only be used on the web',
 ]);
 
-function RootNavigator() {
+function RootNavigator({ initialPreferences }: { initialPreferences: StoredPreferences }) {
   const insets = useSafeAreaInsets();
+  const [themePreference, setThemePreference] = useState<ThemePreference>(
+    initialPreferences.themePreference
+  );
+
+  const handleModeChange = useCallback((mode: ThemeMode) => {
+    setThemePreference(mode);
+    void saveThemePreference(mode).catch((error) => {
+      console.error('Error saving theme preference:', error);
+    });
+  }, []);
+
   return (
-    <TranslationProvider>
+    <TranslationProvider initialPreference={initialPreferences.languagePreference}>
       <CurrencyProvider>
-        <UIProvider insets={insets}>
+        <UIProvider insets={insets} mode={themePreference} onModeChange={handleModeChange}>
           <RootWithTheme />
         </UIProvider>
       </CurrencyProvider>
@@ -75,39 +95,44 @@ function RootWithTheme() {
 }
 
 export default function RootLayout() {
-  const [isDbReady, setIsDbReady] = useState(false);
+  const [preferences, setPreferences] = useState<StoredPreferences | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function prepare() {
       try {
         await initDatabase();
-      } catch (e) {
-        console.error('Failed to initialize database', e);
-      } finally {
-        setIsDbReady(true);
+      } catch (error) {
+        console.error('Failed to initialize database', error);
+      }
+
+      const storedPreferences = await loadStoredPreferences();
+      if (!cancelled) {
+        setPreferences(storedPreferences);
       }
     }
-    prepare();
+
+    void prepare();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  if (!isDbReady) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: darkPalette.background,
-        }}
-      >
-        <ActivityIndicator size="large" color={darkPalette.primary} />
-      </View>
-    );
+  useEffect(() => {
+    if (preferences) {
+      SplashScreen.hide();
+    }
+  }, [preferences]);
+
+  if (!preferences) {
+    return null;
   }
 
   return (
     <SafeAreaProvider>
-      <RootNavigator />
+      <RootNavigator initialPreferences={preferences} />
     </SafeAreaProvider>
   );
 }
