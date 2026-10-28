@@ -1,4 +1,10 @@
-import { Platform, type ViewStyle } from 'react-native';
+import {
+  CATEGORY_COLOR_PALETTES,
+  type CategoryColorPalette,
+} from '@/core/constants/categoryPalettes';
+
+export { CATEGORY_COLOR_PALETTES as categoryPalettes };
+export type { CategoryColorPalette };
 
 // Las escalas numéricas se tipan explícitamente como `number` (no `as const`):
 // createTheme() debe poder sobreescribir cualquier valor con otro número
@@ -20,7 +26,7 @@ export const spacing: Record<'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 
   xxxl: 32,
 };
 
-export const radius: Record<'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full', number> = {
+export const radius: Record<'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'card' | 'full', number> = {
   none: 0,
   xs: 4,
   sm: 6,
@@ -28,6 +34,8 @@ export const radius: Record<'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 
   lg: 12,
   xl: 16,
   xxl: 20,
+  /** Radio de todas las cards de la app (referencia: Ajustes). */
+  card: 24,
   full: 9999,
 };
 
@@ -62,42 +70,61 @@ export const duration: Record<'fast' | 'base' | 'slow', number> = {
   slow: 250,
 };
 
-type ShadowStyle = Pick<
-  ViewStyle,
-  'shadowColor' | 'shadowOffset' | 'shadowOpacity' | 'shadowRadius' | 'elevation'
->;
+export interface CardShadowToken {
+  /** Desplazamiento vertical de la sombra. */
+  offsetY: number;
+  /** Radio de difuminado de la sombra. */
+  blur: number;
+  opacityLight: number;
+  opacityDark: number;
+}
 
 /**
- * Sombras cross-platform: shadow* para iOS, elevation para Android.
- * `shadowColor` se deja en negro fijo — el color de sombra por tema es un
- * detalle demasiado fino para justificar la complejidad de resolverlo aquí.
+ * Sombra única de la app: difusa, suave y sin capas apiladas. El color sale
+ * de `colors.shadow` del tema, así que aquí solo viven los valores numéricos.
  */
-export const shadow: Record<'none' | 'sm' | 'md' | 'lg', ShadowStyle> = {
-  none: Platform.select({
-    android: { elevation: 0 },
-    default: { shadowOpacity: 0 },
-  }) as ShadowStyle,
-  sm: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
-  },
+export const cardShadow: CardShadowToken = {
+  offsetY: 8,
+  blur: 24,
+  opacityLight: 0.16,
+  opacityDark: 0.42,
+};
+
+/**
+ * Sombra compacta para superficies pequeñas (cards de cuentas, chips) donde
+ * la difusa grande se desborda del espacio disponible y se corta.
+ */
+export const cardShadowSm: CardShadowToken = {
+  offsetY: 2,
+  blur: 6,
+  opacityLight: 0.12,
+  opacityDark: 0.28,
+};
+
+export interface HeroGradientToken {
+  colors: readonly [string, string, ...string[]];
+  locations: readonly [number, number, ...number[]];
+  start: { x: number; y: number };
+  end: { x: number; y: number };
+}
+
+/**
+ * Fondos del balance del Dashboard. El modo oscuro mantiene un azul marino
+ * profundo casi plano hasta el 72% de la altura; el último tramo se oscurece
+ * apenas para fundirse con la hoja, sin llegar al negro.
+ */
+export const heroGradientLight: HeroGradientToken = {
+  colors: ['#2A5BE0', '#1A46C4'],
+  locations: [0, 1],
+  start: { x: 0.5, y: 0 },
+  end: { x: 0.5, y: 1 },
+};
+
+export const heroGradientDark: HeroGradientToken = {
+  colors: ['#17399A', '#153690', '#112A72', '#0D2158'],
+  locations: [0, 0.72, 0.86, 1],
+  start: { x: 0.5, y: 0 },
+  end: { x: 0.5, y: 1 },
 };
 
 export const tokens = {
@@ -107,7 +134,10 @@ export const tokens = {
   fontWeight,
   lineHeight,
   duration,
-  shadow,
+  cardShadow,
+  categoryPalettes: CATEGORY_COLOR_PALETTES,
+  heroGradientLight,
+  heroGradientDark,
 };
 
 export type Tokens = typeof tokens;

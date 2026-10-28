@@ -7,8 +7,9 @@ import {
   calculateFixedTermMaturity,
   calculateMonthlyGain,
 } from '@/core/services/interest-calculator';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface AccountProjectionCardProps {
@@ -17,6 +18,7 @@ interface AccountProjectionCardProps {
 
 export function AccountProjectionCard({ account }: AccountProjectionCardProps) {
   const colors = useColors();
+  const { format } = useCurrency();
   const { t } = useTranslation();
   const isFlexible = account.type === 'FLEXIBLE_SAVINGS';
   const isFixed = account.type === 'FIXED_TERM';
@@ -46,7 +48,7 @@ export function AccountProjectionCard({ account }: AccountProjectionCardProps) {
   const flexibleYearEnd = flexibleProjection.at(-1)?.balance ?? account.balance;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+    <Card style={styles.container}>
       <View style={styles.header}>
         <View style={[styles.iconBox, { backgroundColor: isFixed ? colors.warningSoft : colors.successSoft }]}>
           {isFixed ? (
@@ -73,14 +75,14 @@ export function AccountProjectionCard({ account }: AccountProjectionCardProps) {
       <View style={styles.metricsRow}>
         <View style={styles.metric}>
           <Text style={[styles.label, { color: colors.textLight }]}>{t('monthlyGeneration')}</Text>
-          <Text style={[styles.value, { color: colors.text }]}>{formatCurrency(monthlyGain)}</Text>
+          <Text style={[styles.value, { color: colors.text }]}>{format(monthlyGain)}</Text>
         </View>
         <View style={styles.metric}>
           <Text style={[styles.label, { color: colors.textLight }]}>
             {isFixed ? t('maturityAmount') : t('estimatedYearAmount')}
           </Text>
           <Text style={[styles.value, { color: colors.primaryText }]}>
-            {formatCurrency(fixedMaturity ?? flexibleYearEnd)}
+            {format(fixedMaturity ?? flexibleYearEnd)}
           </Text>
         </View>
       </View>
@@ -88,18 +90,16 @@ export function AccountProjectionCard({ account }: AccountProjectionCardProps) {
       <Text style={[styles.note, { color: colors.textLight }]}>
         {isFixed
           ? t('simpleInterestCapital')
-          : `${t('accumulatedReturn')} ${formatCurrency(
+          : `${t('accumulatedReturn')} ${format(
               flexibleYearEnd - account.balance
             )}.`}
       </Text>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 24,
-    borderWidth: 1,
     padding: 16,
     marginBottom: 20,
   },

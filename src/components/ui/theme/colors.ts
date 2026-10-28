@@ -32,6 +32,10 @@ export interface AccentRoles {
 
 const HEX = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
 
+export function isHexColor(value: string | null | undefined): value is string {
+  return typeof value === 'string' && HEX.test(value.trim());
+}
+
 export function hexToRgb(hex: string): Rgb {
   const match = HEX.exec(hex.trim());
   if (!match) {
@@ -44,6 +48,12 @@ export function hexToRgb(hex: string): Rgb {
     g: parseInt(full.slice(2, 4), 16),
     b: parseInt(full.slice(4, 6), 16),
   };
+}
+
+/** Aplica una opacidad 0–1 a un color hex y devuelve el `rgba()` equivalente. */
+export function withAlpha(hex: string, alpha: number): string {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 const toHexPair = (value: number) => Math.round(clamp(value, 0, 255)).toString(16).padStart(2, '0');
@@ -120,6 +130,14 @@ export function contrast(a: string, b: string): number {
 function bestOnColor(background: string, light: string, dark: string): string {
   if (contrast(background, light) >= AA_CONTRAST) return light;
   return contrast(background, dark) >= contrast(background, light) ? dark : light;
+}
+
+export function bestTextColor(
+  background: string,
+  light = '#ffffff',
+  dark = '#000000'
+): string {
+  return bestOnColor(background, light, dark);
 }
 
 /**

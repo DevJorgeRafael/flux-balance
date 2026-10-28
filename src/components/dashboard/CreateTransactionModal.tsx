@@ -1,9 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
   Text,
-  Modal,
   ScrollView,
   TouchableOpacity,
   TextInput,
@@ -11,14 +10,15 @@ import {
   Alert,
 } from 'react-native';
 import { X } from 'lucide-react-native';
-import { MotiView } from 'moti';
 import { TransactionType } from '@/core/models/transaction';
 import { Account } from '@/core/models/account';
 import { Category } from '@/core/models/category';
-import { useColors, useInsets } from '@/components/ui/theme';
+import { isHexColor, useColors, useThemeMode } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { SqliteTransactionRepository } from '@/infrastructure/repositories';
 import { useTranslation } from '@/core/i18n/useTranslation';
-import { BackdropBlur } from '@/components/ui/BackdropBlur';
+import { useCurrency } from '@/core/currency/useCurrency';
+import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 
 interface CreateTransactionModalProps {
   visible: boolean;
@@ -42,7 +42,8 @@ export function CreateTransactionModal({
   blurTarget,
 }: CreateTransactionModalProps) {
   const colors = useColors();
-  const insets = useInsets();
+  const { isDark } = useThemeMode();
+  const { currency } = useCurrency();
   const { t } = useTranslation();
 
   const [txType, setTxType] = useState<TransactionType>(initialType);
@@ -51,6 +52,7 @@ export function CreateTransactionModal({
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const typeCategories = categories.filter((category) => category.type === txType);
 
   const [prevVisible, setPrevVisible] = useState(visible);
   if (visible !== prevVisible) {
@@ -62,39 +64,6 @@ export function CreateTransactionModal({
       }
     }
   }
-
-  // Control de animación entrada/salida
-  const [isRendered, setIsRendered] = useState(false);
-  const [isAnimatingIn, setIsAnimatingIn] = useState(false);
-  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    const run = async () => {
-      if (visible) {
-        if (!cancelled) setIsRendered(true);
-        await new Promise<void>((resolve) => setTimeout(resolve, 16));
-        if (!cancelled) setIsAnimatingIn(true);
-      } else {
-        if (!cancelled) setIsAnimatingIn(false);
-        closeTimeoutRef.current = setTimeout(() => {
-          if (!cancelled) setIsRendered(false);
-        }, 250);
-      }
-    };
-    void run();
-    return () => {
-      cancelled = true;
-      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-    };
-  }, [visible]);
-
-  const handleClose = () => {
-    setIsAnimatingIn(false);
-    setTimeout(() => {
-      onClose();
-    }, 210);
-  };
 
   const resetForm = () => {
     setTxAmount('');
@@ -117,10 +86,9 @@ export function CreateTransactionModal({
     }
 
     const catId =
-      selectedCategoryId ||
-      categories.find((c) => c.type === txType)?.id ||
-      categories[0]?.id ||
-      'cat-default';
+      typeCategories.find((category) => category.id === selectedCategoryId)?.id ??
+      typeCategories[0]?.id ??
+      '';
 
     try {
       setIsSubmitting(true);
@@ -139,7 +107,7 @@ export function CreateTransactionModal({
       });
 
       resetForm();
-      handleClose();
+      onClose();
       onTransactionCreated();
     } catch (err: unknown) {
       console.error('Error creating transaction:', err);
@@ -149,44 +117,42 @@ export function CreateTransactionModal({
     }
   };
 
-  if (!isRendered) return null;
-
   return (
-    <Modal
-      visible={isRendered}
-      transparent
-      animationType="none"
-      onRequestClose={handleClose}
+    <BottomSheetModal
+      visible={visible}
+      onClose={onClose}
+      blurTarget={blurTarget}
+      maxHeight="92%"
     >
-      <BackdropBlur visible={isAnimatingIn} onPress={handleClose} blurTarget={blurTarget} />
+      <View style={styles.modalTopBar}>
+        <Text style={[styles.modalHeading, { color: colors.text }]}>
+          {txType === 'INCOME' ? t('registerIncome') : t('registerExpense')}
+        </Text>
+        <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <X size={22} color={colors.textLight} strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
 
-      {/* Sheet — slide up/down sin layout animation */}
-      <View style={styles.modalBackdrop} pointerEvents="box-none">
-        <MotiView
-          animate={{
-            translateY: isAnimatingIn ? 0 : 400,
-            opacity: isAnimatingIn ? 1 : 0,
-          }}
-          transition={{ type: 'timing', duration: 220 } as any}
-          style={[styles.modalSheet, { backgroundColor: colors.surface, paddingBottom: insets.bottom + 24 }]}
-        >
-          <View style={styles.modalTopBar}>
-            <Text style={[styles.modalHeading, { color: colors.text }]}>
-              {txType === 'INCOME' ? t('registerIncome') : t('registerExpense')}
-            </Text>
-            <TouchableOpacity onPress={handleClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-              <X size={22} color={colors.textLight} strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Segmented Control de Tipo */}
-          <View style={[styles.typeSegmentedControl, { backgroundColor: colors.background, borderColor: colors.border }]}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        style={{ flexGrow: 0 }}
+        contentContainerStyle={{ paddingBottom: 8 }}
+      >
+        {/* Segmented Control de Tipo */}
+          <Card
+            backgroundColor={colors.surfaceMuted}
+            style={styles.typeSegmentedControl}
+          >
             <TouchableOpacity
               style={[
                 styles.typeSegmentOption,
                 txType === 'INCOME' && { backgroundColor: colors.success, borderRadius: 10 },
               ]}
-              onPress={() => setTxType('INCOME')}
+              onPress={() => {
+                setTxType('INCOME');
+                setSelectedCategoryId('');
+              }}
             >
               <Text
                 style={[
@@ -202,7 +168,10 @@ export function CreateTransactionModal({
                 styles.typeSegmentOption,
                 txType === 'EXPENSE' && { backgroundColor: colors.error, borderRadius: 10 },
               ]}
-              onPress={() => setTxType('EXPENSE')}
+              onPress={() => {
+                setTxType('EXPENSE');
+                setSelectedCategoryId('');
+              }}
             >
               <Text
                 style={[
@@ -213,10 +182,12 @@ export function CreateTransactionModal({
                 {t('expense')}
               </Text>
             </TouchableOpacity>
-          </View>
+          </Card>
 
           {/* Input de Monto */}
-          <Text style={[styles.formLabel, { color: colors.textLight }]}>{t('amount')}</Text>
+          <Text style={[styles.formLabel, { color: colors.textLight }]}>
+            {t('amount', { currency })}
+          </Text>
           <TextInput
             style={[
               styles.largeAmountInput,
@@ -252,37 +223,45 @@ export function CreateTransactionModal({
           />
 
           {/* Selector de Categoría */}
-          {categories.length > 0 && (
+          {typeCategories.length > 0 && (
             <>
               <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14 }]}>{t('category')}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
-                {categories
-                  .filter((c) => (txType === 'INCOME' ? c.type === 'INCOME' : c.type === 'EXPENSE'))
-                  .map((cat) => (
-                    <TouchableOpacity
-                      key={cat.id}
+                {typeCategories.map((cat) => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[
+                      styles.selectionChip,
+                      {
+                        backgroundColor:
+                          selectedCategoryId === cat.id
+                            ? colors.primary
+                            : isDark
+                              ? colors.surfaceMuted
+                              : colors.inputBackground,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                    onPress={() => setSelectedCategoryId(cat.id)}
+                  >
+                    <View
                       style={[
-                        styles.selectionChip,
+                        styles.categoryColorDot,
+                        { backgroundColor: isHexColor(cat.color) ? cat.color : colors.chartOther },
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        styles.selectionChipText,
                         {
-                          backgroundColor:
-                            selectedCategoryId === cat.id ? colors.primary : colors.inputBackground,
-                          borderColor: colors.border,
+                          color: selectedCategoryId === cat.id ? colors.onPrimary : colors.text,
                         },
                       ]}
-                      onPress={() => setSelectedCategoryId(cat.id)}
                     >
-                      <Text
-                        style={[
-                          styles.selectionChipText,
-                          {
-                            color: selectedCategoryId === cat.id ? colors.onPrimary : colors.text,
-                          },
-                        ]}
-                      >
-                        {cat.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                      {cat.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </ScrollView>
             </>
           )}
@@ -299,7 +278,11 @@ export function CreateTransactionModal({
                       styles.selectionChip,
                       {
                         backgroundColor:
-                          selectedAccountId === acc.id ? colors.primary : colors.inputBackground,
+                          selectedAccountId === acc.id
+                            ? colors.primary
+                            : isDark
+                              ? colors.surfaceMuted
+                              : colors.inputBackground,
                         borderColor: colors.border,
                       },
                     ]}
@@ -334,33 +317,26 @@ export function CreateTransactionModal({
             disabled={isSubmitting}
           >
             {isSubmitting ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator
+                color={txType === 'INCOME' ? colors.onSuccess : colors.onPrimary}
+              />
             ) : (
-              <Text style={styles.submitTransactionButtonText}>{t('saveMovement')}</Text>
+              <Text
+                style={[
+                  styles.submitTransactionButtonText,
+                  { color: txType === 'INCOME' ? colors.onSuccess : colors.onPrimary },
+                ]}
+              >
+                {t('saveMovement')}
+              </Text>
             )}
           </TouchableOpacity>
-        </MotiView>
-      </View>
-    </Modal>
+      </ScrollView>
+    </BottomSheetModal>
   );
 }
 
 const styles = StyleSheet.create({
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    position: 'relative',
-    zIndex: 1,
-    elevation: 1,
-  },
-  modalSheet: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    zIndex: 1,
-    elevation: 1,
-  },
   modalTopBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -373,8 +349,6 @@ const styles = StyleSheet.create({
   },
   typeSegmentedControl: {
     flexDirection: 'row',
-    borderRadius: 14,
-    borderWidth: 1,
     padding: 4,
     marginBottom: 18,
   },
@@ -413,11 +387,19 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   selectionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
     marginRight: 8,
+  },
+  categoryColorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   selectionChipText: {
     fontSize: 14,
@@ -431,7 +413,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   submitTransactionButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '800',
   },

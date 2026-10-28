@@ -8,54 +8,66 @@ import {
 } from 'react-native';
 import { CreditCard, Plus, Layers } from 'lucide-react-native';
 import { Account } from '@/core/models/account';
-import { useColors } from '@/components/ui/theme';
-import { formatCurrency } from '@/core/utils/currency';
-import { AccountCard } from './AccountCard';
+import { spacing, useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
+import { useCurrency } from '@/core/currency/useCurrency';
+import { AccountCard, ACCOUNT_CARD_HEIGHT } from './AccountCard';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface AccountCarouselProps {
   accounts: Account[];
   totalBalance: number;
-  selectedFilterAccountId: string | null;
-  onSelectAccountFilter: (id: string | null) => void;
+  selectedFilterAccountId?: string | null;
+  onSelectAccountFilter?: (id: string | null) => void;
   onOpenCreateAccountModal: () => void;
+  showNewAccount?: boolean;
+  showHeader?: boolean;
+  showAllFilter?: boolean;
+  onPressAccount?: (id: string) => void;
 }
 
 export function AccountCarousel({
   accounts,
   totalBalance,
-  selectedFilterAccountId,
+  selectedFilterAccountId = null,
   onSelectAccountFilter,
   onOpenCreateAccountModal,
+  showNewAccount = true,
+  showHeader = true,
+  showAllFilter = true,
+  onPressAccount,
 }: AccountCarouselProps) {
   const colors = useColors();
+  const { format } = useCurrency();
   const { t } = useTranslation();
 
   return (
     <>
-      {/* Sección Cuentas Cabecera */}
-      <View style={styles.sectionHeaderRow}>
-        <View style={styles.titleWithBadge}>
-          <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('accounts')}</Text>
-          <View style={[styles.counterBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={[styles.counterBadgeText, { color: colors.textLight }]}>{accounts.length}</Text>
+      {showHeader && (
+        <View style={styles.sectionHeaderRow}>
+          <View style={styles.titleWithBadge}>
+            <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('accounts')}</Text>
+            <View style={[styles.counterBadge, { backgroundColor: colors.cardRaised, borderColor: colors.border }]}>
+              <Text style={[styles.counterBadgeText, { color: colors.textLight }]}>{accounts.length}</Text>
+            </View>
           </View>
-        </View>
 
-        {/* Botón Nueva Cuenta en Cabecera */}
-        <TouchableOpacity
-          style={[styles.addAccountHeaderBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          onPress={onOpenCreateAccountModal}
-          activeOpacity={0.7}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Plus size={15} color={colors.primaryText} strokeWidth={2.5} />
-          <Text style={[styles.addAccountHeaderText, { color: colors.primaryText }]}>{t('newAccount')}</Text>
-        </TouchableOpacity>
-      </View>
+          {showNewAccount && (
+            <TouchableOpacity
+              style={[styles.addAccountHeaderBtn, { backgroundColor: colors.cardRaised, borderColor: colors.border }]}
+              onPress={onOpenCreateAccountModal}
+              activeOpacity={0.7}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Plus size={15} color={colors.primaryText} strokeWidth={2.5} />
+              <Text style={[styles.addAccountHeaderText, { color: colors.primaryText }]}>{t('newAccount')}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       {accounts.length === 0 ? (
-        <View style={[styles.emptyContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Card style={styles.emptyContainer}>
           <View style={{ marginBottom: 12 }}>
             <CreditCard size={36} color={colors.textLight} strokeWidth={1.5} />
           </View>
@@ -63,124 +75,142 @@ export function AccountCarousel({
           <Text style={[styles.emptySubtext, { color: colors.textLight }]}>
             {t('createFirstAccount')}
           </Text>
-          <TouchableOpacity
-            style={[styles.createAccountPrimaryBtn, { backgroundColor: colors.primary }]}
-            onPress={onOpenCreateAccountModal}
-            activeOpacity={0.85}
-          >
-            <Plus size={18} color={colors.onPrimary} strokeWidth={2.5} />
-            <Text style={[styles.createAccountPrimaryBtnText, { color: colors.onPrimary }]}>
-              {t('createFirstAccount')}
-            </Text>
-          </TouchableOpacity>
-        </View>
+          {showNewAccount && (
+            <TouchableOpacity
+              style={[styles.createAccountPrimaryBtn, { backgroundColor: colors.primary }]}
+              onPress={onOpenCreateAccountModal}
+              activeOpacity={0.85}
+            >
+              <Plus size={18} color={colors.onPrimary} strokeWidth={2.5} />
+              <Text style={[styles.createAccountPrimaryBtnText, { color: colors.onPrimary }]}>
+                {t('createFirstAccount')}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </Card>
       ) : (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={styles.horizontalCardsScroll}
           contentContainerStyle={styles.horizontalCardsTrack}
         >
-          {/* Chip/Tarjeta "Todas" */}
-          <TouchableOpacity
-            style={[
-              styles.modernAccountCard,
-              {
-                backgroundColor: colors.surface,
-                borderColor: selectedFilterAccountId === null ? colors.primary : colors.border,
-                borderWidth: selectedFilterAccountId === null ? 2 : 1,
-              },
-            ]}
-            onPress={() => onSelectAccountFilter(null)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.accountCardHeader}>
-              <Text style={[styles.accountTypeHeader, { color: colors.textLight }]}>
-                {t('allAccounts').toUpperCase()}
-              </Text>
-              <View
-                style={[
-                  styles.tnaBadge,
-                  {
-                    backgroundColor:
-                      selectedFilterAccountId === null ? colors.primarySoft : colors.background,
-                  },
-                ]}
+          {showAllFilter && (
+            <TouchableOpacity
+              style={styles.allAccountsPressable}
+              onPress={() => onSelectAccountFilter?.(null)}
+              activeOpacity={0.8}
+            >
+              <Card
+                variant={selectedFilterAccountId === null ? 'raised' : 'default'}
+                shadowSize="sm"
+                style={styles.allAccountsCard}
               >
+                <View style={styles.accountCardHeader}>
+                  <Text
+                    style={[styles.accountTypeHeader, { color: colors.textLight }]}
+                    numberOfLines={1}
+                  >
+                    {t('allAccounts').toUpperCase()}
+                  </Text>
+
+                  {selectedFilterAccountId === null && (
+                    <View style={[styles.tnaBadge, { backgroundColor: colors.primarySoft }]}>
+                      <Text style={[styles.tnaBadgeText, { color: colors.primaryText }]}>
+                        {t('active')}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.accountCardTitleRow}>
+                  <Layers size={16} color={colors.text} />
+                  <Text
+                    style={[styles.accountCardTitle, { color: colors.text, marginBottom: 0 }]}
+                    numberOfLines={1}
+                  >
+                    {t('allAccounts')}
+                  </Text>
+                </View>
+
                 <Text
                   style={[
-                    styles.tnaBadgeText,
+                    styles.accountCardBalance,
                     {
                       color:
-                        selectedFilterAccountId === null ? colors.primaryText : colors.textLight,
+                        selectedFilterAccountId === null ? colors.primaryText : colors.text,
+                    },
+                  ]}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                >
+                  {format(totalBalance)}
+                </Text>
+
+                <View
+                  style={[
+                    styles.filterNoticeBadge,
+                    {
+                      backgroundColor:
+                        selectedFilterAccountId === null
+                          ? colors.primarySoft
+                          : colors.surfaceMuted,
                     },
                   ]}
                 >
-                  {selectedFilterAccountId === null ? t('active') : t('allAccounts')}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.accountCardTitleRow}>
-              <Layers size={16} color={colors.text} />
-              <Text style={[styles.accountCardTitle, { color: colors.text, marginBottom: 0 }]} numberOfLines={1}>
-                {t('allAccounts')}
-              </Text>
-            </View>
-
-            <Text style={[styles.accountCardBalance, { color: colors.text }]}>
-              {formatCurrency(totalBalance, false)}
-            </Text>
-
-            <View
-              style={[
-                styles.filterNoticeBadge,
-                {
-                  backgroundColor:
-                    selectedFilterAccountId === null ? colors.primarySoft : colors.background,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.filterNoticeText,
-                  {
-                    color:
-                      selectedFilterAccountId === null ? colors.primaryText : colors.textLight,
-                  },
-                ]}
-              >
-                {selectedFilterAccountId === null ? t('showingAll') : t('tapToShowAll')}
-              </Text>
-            </View>
-          </TouchableOpacity>
+                  <Text
+                    style={[
+                      styles.filterNoticeText,
+                      {
+                        color:
+                          selectedFilterAccountId === null
+                            ? colors.primaryText
+                            : colors.textLight,
+                      },
+                    ]}
+                  >
+                    {selectedFilterAccountId === null ? t('showingAll') : t('tapToShowAll')}
+                  </Text>
+                </View>
+              </Card>
+            </TouchableOpacity>
+          )}
 
           {/* Tarjetas individuales de Cuentas */}
           {accounts.map((acc) => (
             <AccountCard
               key={acc.id}
               account={acc}
-              isSelected={selectedFilterAccountId === acc.id}
-              onPress={() => onSelectAccountFilter(acc.id)}
+              isSelected={showAllFilter && selectedFilterAccountId === acc.id}
+              onPress={() => {
+                if (onPressAccount) {
+                  onPressAccount(acc.id);
+                } else {
+                  onSelectAccountFilter?.(acc.id);
+                }
+              }}
             />
           ))}
 
           {/* Tarjeta para Añadir Otra Cuenta */}
-          <TouchableOpacity
-            style={[
-              styles.addAccountDashedCard,
-              { backgroundColor: colors.surface, borderColor: colors.border },
-            ]}
-            onPress={onOpenCreateAccountModal}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.addAccountIconCircle, { backgroundColor: colors.primarySoft }]}>
-              <Plus size={20} color={colors.primaryText} strokeWidth={2.5} />
-            </View>
-            <Text style={[styles.addAccountDashedTitle, { color: colors.text }]}>{t('newAccount')}</Text>
-            <Text style={[styles.addAccountDashedSubtext, { color: colors.textLight }]}>
-              {t('addAnother')}
-            </Text>
-          </TouchableOpacity>
+          {showNewAccount && (
+            <TouchableOpacity
+              style={styles.addAccountPressable}
+              onPress={onOpenCreateAccountModal}
+              activeOpacity={0.8}
+            >
+              <Card borderStyle="dashed" style={styles.addAccountDashedCard}>
+                <View style={[styles.addAccountIconCircle, { backgroundColor: colors.primarySoft }]}>
+                  <Plus size={20} color={colors.primaryText} strokeWidth={2.5} />
+                </View>
+                <Text style={[styles.addAccountDashedTitle, { color: colors.text }]}>{t('newAccount')}</Text>
+                <Text style={[styles.addAccountDashedSubtext, { color: colors.textLight }]}>
+                  {t('addAnother')}
+                </Text>
+              </Card>
+            </TouchableOpacity>
+          )}
         </ScrollView>
       )}
     </>
@@ -192,7 +222,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 14,
   },
   titleWithBadge: {
     flexDirection: 'row',
@@ -229,10 +258,10 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     padding: 28,
-    borderRadius: 28,
-    borderWidth: 1,
     alignItems: 'center',
     textAlign: 'center',
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
   },
   emptyHeading: {
     fontSize: 17,
@@ -259,33 +288,44 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
   },
+  horizontalCardsScroll: {
+    flexGrow: 0,
+    // Carrusel a sangre: cancela el margen de la hoja para que las cards se
+    // recorten contra el borde de la pantalla y no contra el margen interior.
+    marginHorizontal: -24,
+  },
   horizontalCardsTrack: {
-    paddingRight: 8,
+    // Margen de reposo: la primera y la última card alinean con el resto.
+    paddingHorizontal: 24,
+    // 16px verticales: aire para la sombra (offsetY 2 + blur 6) para que el
+    // ScrollView no la recorte y el ritmo entre secciones siga en 16px.
+    paddingVertical: spacing.lg,
     gap: 14,
   },
-  modernAccountCard: {
+  allAccountsPressable: {
     width: 220,
-    borderRadius: 28,
-    padding: 18,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
+  },
+  allAccountsCard: {
+    width: 220,
+    minHeight: ACCOUNT_CARD_HEIGHT,
+    padding: spacing.lg,
   },
   accountCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    gap: 8,
+    marginBottom: spacing.sm,
   },
   accountTypeHeader: {
+    flexShrink: 1,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.6,
     textTransform: 'uppercase',
   },
   tnaBadge: {
+    flexShrink: 0,
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 8,
@@ -303,13 +343,13 @@ const styles = StyleSheet.create({
   accountCardTitle: {
     fontSize: 16,
     fontWeight: '800',
-    marginBottom: 6,
+    marginBottom: spacing.xs,
   },
   accountCardBalance: {
     fontSize: 20,
     fontWeight: '900',
     letterSpacing: -0.5,
-    marginBottom: 10,
+    marginBottom: spacing.sm,
   },
   filterNoticeBadge: {
     paddingHorizontal: 8,
@@ -321,14 +361,15 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
+  addAccountPressable: {
+    width: 140,
+  },
   addAccountDashedCard: {
     width: 140,
-    borderRadius: 28,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
+    minHeight: ACCOUNT_CARD_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 18,
+    padding: spacing.lg,
     gap: 6,
   },
   addAccountIconCircle: {

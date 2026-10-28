@@ -10,9 +10,10 @@ import { router } from 'expo-router';
 import { ChevronRight, Plus, Minus } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { Transaction } from '@/core/models/transaction';
-import { useColors } from '@/components/ui/theme';
+import { spacing, useColors, useThemeMode } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 
 interface RecentTransactionsListProps {
   transactions: Transaction[];
@@ -28,6 +29,8 @@ export function RecentTransactionsList({
   defaultAccountId,
 }: RecentTransactionsListProps) {
   const colors = useColors();
+  const { isDark } = useThemeMode();
+  const { format } = useCurrency();
   const { t } = useTranslation();
 
   const handleSeeMore = () => {
@@ -45,7 +48,7 @@ export function RecentTransactionsList({
   return (
     <>
       {/* Sección Últimos Movimientos con botón 'Ver más →' */}
-      <View style={[styles.sectionHeaderRow, { marginTop: 32 }]}>
+      <View style={styles.sectionHeaderRow}>
         <View>
           <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('latestMovements')}</Text>
           {selectedAccountName && (
@@ -57,7 +60,7 @@ export function RecentTransactionsList({
 
         {/* Botón Ver más */}
         <TouchableOpacity
-          style={[styles.seeMoreBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          style={[styles.seeMoreBtn, { backgroundColor: colors.cardRaised, borderColor: colors.border }]}
           onPress={handleSeeMore}
           activeOpacity={0.7}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -68,18 +71,17 @@ export function RecentTransactionsList({
       </View>
 
       {transactions.length === 0 ? (
-        <View style={[styles.emptyContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Card style={styles.emptyContainer}>
           <Text style={[styles.emptySubtext, { color: colors.textLight }]}>
             {selectedFilterAccountId
               ? 'Esta cuenta no tiene movimientos registrados.'
               : t('noMovementsPeriod')}
           </Text>
-        </View>
+        </Card>
       ) : (
-        <View style={[styles.transactionsCardContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Card>
           {transactions.map((tx, idx) => {
             const isIncome = tx.type === 'INCOME';
-            const isLast = idx === transactions.length - 1;
             const dateFormatted = new Date(tx.date).toLocaleDateString('es-ES', {
               day: 'numeric',
               month: 'short',
@@ -93,10 +95,7 @@ export function RecentTransactionsList({
                 transition={{ type: 'timing', duration: 350, delay: idx * 50 } as any}
               >
                 <TouchableOpacity
-                  style={[
-                    styles.transactionItemRow,
-                    !isLast && { borderBottomWidth: 1, borderBottomColor: colors.border },
-                  ]}
+                  style={[styles.transactionItemRow, isDark && styles.transactionItemRowDark]}
                   onPress={() => {
                     router.push({
                       pathname: '/transaction/[id]',
@@ -133,13 +132,16 @@ export function RecentTransactionsList({
                       { color: isIncome ? colors.successText : colors.text },
                     ]}
                   >
-                    {isIncome ? '+' : '-'}{formatCurrency(tx.totalAmount, false)}
+                    {format(isIncome ? tx.totalAmount : -tx.totalAmount, {
+                      showSign: isIncome,
+                      showCurrency: false,
+                    })}
                   </Text>
                 </TouchableOpacity>
               </MotiView>
             );
           })}
-        </View>
+        </Card>
       )}
     </>
   );
@@ -150,7 +152,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 14,
+    marginBottom: spacing.lg,
   },
   sectionHeading: {
     fontSize: 18,
@@ -177,8 +179,6 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     padding: 28,
-    borderRadius: 28,
-    borderWidth: 1,
     alignItems: 'center',
     textAlign: 'center',
   },
@@ -188,22 +188,15 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginBottom: 16,
   },
-  transactionsCardContainer: {
-    borderRadius: 28,
-    borderWidth: 1,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  transactionItemRow: {
-    flexDirection: 'row',
+  transactionItemRow: {    flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 18,
     gap: 14,
+  },
+  transactionItemRowDark: {
+    minHeight: 72,
+    paddingVertical: 18,
   },
   transactionIconContainer: {
     width: 40,

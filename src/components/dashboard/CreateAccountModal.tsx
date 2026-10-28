@@ -1,9 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
   Text,
-  Modal,
   ScrollView,
   TouchableOpacity,
   TextInput,
@@ -11,10 +10,10 @@ import {
   Alert,
 } from 'react-native';
 import { X, CreditCard, TrendingUp, Calendar } from 'lucide-react-native';
-import { MotiView } from 'moti';
-import Animated, { LinearTransition, FadeIn, Easing } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { AccountType } from '@/core/models/account';
-import { useColors, useInsets } from '@/components/ui/theme';
+import { useColors, useThemeMode } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { SqliteAccountRepository } from '@/infrastructure/repositories';
 import {
   calculateDailyProjection,
@@ -22,7 +21,8 @@ import {
 } from '@/core/services/interest-calculator';
 import { AccountProjectionPreview } from '@/components/dashboard/AccountProjectionPreview';
 import { useTranslation } from '@/core/i18n/useTranslation';
-import { BackdropBlur } from '@/components/ui/BackdropBlur';
+import { useCurrency } from '@/core/currency/useCurrency';
+import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 
 interface CreateAccountModalProps {
   visible: boolean;
@@ -40,7 +40,8 @@ export function CreateAccountModal({
   blurTarget,
 }: CreateAccountModalProps) {
   const colors = useColors();
-  const insets = useInsets();
+  const { isDark } = useThemeMode();
+  const { currency } = useCurrency();
   const { t } = useTranslation();
 
   const [accName, setAccName] = useState('');
@@ -49,42 +50,6 @@ export function CreateAccountModal({
   const [accTNA, setAccTNA] = useState('');
   const [accTermMonths, setAccTermMonths] = useState('3');
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
-
-  // Control interno para animar entrada y salida del modal
-  const [isRendered, setIsRendered] = useState(false);
-  const [isAnimatingIn, setIsAnimatingIn] = useState(false);
-  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    const run = async () => {
-      if (visible) {
-        if (!cancelled) setIsRendered(true);
-        // Esperar dos frames para que React haga commit del estado inicial (off-screen)
-        // antes de que Moti inicie la transición
-        await new Promise<void>((resolve) => setTimeout(resolve, 16));
-        if (!cancelled) setIsAnimatingIn(true);
-      } else {
-        if (!cancelled) setIsAnimatingIn(false);
-        closeTimeoutRef.current = setTimeout(() => {
-          if (!cancelled) setIsRendered(false);
-        }, 250);
-      }
-    };
-    void run();
-    return () => {
-      cancelled = true;
-      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-    };
-  }, [visible]);
-
-  const handleClose = () => {
-    // Dispara la animación de salida, luego llama onClose
-    setIsAnimatingIn(false);
-    setTimeout(() => {
-      onClose();
-    }, 210);
-  };
 
   const resetForm = () => {
     setAccName('');
@@ -125,7 +90,7 @@ export function CreateAccountModal({
       });
 
       resetForm();
-      handleClose();
+      onClose();
       onAccountCreated();
     } catch (err) {
       console.error('Error creating account:', err);
@@ -155,95 +120,72 @@ export function CreateAccountModal({
       ? calculateDailyProjection(previewCapital, previewRate, 365).at(-1)?.balance ?? previewCapital
       : null;
 
-  if (!isRendered) return null;
-
   return (
-    <Modal
-      visible={isRendered}
-      transparent
-      animationType="none"
-      onRequestClose={handleClose}
+    <BottomSheetModal
+      visible={visible}
+      onClose={onClose}
+      blurTarget={blurTarget}
+      maxHeight="88%"
+      bottomPaddingExtra={20}
     >
-      <BackdropBlur visible={isAnimatingIn} onPress={handleClose} blurTarget={blurTarget} />
+      <View style={styles.modalTopBar}>
+        <Text style={[styles.modalHeading, { color: colors.text }]}>{t('newAccountTitle')}</Text>
+        <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <X size={22} color={colors.textLight} strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
 
-      {/* Sheet — solo slide up/down, sin layout animation ni Reanimated */}
-      <View style={styles.modalBackdrop} pointerEvents="box-none">
-        <MotiView
-          animate={{
-            translateY: isAnimatingIn ? 0 : 400,
-            opacity: isAnimatingIn ? 1 : 0,
-          }}
-          transition={{ type: 'timing', duration: 220 } as any}
-          layout={LinearTransition.duration(200).easing(Easing.out(Easing.quad))}
-          style={[
-            styles.modalSheet,
-            { backgroundColor: colors.surface, paddingBottom: insets.bottom + 20, maxHeight: '88%' },
-          ]}
-        >
-          <View style={styles.modalTopBar}>
-            <Text style={[styles.modalHeading, { color: colors.text }]}>{t('newAccountTitle')}</Text>
-            <TouchableOpacity onPress={handleClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-              <X size={22} color={colors.textLight} strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
             {/* Selector de Tipo de Cuenta */}
             <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 4 }]}>{t('accountType')}</Text>
             <View style={styles.accountTypeSelectorRow}>
-              <TouchableOpacity
-                style={[
-                  styles.accountTypeCardOption,
-                  {
-                    backgroundColor: accType === 'CHECKING' ? colors.primarySoft : colors.background,
-                    borderColor: accType === 'CHECKING' ? colors.primary : colors.border,
-                  },
-                ]}
+              <Card
+                backgroundColor={
+                  accType === 'CHECKING' ? colors.primarySoft : colors.surfaceMuted
+                }
+                borderColor={accType === 'CHECKING' ? colors.primary : colors.border}
+                borderWidth={1.5}
+                style={styles.accountTypeCardOption}
                 onPress={() => setAccType('CHECKING')}
-                activeOpacity={0.7}
               >
                 <CreditCard size={18} color={accType === 'CHECKING' ? colors.primaryText : colors.textLight} />
                 <Text style={[styles.accountTypeOptionTitle, { color: accType === 'CHECKING' ? colors.primaryText : colors.text }]}>
                   {t('checking')}
                 </Text>
                 <Text style={[styles.accountTypeOptionDesc, { color: colors.textLight }]}>{t('operations')}</Text>
-              </TouchableOpacity>
+              </Card>
 
-              <TouchableOpacity
-                style={[
-                  styles.accountTypeCardOption,
-                  {
-                    backgroundColor: accType === 'FLEXIBLE_SAVINGS' ? colors.primarySoft : colors.background,
-                    borderColor: accType === 'FLEXIBLE_SAVINGS' ? colors.primary : colors.border,
-                  },
-                ]}
+              <Card
+                backgroundColor={
+                  accType === 'FLEXIBLE_SAVINGS' ? colors.primarySoft : colors.surfaceMuted
+                }
+                borderColor={accType === 'FLEXIBLE_SAVINGS' ? colors.primary : colors.border}
+                borderWidth={1.5}
+                style={styles.accountTypeCardOption}
                 onPress={() => setAccType('FLEXIBLE_SAVINGS')}
-                activeOpacity={0.7}
               >
                 <TrendingUp size={18} color={accType === 'FLEXIBLE_SAVINGS' ? colors.primaryText : colors.textLight} />
                 <Text style={[styles.accountTypeOptionTitle, { color: accType === 'FLEXIBLE_SAVINGS' ? colors.primaryText : colors.text }]}>
                   Flexible
                 </Text>
                 <Text style={[styles.accountTypeOptionDesc, { color: colors.textLight }]}>{t('returnLabel')}</Text>
-              </TouchableOpacity>
+              </Card>
 
-              <TouchableOpacity
-                style={[
-                  styles.accountTypeCardOption,
-                  {
-                    backgroundColor: accType === 'FIXED_TERM' ? colors.warningSoft : colors.background,
-                    borderColor: accType === 'FIXED_TERM' ? colors.warning : colors.border,
-                  },
-                ]}
+              <Card
+                backgroundColor={
+                  accType === 'FIXED_TERM' ? colors.warningSoft : colors.surfaceMuted
+                }
+                borderColor={accType === 'FIXED_TERM' ? colors.warning : colors.border}
+                borderWidth={1.5}
+                style={styles.accountTypeCardOption}
                 onPress={() => setAccType('FIXED_TERM')}
-                activeOpacity={0.7}
               >
                 <Calendar size={18} color={accType === 'FIXED_TERM' ? colors.warningText : colors.textLight} />
                 <Text style={[styles.accountTypeOptionTitle, { color: accType === 'FIXED_TERM' ? colors.warningText : colors.text }]}>
                   {t('fixedTerm')}
                 </Text>
                 <Text style={[styles.accountTypeOptionDesc, { color: colors.textLight }]}>{t('atTerm')}</Text>
-              </TouchableOpacity>
+              </Card>
             </View>
 
             {/* Nombre de la Cuenta */}
@@ -261,7 +203,9 @@ export function CreateAccountModal({
 
             {/* Saldo Inicial / Capital */}
             <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14 }]}>
-              {accType === 'FIXED_TERM' ? t('investedCapital') : t('initialBalance')}
+              {accType === 'FIXED_TERM'
+                ? t('investedCapital', { currency })
+                : t('initialBalance', { currency })}
             </Text>
             <TextInput
               style={[
@@ -310,7 +254,12 @@ export function CreateAccountModal({
                       style={[
                         styles.termMonthPill,
                         {
-                          backgroundColor: accTermMonths === m ? colors.primary : colors.inputBackground,
+                          backgroundColor:
+                            accTermMonths === m
+                              ? colors.primary
+                              : isDark
+                                ? colors.surfaceMuted
+                                : colors.inputBackground,
                           borderColor: accTermMonths === m ? colors.primary : colors.border,
                         },
                       ]}
@@ -355,32 +304,12 @@ export function CreateAccountModal({
                 </Text>
               )}
             </TouchableOpacity>
-          </ScrollView>
-        </MotiView>
-      </View>
-    </Modal>
+      </ScrollView>
+    </BottomSheetModal>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    zIndex: 0,
-  },
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    position: 'relative',
-    zIndex: 1,
-    elevation: 1,
-  },
-  modalSheet: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    zIndex: 1,
-    elevation: 1,
-  },
   modalTopBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -400,8 +329,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 8,
-    borderRadius: 16,
-    borderWidth: 1.5,
     alignItems: 'center',
     gap: 4,
   },

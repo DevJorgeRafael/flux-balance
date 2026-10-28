@@ -18,7 +18,10 @@ export function QuickActionsGrid({ onOpenTransactionModal }: QuickActionsGridPro
       {/* Botón Ingreso */}
       <MotiPressable
         containerStyle={{ flex: 1 }}
-        style={[styles.primaryActionBtn, { backgroundColor: colors.success }]}
+        style={[
+          styles.primaryActionBtn,
+          { backgroundColor: colors.success },
+        ]}
         animate={({ pressed }) => {
           'worklet';
           return {
@@ -31,7 +34,7 @@ export function QuickActionsGrid({ onOpenTransactionModal }: QuickActionsGridPro
         } as any}
         onPress={() => onOpenTransactionModal('INCOME')}
       >
-        <View style={styles.actionIconCircle}>
+        <View style={[styles.actionIconCircle, { backgroundColor: colors.onAccentMuted }]}>
           <Plus size={20} color={colors.onSuccess} strokeWidth={2.5} />
         </View>
         <Text style={[styles.primaryActionText, { color: colors.onSuccess }]}>{t('addIncome')}</Text>
@@ -40,7 +43,10 @@ export function QuickActionsGrid({ onOpenTransactionModal }: QuickActionsGridPro
       {/* Botón Gasto */}
       <MotiPressable
         containerStyle={{ flex: 1 }}
-        style={[styles.primaryActionBtn, { backgroundColor: colors.error }]}
+        style={[
+          styles.primaryActionBtn,
+          { backgroundColor: colors.error },
+        ]}
         animate={({ pressed }) => {
           'worklet';
           return {
@@ -53,7 +59,7 @@ export function QuickActionsGrid({ onOpenTransactionModal }: QuickActionsGridPro
         } as any}
         onPress={() => onOpenTransactionModal('EXPENSE')}
       >
-        <View style={styles.actionIconCircle}>
+        <View style={[styles.actionIconCircle, { backgroundColor: colors.onAccentMuted }]}>
           <Minus size={20} color={colors.onError} strokeWidth={2.5} />
         </View>
         <Text style={[styles.primaryActionText, { color: colors.onError }]}>{t('addExpense')}</Text>
@@ -76,7 +82,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 10,
@@ -86,7 +91,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.22)',
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -1,8 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { AccountType } from '@/core/models/account';
-import { formatCurrency } from '@/core/utils/currency';
+import { useCurrency } from '@/core/currency/useCurrency';
 import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface AccountProjectionPreviewProps {
@@ -17,18 +18,15 @@ export function AccountProjectionPreview({
   finalAmount,
 }: AccountProjectionPreviewProps) {
   const colors = useColors();
+  const { format } = useCurrency();
   const { t } = useTranslation();
   const isFixed = accountType === 'FIXED_TERM';
 
   return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: isFixed ? colors.warningSoft : colors.successSoft,
-          borderColor: isFixed ? colors.warning : colors.successText,
-        },
-      ]}
+    <Card
+      backgroundColor={isFixed ? colors.warningSoft : colors.successSoft}
+      borderColor={isFixed ? colors.warning : colors.successText}
+      style={styles.card}
     >
       <Text style={[styles.title, { color: colors.text }]}>{t('previewYield')}</Text>
       <View style={styles.row}>
@@ -37,21 +35,19 @@ export function AccountProjectionPreview({
       </View>
       <View style={styles.row}>
         <Text style={[styles.label, { color: colors.textLight }]}>{t('estimatedFinalAmount')}</Text>
-        <Text style={[styles.value, { color: colors.primaryText }]}>{formatCurrency(finalAmount)}</Text>
+        <Text style={[styles.value, { color: colors.primaryText }]}>{format(finalAmount)}</Text>
       </View>
       <Text style={[styles.hint, { color: colors.textLight }]}>
         {isFixed
           ? t('simpleInterestHint')
           : t('compoundInterestHint')}
       </Text>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
-    borderWidth: 1,
     padding: 14,
     marginTop: 18,
   },

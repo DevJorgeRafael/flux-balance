@@ -8,8 +8,8 @@ import {
   SqliteTransactionRepository,
   SqliteCategoryRepository,
 } from '@/infrastructure/repositories';
-import { getDatabase, resetDatabase } from '@/infrastructure/database/db';
-import { DEFAULT_CATEGORIES } from '@/infrastructure/database/schema.sql';
+import { resetDatabase } from '@/infrastructure/database/db';
+import { seedDemoData } from '@/infrastructure/database/seedDemoData';
 
 const accountRepo = new SqliteAccountRepository();
 const transactionRepo = new SqliteTransactionRepository();
@@ -87,79 +87,12 @@ export function useDashboardStats() {
   const handleSeedDemoData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const db = await getDatabase();
-
-      for (const cat of DEFAULT_CATEGORIES) {
-        await db.runAsync(
-          'INSERT OR IGNORE INTO categories (id, name, type, icon, color) VALUES (?, ?, ?, ?, ?);',
-          [cat.id, cat.name, cat.type, cat.icon, cat.color]
-        );
-      }
-
-      const accCheckingId = 'demo-acc-1';
-      const accYieldId = 'demo-acc-2';
-      const accFixedId = 'demo-acc-3';
-
-      await db.runAsync(
-        `INSERT OR REPLACE INTO accounts
-         (id, name, type, balance, currency, annual_rate, is_archived, created_at, updated_at)
-         VALUES (?, ?, ?, ?, 'USD', ?, 0, ?, ?);`,
-        [accCheckingId, 'Cuenta Sueldo (Galicia)', 'CHECKING', 1250000, null, new Date().toISOString(), new Date().toISOString()]
-      );
-
-      await db.runAsync(
-        `INSERT OR REPLACE INTO accounts
-         (id, name, type, balance, currency, annual_rate, is_archived, created_at, updated_at)
-         VALUES (?, ?, ?, ?, 'USD', ?, 0, ?, ?);`,
-        [accYieldId, 'Fondo MercadoPago', 'FLEXIBLE_SAVINGS', 380450, 0.375, new Date().toISOString(), new Date().toISOString()]
-      );
-
-      await db.runAsync(
-        `INSERT OR REPLACE INTO accounts
-         (id, name, type, balance, currency, annual_rate, is_archived, created_at, updated_at)
-         VALUES (?, ?, ?, ?, 'USD', ?, 0, ?, ?);`,
-        [accFixedId, 'Plazo Fijo UVA 90d', 'FIXED_TERM', 500000, 0.42, new Date().toISOString(), new Date().toISOString()]
-      );
-
-      await db.runAsync('DELETE FROM fixed_term_deposits WHERE account_id = ?;', [accFixedId]);
-      await db.runAsync(
-        `INSERT INTO fixed_term_deposits (id, account_id, principal_amount, annual_rate, term_months, start_date, maturity_date, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
-        [
-          'demo-dep-1',
-          accFixedId,
-          500000,
-          0.42,
-          3,
-          '2026-03-01',
-          '2026-06-01',
-          'ACTIVE',
-        ]
-      );
-
-      const txDate = new Date().toISOString();
-      await db.runAsync(
-        'INSERT OR REPLACE INTO transactions (id, type, total_amount, description, date, created_at) VALUES (?, ?, ?, ?, ?, ?);',
-        ['demo-tx-1', 'INCOME', 1250000, 'Acreditación Haberes', txDate, txDate]
-      );
-      await db.runAsync('DELETE FROM transaction_splits WHERE transaction_id = ?;', ['demo-tx-1']);
-      await db.runAsync(
-        'INSERT INTO transaction_splits (id, transaction_id, account_id, category_id, amount) VALUES (?, ?, ?, ?, ?);',
-        ['demo-split-1', 'demo-tx-1', accCheckingId, 'cat_inc_salary', 1250000]
-      );
-
-      await db.runAsync(
-        'INSERT OR REPLACE INTO transactions (id, type, total_amount, description, date, created_at) VALUES (?, ?, ?, ?, ?, ?);',
-        ['demo-tx-2', 'EXPENSE', 84500, 'Supermercado Coto', txDate, txDate]
-      );
-      await db.runAsync('DELETE FROM transaction_splits WHERE transaction_id = ?;', ['demo-tx-2']);
-      await db.runAsync(
-        'INSERT INTO transaction_splits (id, transaction_id, account_id, category_id, amount) VALUES (?, ?, ?, ?, ?);',
-        ['demo-split-2', 'demo-tx-2', accCheckingId, 'cat_exp_food', 84500]
-      );
-
+      const result = await seedDemoData();
       await loadData();
-      Alert.alert('Datos cargados', 'Se agregaron cuentas y transacciones demo con éxito.');
+      Alert.alert(
+        'Datos cargados',
+        `Se agregaron ${result.accounts} cuentas y ${result.transactions} movimientos con la fecha actual.`
+      );
     } catch (err: unknown) {
       console.error('Error seeding demo data:', err);
       Alert.alert('Error', 'No se pudieron cargar los datos demo.');
