@@ -14,6 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 import { useColors, useInsets, useThemeMode } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { BottomFade } from '@/components/ui/BottomFade';
 import { IS_DEVELOPMENT_MODE } from '@/core/constants/environment';
 import { useTranslation } from '@/core/i18n/useTranslation';
@@ -103,7 +104,7 @@ export default function SettingsScreen() {
         <Text style={[styles.sectionLabel, { color: colors.textLight }]}>
           {t('categories')}
         </Text>
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Card style={styles.card}>
           <SettingsRow
             icon={TrendingUp}
             label={t('incomeCategories')}
@@ -127,12 +128,12 @@ export default function SettingsScreen() {
               })
             }
           />
-        </View>
+        </Card>
 
         <Text style={[styles.sectionLabel, { color: colors.textLight }]}>
           {t('system')}
         </Text>
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Card style={styles.card}>
           <SettingsRow
             icon={Coins}
             label={t('currency')}
@@ -153,14 +154,14 @@ export default function SettingsScreen() {
             isLast
             onPress={toggleLanguage}
           />
-        </View>
+        </Card>
 
         {IS_DEVELOPMENT_MODE && (
           <>
             <Text style={[styles.sectionLabel, { color: colors.textLight }]}>
               {t('developerMode')}
             </Text>
-            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Card style={styles.card}>
               <SettingsRow
                 icon={Sparkles}
                 label={t('demoMode')}
@@ -173,7 +174,7 @@ export default function SettingsScreen() {
                 isLast
                 onPress={() => void handleResetAllData()}
               />
-            </View>
+            </Card>
           </>
         )}
       </ScrollView>
@@ -205,9 +206,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   card: {
-    borderRadius: 24,
-    borderWidth: 1,
-    overflow: 'hidden',
     marginBottom: 16,
   },
   row: {

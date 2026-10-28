@@ -3,7 +3,8 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { Receipt, Plus, Minus } from 'lucide-react-native';
 import { Transaction } from '@/core/models/transaction';
-import { shadow, useColors, useThemeMode } from '@/components/ui/theme';
+import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
@@ -16,7 +17,6 @@ type FilterType = 'ALL' | 'INCOME' | 'EXPENSE';
 export function AccountTransactionsList({ transactions }: AccountTransactionsListProps) {
   const [filterType, setFilterType] = useState<FilterType>('ALL');
   const colors = useColors();
-  const { isDark } = useThemeMode();
   const { format } = useCurrency();
   const { t } = useTranslation();
 
@@ -103,7 +103,7 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
 
       {/* Lista de Movimientos */}
       {filteredTransactions.length === 0 ? (
-        <View style={[styles.emptyContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Card style={styles.emptyContainer}>
           <View style={{ marginBottom: 12 }}>
             <Receipt size={32} color={colors.textLight} strokeWidth={1.5} />
           </View>
@@ -113,7 +113,7 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
               ? t('noAccountMovements')
               : 'No se encontraron movimientos con el filtro seleccionado.'}
           </Text>
-        </View>
+        </Card>
       ) : (
         <View style={styles.transactionsList}>
           {filteredTransactions.map((tx) => {
@@ -126,20 +126,15 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
             });
 
             return (
-              <TouchableOpacity
+              <Card
                 key={tx.id}
-                style={[
-                  styles.transactionItemRow,
-                  { backgroundColor: colors.surface },
-                  !isDark && shadow.sm,
-                ]}
+                style={styles.transactionItemRow}
                 onPress={() => {
                   router.push({
                     pathname: '/transaction/[id]',
                     params: { id: tx.id },
                   });
                 }}
-                activeOpacity={0.7}
               >
                 <View
                   style={[
@@ -171,7 +166,7 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
                 >
                   {format(isIncome ? tx.totalAmount : -tx.totalAmount, { showSign: isIncome })}
                 </Text>
-              </TouchableOpacity>
+              </Card>
             );
           })}
         </View>
@@ -213,8 +208,6 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     padding: 32,
-    borderRadius: 24,
-    borderWidth: 1,
     alignItems: 'center',
   },
   emptyHeading: {
@@ -236,9 +229,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     gap: 12,
-    borderRadius: 20,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
   },
   transactionIconContainer: {
     width: 36,

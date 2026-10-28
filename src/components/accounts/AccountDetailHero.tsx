@@ -3,6 +3,7 @@ import { StyleSheet, View, Text } from 'react-native';
 import { Plus, Minus, Zap, TrendingUp, Clock, Calendar } from 'lucide-react-native';
 import { Account, AccountType } from '@/core/models/account';
 import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
@@ -63,7 +64,7 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
         </Text>
 
         {/* Tarjeta de Resumen Rápido de Flujos */}
-        <View style={[styles.flowsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Card style={styles.flowsCard}>
           <View style={styles.flowItem}>
             <View style={[styles.flowIconDot, { backgroundColor: colors.successSoft }]}>
               <Plus size={12} color={colors.successText} strokeWidth={3} />
@@ -89,12 +90,12 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
               </Text>
             </View>
           </View>
-        </View>
+        </Card>
       </View>
 
       {/* Sección Rendimientos para Fondos Flexibles */}
       {isFlexible && account.annualRate && (
-        <View style={[styles.yieldContainer, { backgroundColor: colors.surface, borderColor: colors.primary }]}>
+        <Card borderColor={colors.primary} borderWidth={1.5} style={styles.yieldContainer}>
           <View style={styles.yieldHeader}>
             <View style={[styles.yieldIconBox, { backgroundColor: colors.successSoft }]}>
               <Zap size={18} color={colors.successText} strokeWidth={2.5} />
@@ -129,7 +130,7 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
               </Text>
             </View>
           </View>
-        </View>
+        </Card>
       )}
 
       {/* Sección Plazos Fijos Activos */}
@@ -140,10 +141,7 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
           </Text>
 
           {account.fixedTermDeposits.map((dep) => (
-            <View
-              key={dep.id}
-              style={[styles.depositCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            >
+            <Card key={dep.id} style={styles.depositCard}>
               <View style={styles.depositTopRow}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <TrendingUp size={16} color={colors.warningText} />
@@ -173,7 +171,7 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
                   </Text>
                 </View>
               </View>
-            </View>
+            </Card>
           ))}
         </View>
       )}
@@ -218,8 +216,6 @@ const styles = StyleSheet.create({
   flowsCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 20,
-    borderWidth: 1,
     paddingVertical: 12,
     paddingHorizontal: 16,
     width: '100%',
@@ -251,8 +247,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   yieldContainer: {
-    borderRadius: 24,
-    borderWidth: 1.5,
     padding: 16,
     marginBottom: 20,
   },
@@ -303,8 +297,6 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   depositCard: {
-    borderRadius: 18,
-    borderWidth: 1,
     padding: 14,
     marginBottom: 10,
   },

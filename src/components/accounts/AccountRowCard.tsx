@@ -10,7 +10,8 @@ import {
 import type { Account, AccountType, FixedTermDeposit } from '@/core/models/account';
 import { calculateDailyProjection } from '@/core/services/interest-calculator';
 import { useCurrency } from '@/core/currency/useCurrency';
-import { shadow, useColors, useThemeMode } from '@/components/ui/theme';
+import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface AccountRowCardProps {
@@ -100,7 +101,6 @@ export function AccountRowCard({
   onPress,
 }: AccountRowCardProps) {
   const colors = useColors();
-  const { isDark } = useThemeMode();
   const { format } = useCurrency();
   const { t } = useTranslation();
 
@@ -140,98 +140,92 @@ export function AccountRowCard({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={account.name}
-      style={({ pressed }) => [
-        styles.card,
-        { backgroundColor: colors.surface },
-        !isDark && shadow.sm,
-        pressed && styles.pressed,
-      ]}
+      style={({ pressed }) => [pressed && styles.pressed]}
     >
-      <View style={styles.mainRow}>
-        <View style={[styles.iconCircle, { backgroundColor: background }]}>
-          <Icon size={18} color={foreground} strokeWidth={2.2} />
-        </View>
+      <Card style={styles.card}>
+        <View style={styles.mainRow}>
+          <View style={[styles.iconCircle, { backgroundColor: background }]}>
+            <Icon size={18} color={foreground} strokeWidth={2.2} />
+          </View>
 
-        <View style={styles.copy}>
+          <View style={styles.copy}>
+            <Text
+              style={[styles.name, { color: colors.text }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {account.name}
+            </Text>
+            <Text style={[styles.meta, { color: colors.textLight }]} numberOfLines={1}>
+              {movementLabel}
+            </Text>
+          </View>
+
           <Text
-            style={[styles.name, { color: colors.text }]}
+            style={[styles.balance, { color: colors.text }]}
             numberOfLines={1}
             adjustsFontSizeToFit
-            minimumFontScale={0.8}
           >
-            {account.name}
-          </Text>
-          <Text style={[styles.meta, { color: colors.textLight }]} numberOfLines={1}>
-            {movementLabel}
+            {format(account.balance, { hidden: !isBalanceVisible })}
           </Text>
         </View>
 
-        <Text
-          style={[styles.balance, { color: colors.text }]}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
-          {format(account.balance, { hidden: !isBalanceVisible })}
-        </Text>
-      </View>
-
-      {flexibleYield !== null && (
-        <View
-          style={[
-            styles.performanceStrip,
-            styles.flexibleStrip,
-            { backgroundColor: colors.successSoft },
-          ]}
-        >
-          <TrendingUp size={13} color={colors.successText} strokeWidth={2.4} />
-          <Text
-            style={[styles.performanceText, { color: colors.successText }]}
-            numberOfLines={1}
+        {flexibleYield !== null && (
+          <View
+            style={[
+              styles.performanceStrip,
+              styles.flexibleStrip,
+              { backgroundColor: colors.successSoft },
+            ]}
           >
-            {format(flexibleYield, { showSign: isBalanceVisible, hidden: !isBalanceVisible })}
-          </Text>
-          <View style={[styles.estimatedTag, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.estimatedText, { color: colors.successText }]}>
-              {t('estimated')}
-            </Text>
-          </View>
-        </View>
-      )}
-
-      {fixedTimeline && (
-        <View style={[styles.performanceStrip, { backgroundColor: colors.warningSoft }]}>
-          <View style={styles.fixedHeaderRow}>
-            <Calendar size={13} color={colors.warningText} strokeWidth={2.4} />
+            <TrendingUp size={13} color={colors.successText} strokeWidth={2.4} />
             <Text
-              style={[styles.performanceText, { color: colors.warningText }]}
+              style={[styles.performanceText, { color: colors.successText }]}
               numberOfLines={1}
             >
-              {fixedTimeline.daysLeft === 1
-                ? t('maturesInDaysOne')
-                : t('maturesInDaysMany', { days: fixedTimeline.daysLeft })}
+              {format(flexibleYield, { showSign: isBalanceVisible, hidden: !isBalanceVisible })}
             </Text>
+            <View style={[styles.estimatedTag, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.estimatedText, { color: colors.successText }]}>
+                {t('estimated')}
+              </Text>
+            </View>
           </View>
-          <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
-            <View
-              style={[
-                styles.progressFill,
-                { width: progressWidth, backgroundColor: colors.warningText },
-              ]}
-            />
+        )}
+
+        {fixedTimeline && (
+          <View style={[styles.performanceStrip, { backgroundColor: colors.warningSoft }]}>
+            <View style={styles.fixedHeaderRow}>
+              <Calendar size={13} color={colors.warningText} strokeWidth={2.4} />
+              <Text
+                style={[styles.performanceText, { color: colors.warningText }]}
+                numberOfLines={1}
+              >
+                {fixedTimeline.daysLeft === 1
+                  ? t('maturesInDaysOne')
+                  : t('maturesInDaysMany', { days: fixedTimeline.daysLeft })}
+              </Text>
+            </View>
+            <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: progressWidth, backgroundColor: colors.warningText },
+                ]}
+              />
+            </View>
           </View>
-        </View>
-      )}
+        )}
+      </Card>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 22,
     paddingHorizontal: 14,
     paddingVertical: 14,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
   },
   pressed: {
     opacity: 0.78,

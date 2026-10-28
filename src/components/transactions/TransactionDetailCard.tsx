@@ -14,6 +14,7 @@ import {
 } from 'lucide-react-native';
 import { Transaction } from '@/core/models/transaction';
 import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useCurrency } from '@/core/currency/useCurrency';
 
 interface TransactionDetailCardProps {
@@ -75,7 +76,7 @@ export function TransactionDetailCard({
   return (
     <>
       {/* HERO CARD TICKET */}
-      <View style={[styles.heroCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <Card style={styles.heroCard}>
         <View
           style={[
             styles.typeBadge,
@@ -116,12 +117,12 @@ export function TransactionDetailCard({
           <CircleCheck size={14} color={colors.successText} strokeWidth={2.5} />
           <Text style={[styles.statusChipText, { color: colors.textLight }]}>Confirmado en cuenta</Text>
         </View>
-      </View>
+      </Card>
 
       {/* DETALLES DE LA OPERACIÓN */}
       <Text style={[styles.sectionHeading, { color: colors.text }]}>Detalles de la Operación</Text>
 
-      <View style={[styles.detailsGroupCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <Card style={styles.detailsGroupCard}>
         <View style={styles.detailRow}>
           <View style={[styles.detailIconBox, { backgroundColor: `${categoryColor}22` }]}>
             <Tag size={18} color={categoryColor} strokeWidth={2.5} />
@@ -171,12 +172,12 @@ export function TransactionDetailCard({
             </Text>
           </View>
         </View>
-      </View>
+      </Card>
 
       {/* NOTAS Y REFERENCIA */}
       <Text style={[styles.sectionHeading, { color: colors.text, marginTop: 24 }]}>Información Adicional</Text>
 
-      <View style={[styles.detailsGroupCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <Card style={styles.detailsGroupCard}>
         <View style={styles.detailRow}>
           <View style={[styles.detailIconBox, { backgroundColor: colors.surfaceMuted }]}>
             <FileText size={18} color={colors.textLight} strokeWidth={2.2} />
@@ -202,7 +203,7 @@ export function TransactionDetailCard({
             </Text>
           </View>
         </View>
-      </View>
+      </Card>
 
       {/* DESGLOSE SPLITS */}
       {transaction.splits && transaction.splits.length > 1 && (
@@ -211,7 +212,7 @@ export function TransactionDetailCard({
             Desglose de la Transacción ({transaction.splits.length})
           </Text>
 
-          <View style={[styles.detailsGroupCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Card style={styles.detailsGroupCard}>
             {transaction.splits.map((split, sIdx) => {
               const isLastSplit = sIdx === transaction.splits.length - 1;
               return (
@@ -240,7 +241,7 @@ export function TransactionDetailCard({
                 </View>
               );
             })}
-          </View>
+          </Card>
         </View>
       )}
 
@@ -262,8 +263,6 @@ export function TransactionDetailCard({
 
 const styles = StyleSheet.create({
   heroCard: {
-    borderRadius: 28,
-    borderWidth: 1,
     padding: 22,
     alignItems: 'center',
     marginBottom: 24,
@@ -315,9 +314,6 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   detailsGroupCard: {
-    borderRadius: 22,
-    borderWidth: 1,
-    overflow: 'hidden',
     paddingVertical: 4,
   },
   detailRow: {

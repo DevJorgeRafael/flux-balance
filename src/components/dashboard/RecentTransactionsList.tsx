@@ -10,7 +10,8 @@ import { router } from 'expo-router';
 import { ChevronRight, Plus, Minus } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { Transaction } from '@/core/models/transaction';
-import { useColors, useThemeMode } from '@/components/ui/theme';
+import { spacing, useColors, useThemeMode } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
 
@@ -47,7 +48,7 @@ export function RecentTransactionsList({
   return (
     <>
       {/* Sección Últimos Movimientos con botón 'Ver más →' */}
-      <View style={[styles.sectionHeaderRow, { marginTop: 32 }]}>
+      <View style={styles.sectionHeaderRow}>
         <View>
           <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('latestMovements')}</Text>
           {selectedAccountName && (
@@ -70,24 +71,15 @@ export function RecentTransactionsList({
       </View>
 
       {transactions.length === 0 ? (
-        <View style={[styles.emptyContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Card style={styles.emptyContainer}>
           <Text style={[styles.emptySubtext, { color: colors.textLight }]}>
             {selectedFilterAccountId
               ? 'Esta cuenta no tiene movimientos registrados.'
               : t('noMovementsPeriod')}
           </Text>
-        </View>
+        </Card>
       ) : (
-        <View
-          style={[
-            styles.transactionsCardContainer,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-              shadowColor: colors.shadow,
-            },
-          ]}
-        >
+        <Card>
           {transactions.map((tx, idx) => {
             const isIncome = tx.type === 'INCOME';
             const dateFormatted = new Date(tx.date).toLocaleDateString('es-ES', {
@@ -149,7 +141,7 @@ export function RecentTransactionsList({
               </MotiView>
             );
           })}
-        </View>
+        </Card>
       )}
     </>
   );
@@ -160,7 +152,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 14,
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
   },
   sectionHeading: {
     fontSize: 18,
@@ -187,8 +180,6 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     padding: 28,
-    borderRadius: 28,
-    borderWidth: 1,
     alignItems: 'center',
     textAlign: 'center',
   },
@@ -198,17 +189,7 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginBottom: 16,
   },
-  transactionsCardContainer: {
-    borderRadius: 28,
-    borderWidth: 1,
-    overflow: 'hidden',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  transactionItemRow: {
-    flexDirection: 'row',
+  transactionItemRow: {    flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 18,

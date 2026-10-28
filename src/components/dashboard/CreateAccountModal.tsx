@@ -13,6 +13,7 @@ import { X, CreditCard, TrendingUp, Calendar } from 'lucide-react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { AccountType } from '@/core/models/account';
 import { useColors, useThemeMode } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { SqliteAccountRepository } from '@/infrastructure/repositories';
 import {
   calculateDailyProjection,
@@ -138,62 +139,53 @@ export function CreateAccountModal({
             {/* Selector de Tipo de Cuenta */}
             <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 4 }]}>{t('accountType')}</Text>
             <View style={styles.accountTypeSelectorRow}>
-              <TouchableOpacity
-                style={[
-                  styles.accountTypeCardOption,
-                  {
-                    backgroundColor:
-                      accType === 'CHECKING' ? colors.primarySoft : colors.surfaceMuted,
-                    borderColor: accType === 'CHECKING' ? colors.primary : colors.border,
-                  },
-                ]}
+              <Card
+                backgroundColor={
+                  accType === 'CHECKING' ? colors.primarySoft : colors.surfaceMuted
+                }
+                borderColor={accType === 'CHECKING' ? colors.primary : colors.border}
+                borderWidth={1.5}
+                style={styles.accountTypeCardOption}
                 onPress={() => setAccType('CHECKING')}
-                activeOpacity={0.7}
               >
                 <CreditCard size={18} color={accType === 'CHECKING' ? colors.primaryText : colors.textLight} />
                 <Text style={[styles.accountTypeOptionTitle, { color: accType === 'CHECKING' ? colors.primaryText : colors.text }]}>
                   {t('checking')}
                 </Text>
                 <Text style={[styles.accountTypeOptionDesc, { color: colors.textLight }]}>{t('operations')}</Text>
-              </TouchableOpacity>
+              </Card>
 
-              <TouchableOpacity
-                style={[
-                  styles.accountTypeCardOption,
-                  {
-                    backgroundColor:
-                      accType === 'FLEXIBLE_SAVINGS' ? colors.primarySoft : colors.surfaceMuted,
-                    borderColor: accType === 'FLEXIBLE_SAVINGS' ? colors.primary : colors.border,
-                  },
-                ]}
+              <Card
+                backgroundColor={
+                  accType === 'FLEXIBLE_SAVINGS' ? colors.primarySoft : colors.surfaceMuted
+                }
+                borderColor={accType === 'FLEXIBLE_SAVINGS' ? colors.primary : colors.border}
+                borderWidth={1.5}
+                style={styles.accountTypeCardOption}
                 onPress={() => setAccType('FLEXIBLE_SAVINGS')}
-                activeOpacity={0.7}
               >
                 <TrendingUp size={18} color={accType === 'FLEXIBLE_SAVINGS' ? colors.primaryText : colors.textLight} />
                 <Text style={[styles.accountTypeOptionTitle, { color: accType === 'FLEXIBLE_SAVINGS' ? colors.primaryText : colors.text }]}>
                   Flexible
                 </Text>
                 <Text style={[styles.accountTypeOptionDesc, { color: colors.textLight }]}>{t('returnLabel')}</Text>
-              </TouchableOpacity>
+              </Card>
 
-              <TouchableOpacity
-                style={[
-                  styles.accountTypeCardOption,
-                  {
-                    backgroundColor:
-                      accType === 'FIXED_TERM' ? colors.warningSoft : colors.surfaceMuted,
-                    borderColor: accType === 'FIXED_TERM' ? colors.warning : colors.border,
-                  },
-                ]}
+              <Card
+                backgroundColor={
+                  accType === 'FIXED_TERM' ? colors.warningSoft : colors.surfaceMuted
+                }
+                borderColor={accType === 'FIXED_TERM' ? colors.warning : colors.border}
+                borderWidth={1.5}
+                style={styles.accountTypeCardOption}
                 onPress={() => setAccType('FIXED_TERM')}
-                activeOpacity={0.7}
               >
                 <Calendar size={18} color={accType === 'FIXED_TERM' ? colors.warningText : colors.textLight} />
                 <Text style={[styles.accountTypeOptionTitle, { color: accType === 'FIXED_TERM' ? colors.warningText : colors.text }]}>
                   {t('fixedTerm')}
                 </Text>
                 <Text style={[styles.accountTypeOptionDesc, { color: colors.textLight }]}>{t('atTerm')}</Text>
-              </TouchableOpacity>
+              </Card>
             </View>
 
             {/* Nombre de la Cuenta */}
@@ -337,8 +329,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 8,
-    borderRadius: 16,
-    borderWidth: 1.5,
     alignItems: 'center',
     gap: 4,
   },

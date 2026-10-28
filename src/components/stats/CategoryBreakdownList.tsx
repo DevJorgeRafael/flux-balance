@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { bestTextColor, useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useCurrency } from '@/core/currency/useCurrency';
 import type { CategoryDonutSlice } from './CategoryDonut';
 
@@ -30,25 +31,23 @@ export function CategoryBreakdownList({
             accessibilityRole="button"
             accessibilityLabel={`${item.name}, ${item.percentage}%, ${format(item.amount)}`}
             accessibilityState={{ selected: selectedId === item.id }}
-            style={({ pressed }) => [
-              styles.row,
-              { backgroundColor: colors.surface },
-              pressed && styles.pressed,
-            ]}
+            style={({ pressed }) => [pressed && styles.pressed]}
           >
-            <View style={[styles.chip, { backgroundColor: item.color }]}>
-              <Text style={[styles.chipText, { color: chipTextColor }]}>
-                {item.percentage}%
+            <Card style={styles.row}>
+              <View style={[styles.chip, { backgroundColor: item.color }]}>
+                <Text style={[styles.chipText, { color: chipTextColor }]}>
+                  {item.percentage}%
+                </Text>
+              </View>
+
+              <Text style={[styles.name, { color: colors.text }]} numberOfLines={2}>
+                {item.name}
               </Text>
-            </View>
 
-            <Text style={[styles.name, { color: colors.text }]} numberOfLines={2}>
-              {item.name}
-            </Text>
-
-            <Text style={[styles.amount, { color: colors.text }]} numberOfLines={1}>
-              {format(item.amount)}
-            </Text>
+              <Text style={[styles.amount, { color: colors.text }]} numberOfLines={1}>
+                {format(item.amount)}
+              </Text>
+            </Card>
           </Pressable>
         );
       })}
@@ -67,7 +66,6 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 18,
   },
   chip: {
     minWidth: 48,

@@ -20,7 +20,7 @@ export function QuickActionsGrid({ onOpenTransactionModal }: QuickActionsGridPro
         containerStyle={{ flex: 1 }}
         style={[
           styles.primaryActionBtn,
-          { backgroundColor: colors.success, shadowColor: colors.shadow },
+          { backgroundColor: colors.success },
         ]}
         animate={({ pressed }) => {
           'worklet';
@@ -45,7 +45,7 @@ export function QuickActionsGrid({ onOpenTransactionModal }: QuickActionsGridPro
         containerStyle={{ flex: 1 }}
         style={[
           styles.primaryActionBtn,
-          { backgroundColor: colors.error, shadowColor: colors.shadow },
+          { backgroundColor: colors.error },
         ]}
         animate={({ pressed }) => {
           'worklet';

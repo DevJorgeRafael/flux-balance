@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { useColors, useThemeMode } from '@/components/ui/theme';
+import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { MonthlyTotals } from '@/core/repositories/ITransactionRepository';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
@@ -15,22 +16,11 @@ export function DashboardSummaryCard({
   isBalanceVisible,
 }: DashboardSummaryCardProps) {
   const colors = useColors();
-  const { isDark } = useThemeMode();
   const { format } = useCurrency();
   const { t } = useTranslation();
 
   return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.cardRaised,
-          shadowColor: colors.shadow,
-          shadowOpacity: isDark ? 0.35 : 0.18,
-          elevation: isDark ? 10 : 14,
-        },
-      ]}
-    >
+    <Card variant="raised" style={styles.card}>
       <View style={styles.metric}>
         <View style={styles.metricLabelRow}>
           <View style={[styles.metricDot, { backgroundColor: colors.success }]} />
@@ -90,7 +80,7 @@ export function DashboardSummaryCard({
           })}
         </Text>
       </View>
-    </View>
+    </Card>
   );
 }
 
@@ -98,17 +88,13 @@ const styles = StyleSheet.create({
   card: {
     position: 'relative',
     zIndex: 2,
-    elevation: 14,
     minHeight: 80,
     marginHorizontal: 24,
-    borderRadius: 24,
     paddingHorizontal: 16,
     paddingVertical: 14,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    shadowOffset: { width: 0, height: 10 },
-    shadowRadius: 22,
   },
   metric: {
     flex: 1,
