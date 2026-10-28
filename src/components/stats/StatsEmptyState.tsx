@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { ChartPie } from 'lucide-react-native';
 import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import type { StatsTransactionType } from '@/core/services/stats-breakdown';
 
@@ -14,7 +15,7 @@ export function StatsEmptyState({ type }: StatsEmptyStateProps) {
   const { t } = useTranslation();
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.surface }]}>
+    <Card style={styles.card}>
       <View style={[styles.iconCircle, { backgroundColor: colors.primarySoft }]}>
         <ChartPie size={28} color={colors.primaryText} strokeWidth={1.8} />
       </View>
@@ -23,14 +24,13 @@ export function StatsEmptyState({ type }: StatsEmptyStateProps) {
         {type === 'INCOME' ? t('noIncomeThisMonth') : t('noExpensesThisMonth')}
       </Text>
       <Text style={[styles.hint, { color: colors.textLight }]}>{t('statsEmptyHint')}</Text>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
     minHeight: 230,
-    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 28,

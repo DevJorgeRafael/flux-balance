@@ -2,6 +2,42 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.5.0] - 2026-10-27
+
+Estilo visual de cards unificado en toda la app.
+
+### Añadido
+
+- Componente base `Card` con variantes `default`, `raised` y `flat`.
+- `Card` acepta `onPress`, color de fondo, color y grosor de borde.
+- Token `radius.card` con el radio de 24px.
+- Token `cardShadow` con la única sombra de la app.
+
+### Cambiado
+
+- Todas las cards comparten radio de 24, borde de 1px y fondo `surface`.
+- La variante `raised` suma una sola sombra difusa y fondo `cardRaised` en oscuro.
+- La tarjeta activa del carrusel usa `raised`, monto en acento y sin borde de color.
+- La tarjeta inactiva del carrusel usa `default`.
+- La card de todas las cuentas solo muestra el chip cuando está activa.
+- El chip de todas las cuentas dice siempre `Activo`.
+- El carrusel lleva `paddingVertical: 24` para que la sombra no se recorte.
+- El carrusel es a sangre: las cards se recortan contra el borde de la pantalla.
+- El margen de reposo del carrusel es de 24px a cada lado.
+- Todas las cards del carrusel miden 160px de alto.
+- El panel de últimos movimientos ya no mezcla sombra con `overflow: hidden`.
+- El resumen de Ingresos, Gastos y Neto usa `raised`.
+- Filas de cuentas, movimientos y categorías usan el mismo estilo de card.
+- Se eliminan las sombras y fondos locales de cards, filas y chips.
+- Se elimina el token `shadow` con color fijo.
+- `package.json` y `app.json` suben a `1.5.0`.
+
+### Compatibilidad
+
+- No cambian rutas, datos, lógica ni textos.
+- No se agregaron dependencias.
+- La sombra usa `boxShadow` en Android y `shadow*` en iOS.
+
 ## [1.4.0] - 2026-10-27
 
 Barra de navegación inferior flotante, tipo píldora.

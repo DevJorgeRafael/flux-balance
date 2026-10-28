@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { isHexColor, useColors, useInsets } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useDashboard } from '@/context/DashboardContext';
 import { SqliteTransactionRepository } from '@/infrastructure/repositories';
@@ -191,13 +192,13 @@ export default function StatsScreen() {
           <StatsEmptyState type={selectedType} />
         ) : (
           <>
-            <View style={[styles.chartCard, { backgroundColor: colors.surface }]}>
+            <Card style={styles.chartCard}>
               <CategoryDonut
                 slices={donutSlices}
                 total={activeBreakdown.total}
                 selectedId={activeSelectedSliceId}
               />
-            </View>
+            </Card>
 
             <CategoryBreakdownList
               items={donutSlices}
@@ -228,7 +229,6 @@ const styles = StyleSheet.create({
   },
   chartCard: {
     alignItems: 'center',
-    borderRadius: 28,
     paddingVertical: 18,
     paddingHorizontal: 18,
     marginBottom: 20,

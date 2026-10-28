@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { AccountType } from '@/core/models/account';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface AccountProjectionPreviewProps {
@@ -22,14 +23,10 @@ export function AccountProjectionPreview({
   const isFixed = accountType === 'FIXED_TERM';
 
   return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: isFixed ? colors.warningSoft : colors.successSoft,
-          borderColor: isFixed ? colors.warning : colors.successText,
-        },
-      ]}
+    <Card
+      backgroundColor={isFixed ? colors.warningSoft : colors.successSoft}
+      borderColor={isFixed ? colors.warning : colors.successText}
+      style={styles.card}
     >
       <Text style={[styles.title, { color: colors.text }]}>{t('previewYield')}</Text>
       <View style={styles.row}>
@@ -45,14 +42,12 @@ export function AccountProjectionPreview({
           ? t('simpleInterestHint')
           : t('compoundInterestHint')}
       </Text>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
-    borderWidth: 1,
     padding: 14,
     marginTop: 18,
   },

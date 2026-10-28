@@ -5,13 +5,19 @@ export {
   fontWeight,
   lineHeight,
   duration,
-  shadow,
+  cardShadow,
+  cardShadowSm,
   categoryPalettes,
   heroGradientLight,
   heroGradientDark,
   tokens,
 } from './tokens';
-export type { CategoryColorPalette, HeroGradientToken, Tokens } from './tokens';
+export type {
+  CardShadowToken,
+  CategoryColorPalette,
+  HeroGradientToken,
+  Tokens,
+} from './tokens';
 export { lightPalette, darkPalette } from './palettes';
 export type { ThemeColors } from './palettes';
 export { createTheme, defaultTheme } from './createTheme';

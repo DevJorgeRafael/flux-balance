@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
 import type { StatsTransactionType } from '@/core/services/stats-breakdown';
@@ -48,7 +49,11 @@ export function StatsTypeSelector({
   ];
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.inputBackground }]}>
+    <Card
+      variant="flat"
+      backgroundColor={colors.inputBackground}
+      style={styles.container}
+    >
       {options.map((option) => {
         const isSelected = selectedType === option.type;
         const formattedTotal = format(option.total);
@@ -88,7 +93,7 @@ export function StatsTypeSelector({
           </Pressable>
         );
       })}
-    </View>
+    </Card>
   );
 }
 
@@ -97,7 +102,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 4,
     padding: 4,
-    borderRadius: 22,
     marginBottom: 20,
   },
   option: {

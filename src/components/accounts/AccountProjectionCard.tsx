@@ -9,6 +9,7 @@ import {
 } from '@/core/services/interest-calculator';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface AccountProjectionCardProps {
@@ -47,7 +48,7 @@ export function AccountProjectionCard({ account }: AccountProjectionCardProps) {
   const flexibleYearEnd = flexibleProjection.at(-1)?.balance ?? account.balance;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+    <Card style={styles.container}>
       <View style={styles.header}>
         <View style={[styles.iconBox, { backgroundColor: isFixed ? colors.warningSoft : colors.successSoft }]}>
           {isFixed ? (
@@ -93,14 +94,12 @@ export function AccountProjectionCard({ account }: AccountProjectionCardProps) {
               flexibleYearEnd - account.balance
             )}.`}
       </Text>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 24,
-    borderWidth: 1,
     padding: 16,
     marginBottom: 20,
   },

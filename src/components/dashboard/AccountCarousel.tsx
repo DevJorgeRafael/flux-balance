@@ -8,9 +8,10 @@ import {
 } from 'react-native';
 import { CreditCard, Plus, Layers } from 'lucide-react-native';
 import { Account } from '@/core/models/account';
-import { useColors, useThemeMode } from '@/components/ui/theme';
+import { spacing, useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useCurrency } from '@/core/currency/useCurrency';
-import { AccountCard } from './AccountCard';
+import { AccountCard, ACCOUNT_CARD_HEIGHT } from './AccountCard';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface AccountCarouselProps {
@@ -37,7 +38,6 @@ export function AccountCarousel({
   onPressAccount,
 }: AccountCarouselProps) {
   const colors = useColors();
-  const { isDark } = useThemeMode();
   const { format } = useCurrency();
   const { t } = useTranslation();
 
@@ -67,7 +67,7 @@ export function AccountCarousel({
       )}
 
       {accounts.length === 0 ? (
-        <View style={[styles.emptyContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Card style={styles.emptyContainer}>
           <View style={{ marginBottom: 12 }}>
             <CreditCard size={36} color={colors.textLight} strokeWidth={1.5} />
           </View>
@@ -87,7 +87,7 @@ export function AccountCarousel({
               </Text>
             </TouchableOpacity>
           )}
-        </View>
+        </Card>
       ) : (
         <ScrollView
           horizontal
@@ -97,102 +97,84 @@ export function AccountCarousel({
         >
           {showAllFilter && (
             <TouchableOpacity
-              style={[
-                styles.modernAccountCard,
-                {
-                  backgroundColor:
-                    selectedFilterAccountId === null ? colors.cardRaised : colors.surface,
-                  borderColor:
-                    selectedFilterAccountId === null ? colors.cardRaised : colors.border,
-                  borderWidth: 1,
-                  shadowColor: colors.shadow,
-                  shadowOpacity:
-                    selectedFilterAccountId === null
-                      ? isDark
-                        ? 0.35
-                        : 0.16
-                      : isDark
-                        ? 0.2
-                        : 0.08,
-                  shadowRadius: selectedFilterAccountId === null ? 14 : 8,
-                  elevation: selectedFilterAccountId === null ? 6 : 2,
-                },
-              ]}
+              style={styles.allAccountsPressable}
               onPress={() => onSelectAccountFilter?.(null)}
               activeOpacity={0.8}
             >
-            <View style={styles.accountCardHeader}>
-              <Text style={[styles.accountTypeHeader, { color: colors.textLight }]}>
-                {t('allAccounts').toUpperCase()}
-              </Text>
-              <View
-                style={[
-                  styles.tnaBadge,
-                  {
-                    backgroundColor:
-                      selectedFilterAccountId === null
-                        ? colors.primarySoft
-                        : colors.surfaceMuted,
-                  },
-                ]}
+              <Card
+                variant={selectedFilterAccountId === null ? 'raised' : 'default'}
+                shadowSize="sm"
+                style={styles.allAccountsCard}
               >
+                <View style={styles.accountCardHeader}>
+                  <Text
+                    style={[styles.accountTypeHeader, { color: colors.textLight }]}
+                    numberOfLines={1}
+                  >
+                    {t('allAccounts').toUpperCase()}
+                  </Text>
+
+                  {selectedFilterAccountId === null && (
+                    <View style={[styles.tnaBadge, { backgroundColor: colors.primarySoft }]}>
+                      <Text style={[styles.tnaBadgeText, { color: colors.primaryText }]}>
+                        {t('active')}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.accountCardTitleRow}>
+                  <Layers size={16} color={colors.text} />
+                  <Text
+                    style={[styles.accountCardTitle, { color: colors.text, marginBottom: 0 }]}
+                    numberOfLines={1}
+                  >
+                    {t('allAccounts')}
+                  </Text>
+                </View>
+
                 <Text
                   style={[
-                    styles.tnaBadgeText,
+                    styles.accountCardBalance,
                     {
                       color:
-                        selectedFilterAccountId === null ? colors.primaryText : colors.textLight,
+                        selectedFilterAccountId === null ? colors.primaryText : colors.text,
+                    },
+                  ]}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                >
+                  {format(totalBalance)}
+                </Text>
+
+                <View
+                  style={[
+                    styles.filterNoticeBadge,
+                    {
+                      backgroundColor:
+                        selectedFilterAccountId === null
+                          ? colors.primarySoft
+                          : colors.surfaceMuted,
                     },
                   ]}
                 >
-                  {selectedFilterAccountId === null ? t('active') : t('allAccounts')}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.accountCardTitleRow}>
-              <Layers size={16} color={colors.text} />
-              <Text style={[styles.accountCardTitle, { color: colors.text, marginBottom: 0 }]} numberOfLines={1}>
-                {t('allAccounts')}
-              </Text>
-            </View>
-
-            <Text
-              style={[
-                styles.accountCardBalance,
-                {
-                  color:
-                    selectedFilterAccountId === null ? colors.primaryText : colors.text,
-                },
-              ]}
-            >
-              {format(totalBalance)}
-            </Text>
-
-            <View
-              style={[
-                styles.filterNoticeBadge,
-                {
-                  backgroundColor:
-                    selectedFilterAccountId === null
-                      ? colors.primarySoft
-                      : colors.surfaceMuted,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.filterNoticeText,
-                  {
-                    color:
-                      selectedFilterAccountId === null ? colors.primaryText : colors.textLight,
-                  },
-                ]}
-              >
-                {selectedFilterAccountId === null ? t('showingAll') : t('tapToShowAll')}
-              </Text>
-            </View>
-          </TouchableOpacity>
+                  <Text
+                    style={[
+                      styles.filterNoticeText,
+                      {
+                        color:
+                          selectedFilterAccountId === null
+                            ? colors.primaryText
+                            : colors.textLight,
+                      },
+                    ]}
+                  >
+                    {selectedFilterAccountId === null ? t('showingAll') : t('tapToShowAll')}
+                  </Text>
+                </View>
+              </Card>
+            </TouchableOpacity>
           )}
 
           {/* Tarjetas individuales de Cuentas */}
@@ -214,20 +196,19 @@ export function AccountCarousel({
           {/* Tarjeta para Añadir Otra Cuenta */}
           {showNewAccount && (
             <TouchableOpacity
-              style={[
-                styles.addAccountDashedCard,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-              ]}
+              style={styles.addAccountPressable}
               onPress={onOpenCreateAccountModal}
               activeOpacity={0.8}
             >
-              <View style={[styles.addAccountIconCircle, { backgroundColor: colors.primarySoft }]}>
-                <Plus size={20} color={colors.primaryText} strokeWidth={2.5} />
-              </View>
-              <Text style={[styles.addAccountDashedTitle, { color: colors.text }]}>{t('newAccount')}</Text>
-              <Text style={[styles.addAccountDashedSubtext, { color: colors.textLight }]}>
-                {t('addAnother')}
-              </Text>
+              <Card borderStyle="dashed" style={styles.addAccountDashedCard}>
+                <View style={[styles.addAccountIconCircle, { backgroundColor: colors.primarySoft }]}>
+                  <Plus size={20} color={colors.primaryText} strokeWidth={2.5} />
+                </View>
+                <Text style={[styles.addAccountDashedTitle, { color: colors.text }]}>{t('newAccount')}</Text>
+                <Text style={[styles.addAccountDashedSubtext, { color: colors.textLight }]}>
+                  {t('addAnother')}
+                </Text>
+              </Card>
             </TouchableOpacity>
           )}
         </ScrollView>
@@ -241,7 +222,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 14,
+    marginBottom: spacing.sm,
   },
   titleWithBadge: {
     flexDirection: 'row',
@@ -278,10 +259,9 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     padding: 28,
-    borderRadius: 28,
-    borderWidth: 1,
     alignItems: 'center',
     textAlign: 'center',
+    marginBottom: spacing.lg,
   },
   emptyHeading: {
     fontSize: 17,
@@ -310,30 +290,40 @@ const styles = StyleSheet.create({
   },
   horizontalCardsScroll: {
     flexGrow: 0,
+    // Carrusel a sangre: cancela el margen de la hoja para que las cards se
+    // recorten contra el borde de la pantalla y no contra el margen interior.
+    marginHorizontal: -24,
   },
   horizontalCardsTrack: {
-    paddingRight: 8,
+    // Margen de reposo: la primera y la última card alinean con el resto.
+    paddingHorizontal: 24,
+    paddingVertical: spacing.sm,
     gap: 14,
   },
-  modernAccountCard: {
+  allAccountsPressable: {
     width: 220,
-    borderRadius: 28,
-    padding: 18,
-    shadowOffset: { width: 0, height: 2 },
+  },
+  allAccountsCard: {
+    width: 220,
+    minHeight: ACCOUNT_CARD_HEIGHT,
+    padding: spacing.lg,
   },
   accountCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    gap: 8,
+    marginBottom: spacing.sm,
   },
   accountTypeHeader: {
+    flexShrink: 1,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.6,
     textTransform: 'uppercase',
   },
   tnaBadge: {
+    flexShrink: 0,
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 8,
@@ -351,13 +341,13 @@ const styles = StyleSheet.create({
   accountCardTitle: {
     fontSize: 16,
     fontWeight: '800',
-    marginBottom: 6,
+    marginBottom: spacing.xs,
   },
   accountCardBalance: {
     fontSize: 20,
     fontWeight: '900',
     letterSpacing: -0.5,
-    marginBottom: 10,
+    marginBottom: spacing.sm,
   },
   filterNoticeBadge: {
     paddingHorizontal: 8,
@@ -369,14 +359,15 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
+  addAccountPressable: {
+    width: 140,
+  },
   addAccountDashedCard: {
     width: 140,
-    borderRadius: 28,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
+    minHeight: ACCOUNT_CARD_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 18,
+    padding: spacing.lg,
     gap: 6,
   },
   addAccountIconCircle: {

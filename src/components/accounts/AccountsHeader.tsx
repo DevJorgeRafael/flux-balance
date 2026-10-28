@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Plus } from 'lucide-react-native';
-import { shadow, useColors, useThemeMode } from '@/components/ui/theme';
+import { useColors } from '@/components/ui/theme';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
@@ -19,7 +19,6 @@ export function AccountsHeader({
   onPressNewAccount,
 }: AccountsHeaderProps) {
   const colors = useColors();
-  const { isDark } = useThemeMode();
   const { format } = useCurrency();
   const { t } = useTranslation();
 
@@ -40,7 +39,6 @@ export function AccountsHeader({
           style={({ pressed }) => [
             styles.newAccountChip,
             { backgroundColor: colors.cardRaised },
-            !isDark && shadow.md,
             pressed && styles.pressed,
           ]}
         >
@@ -91,8 +89,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 13,
     paddingVertical: 9,
     borderRadius: 999,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 10,
   },
   newAccountChipText: {
     fontSize: 12,

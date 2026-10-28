@@ -12,6 +12,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Plus } from 'lucide-react-native';
 import { CategoryListRow } from '@/components/categories/CategoryListRow';
 import { bestTextColor, useColors, useInsets } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import {
   CATEGORY_TYPE_ACCENTS,
   type CategoryPaletteType,
@@ -108,11 +109,11 @@ export default function CategoryListScreen() {
             showsVerticalScrollIndicator={false}
           >
             {categories.length === 0 ? (
-              <View style={[styles.emptyCard, { backgroundColor: colors.surface }]}>
+              <Card style={styles.emptyCard}>
                 <Text style={[styles.emptyText, { color: colors.textLight }]}>
                   {t('noCategories')}
                 </Text>
-              </View>
+              </Card>
             ) : (
               categories.map((category) => (
                 <CategoryListRow
@@ -217,7 +218,6 @@ const styles = StyleSheet.create({
   emptyCard: {
     paddingHorizontal: 24,
     paddingVertical: 32,
-    borderRadius: 24,
     alignItems: 'center',
   },
   emptyText: {

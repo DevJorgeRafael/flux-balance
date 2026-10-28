@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { shadow, useColors, useThemeMode } from '@/components/ui/theme';
+import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import type { AccountDistributionSegment } from '@/core/services/account-distribution';
 
@@ -10,17 +11,10 @@ interface AccountsDistributionCardProps {
 
 export function AccountsDistributionCard({ segments }: AccountsDistributionCardProps) {
   const colors = useColors();
-  const { isDark } = useThemeMode();
   const { t } = useTranslation();
 
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: colors.surface },
-        !isDark && shadow.md,
-      ]}
-    >
+    <Card style={styles.card}>
       <Text style={[styles.title, { color: colors.text }]}>{t('distribution')}</Text>
 
       <View style={[styles.bar, { backgroundColor: colors.surfaceMuted }]}>
@@ -48,18 +42,15 @@ export function AccountsDistributionCard({ segments }: AccountsDistributionCardP
           </View>
         ))}
       </View>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 24,
     paddingHorizontal: 18,
     paddingVertical: 18,
     marginBottom: 28,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 14,
   },
   title: {
     fontSize: 15,

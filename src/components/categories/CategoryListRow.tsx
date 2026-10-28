@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Pencil } from 'lucide-react-native';
 import type { Category } from '@/core/models/category';
 import { isHexColor, useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface CategoryListRowProps {
@@ -15,7 +16,7 @@ export function CategoryListRow({ category, onEdit }: CategoryListRowProps) {
   const { t } = useTranslation();
 
   return (
-    <View style={[styles.row, { backgroundColor: colors.surface }]}>
+    <Card style={styles.row}>
       <View
         style={[
           styles.colorDot,
@@ -40,7 +41,7 @@ export function CategoryListRow({ category, onEdit }: CategoryListRowProps) {
       >
         <Pencil size={17} color={colors.text} strokeWidth={2.2} />
       </Pressable>
-    </View>
+    </Card>
   );
 }
 
@@ -52,7 +53,6 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 18,
     paddingVertical: 12,
-    borderRadius: 20,
   },
   colorDot: {
     width: 14,

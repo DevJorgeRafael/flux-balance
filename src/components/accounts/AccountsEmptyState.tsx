@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CreditCard, Plus } from 'lucide-react-native';
-import { shadow, useColors, useThemeMode } from '@/components/ui/theme';
+import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface AccountsEmptyStateProps {
@@ -10,17 +11,10 @@ interface AccountsEmptyStateProps {
 
 export function AccountsEmptyState({ onCreateAccount }: AccountsEmptyStateProps) {
   const colors = useColors();
-  const { isDark } = useThemeMode();
   const { t } = useTranslation();
 
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: colors.surface },
-        !isDark && shadow.md,
-      ]}
-    >
+    <Card style={styles.card}>
       <View style={[styles.iconCircle, { backgroundColor: colors.primarySoft }]}>
         <CreditCard size={28} color={colors.primaryText} strokeWidth={1.8} />
       </View>
@@ -45,18 +39,15 @@ export function AccountsEmptyState({ onCreateAccount }: AccountsEmptyStateProps)
           {t('createAccount')}
         </Text>
       </Pressable>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 26,
     alignItems: 'center',
     paddingHorizontal: 28,
     paddingVertical: 30,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 14,
   },
   iconCircle: {
     width: 60,

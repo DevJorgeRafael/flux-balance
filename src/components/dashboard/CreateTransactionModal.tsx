@@ -14,6 +14,7 @@ import { TransactionType } from '@/core/models/transaction';
 import { Account } from '@/core/models/account';
 import { Category } from '@/core/models/category';
 import { isHexColor, useColors, useThemeMode } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { SqliteTransactionRepository } from '@/infrastructure/repositories';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
@@ -139,7 +140,10 @@ export function CreateTransactionModal({
         contentContainerStyle={{ paddingBottom: 8 }}
       >
         {/* Segmented Control de Tipo */}
-          <View style={[styles.typeSegmentedControl, { backgroundColor: colors.surfaceMuted, borderColor: colors.border }]}>
+          <Card
+            backgroundColor={colors.surfaceMuted}
+            style={styles.typeSegmentedControl}
+          >
             <TouchableOpacity
               style={[
                 styles.typeSegmentOption,
@@ -178,7 +182,7 @@ export function CreateTransactionModal({
                 {t('expense')}
               </Text>
             </TouchableOpacity>
-          </View>
+          </Card>
 
           {/* Input de Monto */}
           <Text style={[styles.formLabel, { color: colors.textLight }]}>
@@ -345,8 +349,6 @@ const styles = StyleSheet.create({
   },
   typeSegmentedControl: {
     flexDirection: 'row',
-    borderRadius: 14,
-    borderWidth: 1,
     padding: 4,
     marginBottom: 18,
   },

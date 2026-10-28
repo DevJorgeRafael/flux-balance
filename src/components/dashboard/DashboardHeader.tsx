@@ -3,6 +3,7 @@ import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
 import { Sun, Moon, Settings, RotateCcw, Sparkles, Languages } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { useColors } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface DashboardHeaderProps {
@@ -67,82 +68,77 @@ export function DashboardHeader({
               translateY: isSettingsOpen ? 0 : -8,
             }}
             transition={{ type: 'spring', damping: 18, stiffness: 260, mass: 0.7 } as any}
-            style={[
-              styles.settingsPopover,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-                shadowColor: colors.shadow,
-              },
-            ]}
+            style={[styles.settingsPopoverMotion]}
             pointerEvents={isSettingsOpen ? 'auto' : 'none'}
           >
-            <Text style={[styles.menuTitle, { color: colors.text }]}>{t('settings')}</Text>
+            <Card variant="raised" style={styles.settingsPopover}>
+              <Text style={[styles.menuTitle, { color: colors.text }]}>{t('settings')}</Text>
 
-            <View style={[styles.menuRow, { borderTopColor: colors.border }]}>
-              <View style={styles.menuRowLabel}>
-                {isDark ? (
-                  <Moon size={17} color={colors.primaryText} />
-                ) : (
-                  <Sun size={17} color={colors.primaryText} />
-                )}
-                <Text style={[styles.menuLabel, { color: colors.text }]}>{t('theme')}</Text>
+              <View style={[styles.menuRow, { borderTopColor: colors.border }]}>
+                <View style={styles.menuRowLabel}>
+                  {isDark ? (
+                    <Moon size={17} color={colors.primaryText} />
+                  ) : (
+                    <Sun size={17} color={colors.primaryText} />
+                  )}
+                  <Text style={[styles.menuLabel, { color: colors.text }]}>{t('theme')}</Text>
+                </View>
+                <TouchableOpacity
+                  ref={themeButtonRef}
+                  style={[styles.toggleButton, { backgroundColor: colors.primarySoft }]}
+                  onPress={toggleTheme}
+                  activeOpacity={0.75}
+                >
+                  <Text style={[styles.toggleText, { color: colors.primaryText }]}>
+                    {isDark ? t('dark') : t('light')}
+                  </Text>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                ref={themeButtonRef}
-                style={[styles.toggleButton, { backgroundColor: colors.primarySoft }]}
-                onPress={toggleTheme}
-                activeOpacity={0.75}
-              >
-                <Text style={[styles.toggleText, { color: colors.primaryText }]}>
-                  {isDark ? t('dark') : t('light')}
-                </Text>
-              </TouchableOpacity>
-            </View>
 
-            <View style={[styles.menuRow, { borderTopColor: colors.border }]}>
-              <View style={styles.menuRowLabel}>
-                <Languages size={17} color={colors.primaryText} />
-                <Text style={[styles.menuLabel, { color: colors.text }]}>{t('language')}</Text>
+              <View style={[styles.menuRow, { borderTopColor: colors.border }]}>
+                <View style={styles.menuRowLabel}>
+                  <Languages size={17} color={colors.primaryText} />
+                  <Text style={[styles.menuLabel, { color: colors.text }]}>{t('language')}</Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.toggleButton, { backgroundColor: colors.primarySoft }]}
+                  onPress={toggleLanguage}
+                  activeOpacity={0.75}
+                >
+                  <Text style={[styles.toggleText, { color: colors.primaryText }]}>
+                    {language.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                style={[styles.toggleButton, { backgroundColor: colors.primarySoft }]}
-                onPress={toggleLanguage}
-                activeOpacity={0.75}
-              >
-                <Text style={[styles.toggleText, { color: colors.primaryText }]}>
-                  {language.toUpperCase()}
-                </Text>
-              </TouchableOpacity>
-            </View>
 
-            {isDevMode && (
-              <TouchableOpacity
-                style={[styles.actionRow, { borderTopColor: colors.border }]}
-                onPress={() => {
-                  closeSettings();
-                  handleSeedDemoData();
-                }}
-                activeOpacity={0.75}
-              >
-                <Sparkles size={17} color={colors.primaryText} />
-                <Text style={[styles.menuLabel, { color: colors.text }]}>{t('demoMode')}</Text>
-              </TouchableOpacity>
-            )}
+              {isDevMode && (
+                <TouchableOpacity
+                  style={[styles.actionRow, { borderTopColor: colors.border }]}
+                  onPress={() => {
+                    closeSettings();
+                    handleSeedDemoData();
+                  }}
+                  activeOpacity={0.75}
+                >
+                  <Sparkles size={17} color={colors.primaryText} />
+                  <Text style={[styles.menuLabel, { color: colors.text }]}>{t('demoMode')}</Text>
+                </TouchableOpacity>
+              )}
 
-            {isDevMode && (
-              <TouchableOpacity
-                style={[styles.actionRow, { borderTopColor: colors.border }]}
-                onPress={() => {
-                  closeSettings();
-                  handleResetAllData();
-                }}
-                activeOpacity={0.75}
-              >
-                <RotateCcw size={17} color={colors.errorText} />
-                <Text style={[styles.menuLabel, { color: colors.errorText }]}>{t('resetData')}</Text>
-              </TouchableOpacity>
-            )}
+              {isDevMode && (
+                <TouchableOpacity
+                  style={[styles.actionRow, { borderTopColor: colors.border }]}
+                  onPress={() => {
+                    closeSettings();
+                    handleResetAllData();
+                  }}
+                  activeOpacity={0.75}
+                >
+                  <RotateCcw size={17} color={colors.errorText} />
+                  <Text style={[styles.menuLabel, { color: colors.errorText }]}>{t('resetData')}</Text>
+                </TouchableOpacity>
+              )}
+            </Card>
           </MotiView>
         </View>
       </View>
@@ -168,20 +164,16 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     zIndex: 101,
   },
-  settingsPopover: {
+  settingsPopoverMotion: {
     position: 'absolute',
     top: 48,
     right: 0,
     width: 224,
-    borderRadius: 18,
-    borderWidth: 1,
+    transformOrigin: 'top right',
+  },
+  settingsPopover: {
     paddingHorizontal: 14,
     paddingVertical: 12,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.22,
-    shadowRadius: 18,
-    elevation: 10,
-    transformOrigin: 'top right',
   },
   menuTitle: {
     fontSize: 15,

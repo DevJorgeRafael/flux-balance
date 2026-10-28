@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, Check } from 'lucide-react-native';
 import { useColors, useInsets } from '@/components/ui/theme';
+import { Card } from '@/components/ui/Card';
 import { CURRENCIES } from '@/core/constants/currencies';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
@@ -46,13 +47,13 @@ export default function CurrencySelectorScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
+        <Card style={styles.infoCard}>
           <Text style={[styles.infoText, { color: colors.textLight }]}>
             {t('currencyInfo')}
           </Text>
-        </View>
+        </Card>
 
-        <View style={[styles.list, { backgroundColor: colors.surface }]}>
+        <Card>
           {CURRENCIES.map((option) => {
             const isSelected = option.code === currency;
 
@@ -79,7 +80,7 @@ export default function CurrencySelectorScreen() {
               </Pressable>
             );
           })}
-        </View>
+        </Card>
       </ScrollView>
     </View>
   );
@@ -120,7 +121,6 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   infoCard: {
-    borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 14,
     marginBottom: 12,
@@ -129,10 +129,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
   },
-  list: {
-    borderRadius: 24,
-    overflow: 'hidden',
-  },
+  list: {},
   row: {
     minHeight: 56,
     flexDirection: 'row',
