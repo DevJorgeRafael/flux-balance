@@ -2,6 +2,18 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.5.4] - 2026-10-28
+
+Sección Acerca de y catálogo de licencias.
+
+### Añadido
+
+- Sección Acerca de con versión, código abierto, licencias y apoyo.
+- Pantalla de licencias de terceros agrupada por licencia.
+- Buscador de paquetes y textos de licencia colapsables.
+- Apoyo voluntario mediante Ko-fi.
+- Licencia MIT del proyecto y enlace al archivo `LICENSE`.
+
 ## [1.5.3] - 2026-10-28
 
 Contraste AA en chips de Stats y ajustes visuales.
