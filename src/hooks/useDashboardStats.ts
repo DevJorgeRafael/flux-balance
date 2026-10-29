@@ -102,30 +102,13 @@ export function useDashboardStats() {
   }, [loadData]);
 
   const handleResetAllData = useCallback(async () => {
-    Alert.alert(
-      '¿Restablecer todo?',
-      'Esta acción eliminará todas las transacciones, cuentas y depósitos. Los datos volverán a su estado inicial en blanco.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Restablecer',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setIsLoading(true);
-              await resetDatabase();
-              await loadData();
-              Alert.alert('Base de datos restablecida', 'Se han borrado todos los datos correctamente.');
-            } catch (err) {
-              console.error('Error resetting database:', err);
-              Alert.alert('Error', 'No se pudo restablecer la base de datos.');
-            } finally {
-              setIsLoading(false);
-            }
-          },
-        },
-      ]
-    );
+    setIsLoading(true);
+    try {
+      await resetDatabase();
+      await loadData();
+    } finally {
+      setIsLoading(false);
+    }
   }, [loadData]);
 
   return {

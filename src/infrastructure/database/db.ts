@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 import { SCHEMA_DDL } from './schema.sql';
 import { migrateCategories } from './migrateCategories';
+import { resetFinancialData } from './resetFinancialData';
 import { seedDefaultCategories } from './seedDefaultCategories';
 
 let dbInstance: SQLite.SQLiteDatabase | null = null;
@@ -59,15 +60,6 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
 
 export async function resetDatabase(): Promise<void> {
   const db = await getDatabase();
-  await db.execAsync(`
-    DELETE FROM transaction_splits;
-    DELETE FROM transactions;
-    DELETE FROM fixed_term_deposits;
-    DELETE FROM accounts;
-    DELETE FROM income_categories;
-    DELETE FROM expense_categories;
-  `);
-
-  await seedDefaultCategories(db);
+  await resetFinancialData(db);
 }
 

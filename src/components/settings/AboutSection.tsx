@@ -15,6 +15,7 @@ import {
 } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { fontSize, radius, spacing, useColors } from '@/components/ui/theme';
+import { SectionLabel } from './SectionLabel';
 import {
   AUTHOR_NAME,
   LICENSE_URL,
@@ -106,7 +107,6 @@ function AboutRow({
 }
 
 export function AboutSection() {
-  const colors = useColors();
   const { t } = useTranslation();
   const supportVisible = isSupportVisible(SHOW_DONATION, SUPPORT_URL);
   const privacyVisible = PRIVACY_URL.trim().length > 0;
@@ -122,7 +122,7 @@ export function AboutSection() {
 
   return (
     <>
-      <Text style={[styles.sectionLabel, { color: colors.textLight }]}>{t('about')}</Text>
+      <SectionLabel>{t('about')}</SectionLabel>
       <Card style={styles.card}>
         <AboutRow
           icon={Info}
@@ -174,13 +174,6 @@ export function AboutSection() {
 }
 
 const styles = StyleSheet.create({
-  sectionLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: '800',
-    letterSpacing: 0.7,
-    textTransform: 'uppercase',
-    marginBottom: spacing.sm,
-  },
   card: {
     marginBottom: spacing.lg,
   },

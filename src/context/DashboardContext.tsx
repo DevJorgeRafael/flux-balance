@@ -49,7 +49,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     loadData,
     handleRefresh,
     handleSeedDemoData: seedDemoData,
-    handleResetAllData,
+    handleResetAllData: resetAllData,
   } = useDashboardStats();
 
   const {
@@ -64,6 +64,12 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     await seedDemoData();
     await reloadTransactions();
   }, [reloadTransactions, seedDemoData]);
+
+  const handleResetAllData = useCallback(async () => {
+    await resetAllData();
+    handleSelectAccountFilter(null);
+    await reloadTransactions();
+  }, [handleSelectAccountFilter, reloadTransactions, resetAllData]);
 
   const handleDataChanged = useCallback(() => {
     void loadData();

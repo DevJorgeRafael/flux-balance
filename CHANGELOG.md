@@ -2,6 +2,24 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.5.5] - 2026-10-29
+
+Ajustes reorganizados y reinicio de datos seguro.
+
+### Añadido
+
+- Sección Datos con Reiniciar datos.
+- Doble confirmación escribiendo BORRAR o DELETE.
+- Reinicio transaccional que conserva moneda, tema e idioma y restaura las categorías por defecto.
+- Pruebas de visibilidad, confirmación y rollback.
+
+### Cambiado
+
+- Modo desarrollador solo conserva Cargar datos demo.
+- Modo desarrollador sigue oculto en producción.
+- Datos queda visible en producción.
+- Tras reiniciar, la app vuelve al inicio y actualiza todas las pantallas sin reiniciar.
+
 ## [1.5.4] - 2026-10-28
 
 Sección Acerca de y catálogo de licencias.
