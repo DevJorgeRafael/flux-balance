@@ -3,7 +3,7 @@ import { seedDefaultCategories } from './seedDefaultCategories';
 
 type ResetDatabase = Pick<
   SQLiteDatabase,
-  'execAsync' | 'runAsync' | 'withTransactionAsync'
+  'execAsync' | 'withExclusiveTransactionAsync'
 >;
 
 const CLEAR_FINANCIAL_DATA_SQL = `
@@ -16,8 +16,8 @@ const CLEAR_FINANCIAL_DATA_SQL = `
 `;
 
 export async function resetFinancialData(db: ResetDatabase): Promise<void> {
-  await db.withTransactionAsync(async () => {
-    await db.execAsync(CLEAR_FINANCIAL_DATA_SQL);
-    await seedDefaultCategories(db);
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    await txn.execAsync(CLEAR_FINANCIAL_DATA_SQL);
+    await seedDefaultCategories(txn);
   });
 }

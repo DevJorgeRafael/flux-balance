@@ -11,7 +11,7 @@ import type {
 
 type BackupDatabase = Pick<
   SQLiteDatabase,
-  'execAsync' | 'runAsync' | 'getAllAsync' | 'withTransactionAsync'
+  'execAsync' | 'runAsync' | 'getAllAsync' | 'withExclusiveTransactionAsync'
 >;
 
 interface AccountRow {
@@ -64,6 +64,13 @@ interface SplitRow {
   category_id: string;
   amount: number;
   notes: string | null;
+}
+
+interface ForeignKeyViolation {
+  table: string;
+  rowid: number;
+  parent: string;
+  fkid: number;
 }
 
 function mapDeposit(row: DepositRow): BackupFixedTermDeposit {
@@ -176,8 +183,8 @@ export async function importBackupIntoDatabase(
   db: BackupDatabase,
   backup: BackupFile
 ): Promise<void> {
-  await db.withTransactionAsync(async () => {
-    await db.execAsync(`
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    await txn.execAsync(`
       DELETE FROM transaction_splits;
       DELETE FROM transactions;
       DELETE FROM fixed_term_deposits;
@@ -188,7 +195,7 @@ export async function importBackupIntoDatabase(
     `);
 
     for (const account of backup.accounts) {
-      await db.runAsync(
+      await txn.runAsync(
         `INSERT INTO accounts
            (id, name, type, balance, currency, annual_rate, is_archived, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -206,7 +213,7 @@ export async function importBackupIntoDatabase(
       );
 
       for (const deposit of account.fixedTermDeposits) {
-        await db.runAsync(
+        await txn.runAsync(
           `INSERT INTO fixed_term_deposits
              (id, account_id, principal_amount, annual_rate, term_months, start_date, maturity_date, status, created_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -226,7 +233,7 @@ export async function importBackupIntoDatabase(
     }
 
     for (const category of backup.incomeCategories) {
-      await db.runAsync(
+      await txn.runAsync(
         `INSERT INTO income_categories
            (id, name, color, icon, is_default, sort_order, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -243,7 +250,7 @@ export async function importBackupIntoDatabase(
     }
 
     for (const category of backup.expenseCategories) {
-      await db.runAsync(
+      await txn.runAsync(
         `INSERT INTO expense_categories
            (id, name, color, icon, is_default, sort_order, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -260,7 +267,7 @@ export async function importBackupIntoDatabase(
     }
 
     for (const transaction of backup.transactions) {
-      await db.runAsync(
+      await txn.runAsync(
         `INSERT INTO transactions
            (id, type, total_amount, description, date, created_at)
          VALUES (?, ?, ?, ?, ?, ?)`,
@@ -275,7 +282,7 @@ export async function importBackupIntoDatabase(
       );
 
       for (const split of transaction.splits) {
-        await db.runAsync(
+        await txn.runAsync(
           `INSERT INTO transaction_splits
              (id, transaction_id, account_id, category_id, amount, notes)
            VALUES (?, ?, ?, ?, ?, ?)`,
@@ -291,9 +298,17 @@ export async function importBackupIntoDatabase(
       }
     }
 
-    await db.runAsync(
+    await txn.runAsync(
       'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
       ['currency', backup.currency]
     );
+
+    const violations = await txn.getAllAsync<ForeignKeyViolation>(
+      'PRAGMA foreign_key_check'
+    );
+
+    if (violations.length > 0) {
+      throw new Error('El backup contiene referencias inválidas.');
+    }
   });
 }

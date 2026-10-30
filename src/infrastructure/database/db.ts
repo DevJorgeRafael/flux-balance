@@ -58,7 +58,9 @@ export async function initDatabase(): Promise<SQLiteDatabase> {
 
     // Migración incremental de categorías y seed idempotente de defaults
     await migrateCategories(db);
-    await seedDefaultCategories(db);
+    await db.withExclusiveTransactionAsync(async (txn) => {
+      await seedDefaultCategories(txn);
+    });
 
     dbInstance = db;
     return db;
