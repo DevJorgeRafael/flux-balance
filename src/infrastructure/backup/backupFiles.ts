@@ -8,6 +8,7 @@ import {
   getBackupFileName,
   serializeBackup,
 } from '../../core/services/backup-format';
+import { deleteCachedFile } from './exportCache';
 
 export type BackupFileErrorCode =
   | 'sharingUnavailable'
@@ -29,6 +30,7 @@ async function writeFile(file: File, content: string): Promise<void> {
     file.create({ overwrite: true, intermediates: true });
     await file.write(content);
   } catch {
+    deleteCachedFile(file);
     throw new BackupFileError('writeFailed');
   }
 }
@@ -46,25 +48,26 @@ export async function shareBackupFile(
   file: File,
   dialogTitle: string
 ): Promise<void> {
-  if (!(await Sharing.isAvailableAsync())) {
-    throw new BackupFileError('sharingUnavailable');
-  }
+  try {
+    if (!(await Sharing.isAvailableAsync())) {
+      throw new BackupFileError('sharingUnavailable');
+    }
 
-  await Sharing.shareAsync(file.uri, {
-    dialogTitle,
-    mimeType: 'application/json',
-    UTI: 'public.json',
-  });
+    await Sharing.shareAsync(file.uri, {
+      dialogTitle,
+      mimeType: 'application/json',
+      UTI: 'public.json',
+    });
+  } finally {
+    deleteCachedFile(file);
+  }
 }
 
 async function readTextFromUri(uri: string): Promise<string> {
   try {
     return await new File(uri).text();
-  } catch (error) {
-    console.warn('File.text() falló, reintentando con readAsStringAsync:', {
-      uri,
-      error,
-    });
+  } catch {
+    console.warn('File.text() falló, reintentando con readAsStringAsync.');
     return readAsStringAsync(uri);
   }
 }
@@ -80,11 +83,8 @@ export async function pickBackupFileText(): Promise<string | null> {
 
   try {
     return await readTextFromUri(result.assets[0].uri);
-  } catch (error) {
-    console.error('Error reading backup file:', {
-      error,
-      asset: result.assets[0],
-    });
+  } catch {
+    console.error('Error reading backup file.');
     throw new BackupFileError('readFailed');
   }
 }
