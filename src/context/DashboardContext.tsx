@@ -26,6 +26,7 @@ interface DashboardContextValue {
   handleRefresh: () => void;
   handleSeedDemoData: () => Promise<void>;
   handleResetAllData: () => Promise<void>;
+  handleDataImported: () => Promise<void>;
   openTransactionModal: (type?: TransactionType) => void;
   openAccountModal: () => void;
 }
@@ -71,6 +72,12 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     await reloadTransactions();
   }, [handleSelectAccountFilter, reloadTransactions, resetAllData]);
 
+  const handleDataImported = useCallback(async () => {
+    await loadData();
+    handleSelectAccountFilter(null);
+    await reloadTransactions();
+  }, [handleSelectAccountFilter, loadData, reloadTransactions]);
+
   const handleDataChanged = useCallback(() => {
     void loadData();
     void reloadTransactions();
@@ -111,6 +118,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       handleRefresh: handleRefreshAll,
       handleSeedDemoData,
       handleResetAllData,
+      handleDataImported,
       openTransactionModal,
       openAccountModal,
     }),
@@ -130,6 +138,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       handleRefreshAll,
       handleSeedDemoData,
       handleResetAllData,
+      handleDataImported,
       openTransactionModal,
       openAccountModal,
     ]

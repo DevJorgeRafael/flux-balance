@@ -2,6 +2,21 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.6.0] - 2026-10-29
+
+Exportación e importación de copias de seguridad.
+
+### Añadido
+
+- Exportar cuentas, categorías, movimientos y moneda a un JSON.
+- Importar un respaldo con validación, resumen y confirmación.
+- Respaldo automático antes de reemplazar los datos.
+- Reemplazo transaccional de todos los datos.
+
+### Corregido
+
+- La importación lee el archivo elegido en Android y Expo Go.
+
 ## [1.5.5] - 2026-10-29
 
 Ajustes reorganizados y reinicio de datos seguro.

@@ -1,13 +1,24 @@
-import * as SQLite from 'expo-sqlite';
+import type { SQLiteDatabase } from 'expo-sqlite';
 import { SCHEMA_DDL } from './schema.sql';
 import { migrateCategories } from './migrateCategories';
 import { resetFinancialData } from './resetFinancialData';
 import { seedDefaultCategories } from './seedDefaultCategories';
 
-let dbInstance: SQLite.SQLiteDatabase | null = null;
-let initPromise: Promise<SQLite.SQLiteDatabase> | null = null;
+let dbInstance: SQLiteDatabase | null = null;
+let initPromise: Promise<SQLiteDatabase> | null = null;
+let sqliteModulePromise: Promise<typeof import('expo-sqlite')> | null = null;
 
-export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
+async function loadSQLiteModule(): Promise<typeof import('expo-sqlite')> {
+  if (!sqliteModulePromise) {
+    sqliteModulePromise = import('expo-sqlite').catch((error) => {
+      sqliteModulePromise = null;
+      throw error;
+    });
+  }
+  return sqliteModulePromise;
+}
+
+export async function getDatabase(): Promise<SQLiteDatabase> {
   if (dbInstance) {
     try {
       await dbInstance.getFirstAsync('SELECT 1');
@@ -24,12 +35,13 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   return initPromise;
 }
 
-export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
+export async function initDatabase(): Promise<SQLiteDatabase> {
   if (dbInstance) {
     return dbInstance;
   }
 
   try {
+    const SQLite = await loadSQLiteModule();
     const db = await SQLite.openDatabaseAsync('flux_balance.db', {
       useNewConnection: true,
     });

@@ -1,7 +1,7 @@
 {
   "name": "flux-balance",
   "main": "expo-router/entry",
-  "version": "1.5.5",
+  "version": "1.6.0",
   "license": "MIT",
   "dependencies": {
     "@expo/ui": "~58.0.23",
@@ -9,6 +9,8 @@
     "expo-blur": "~58.0.5",
     "expo-constants": "~58.0.13",
     "expo-device": "~58.0.5",
+    "expo-document-picker": "~58.0.4",
+    "expo-file-system": "~58.0.13",
     "expo-font": "~58.0.10",
     "expo-glass-effect": "~58.0.5",
     "expo-image": "~58.0.17",
@@ -16,6 +18,7 @@
     "expo-linking": "~58.0.14",
     "expo-localization": "~58.0.5",
     "expo-router": "~58.0.26",
+    "expo-sharing": "~58.0.21",
     "expo-splash-screen": "~58.0.11",
     "expo-sqlite": "~58.0.14",
     "expo-status-bar": "~58.0.4",
@@ -50,7 +53,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import=./scripts/test-ts-resolver.mjs --test src/constants/about.test.mjs src/core/services/license-search.test.mjs src/core/constants/categoryPalettes.test.mjs src/core/services/stats-breakdown.test.mjs src/core/services/account-distribution.test.mjs src/core/services/category-resolution.test.mjs src/core/services/category-management.test.mjs src/core/utils/money.test.mjs src/core/preferences/preferences.test.mjs src/core/constants/environment.test.mjs src/core/services/reset-data-confirmation.test.mjs src/components/ui/theme/colors.test.mjs src/infrastructure/database/demoData.test.mjs src/infrastructure/database/categoryMigration.test.mjs src/infrastructure/database/categoryManagement.test.mjs src/infrastructure/database/resetFinancialData.test.mjs",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import=./scripts/test-ts-resolver.mjs --test src/constants/about.test.mjs src/core/services/license-search.test.mjs src/core/constants/categoryPalettes.test.mjs src/core/services/stats-breakdown.test.mjs src/core/services/account-distribution.test.mjs src/core/services/category-resolution.test.mjs src/core/services/category-management.test.mjs src/core/utils/money.test.mjs src/core/preferences/preferences.test.mjs src/core/constants/environment.test.mjs src/core/services/reset-data-confirmation.test.mjs src/components/ui/theme/colors.test.mjs src/infrastructure/database/demoData.test.mjs src/infrastructure/database/categoryMigration.test.mjs src/infrastructure/database/categoryManagement.test.mjs src/infrastructure/database/resetFinancialData.test.mjs src/core/services/backup-validation.test.mjs src/infrastructure/database/backup.test.mjs",
     "licenses:generate": "node scripts/generate-licenses.mjs",
     "prepare": "husky"
   },
