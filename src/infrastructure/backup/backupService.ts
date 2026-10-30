@@ -21,7 +21,6 @@ import {
 import { getDatabase } from '../database/db';
 import {
   pickBackupFileText,
-  saveSafetyBackup,
   shareBackupFile,
   writeExportFile,
 } from './backupFiles';
@@ -129,12 +128,7 @@ export async function pickAndValidateBackup(): Promise<PickBackupResult> {
 
 export async function replaceAllDataWithBackup(
   backup: BackupFile
-): Promise<{ safetyBackupUri: string }> {
-  const currentBackup = await buildCurrentBackup();
-  const safetyBackupUri = await saveSafetyBackup(currentBackup);
+): Promise<void> {
   const db = await getDatabase();
-
   await importBackupIntoDatabase(db, backup);
-
-  return { safetyBackupUri };
 }

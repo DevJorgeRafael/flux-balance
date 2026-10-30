@@ -93,8 +93,8 @@ export default function SettingsScreen() {
           />
         </Card>
 
-        <DeveloperSection />
         <DataSection />
+        <DeveloperSection />
         <AboutSection />
       </ScrollView>
 

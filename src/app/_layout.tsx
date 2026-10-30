@@ -13,6 +13,7 @@ import {
   type ThemeMode,
 } from '@/components/ui/theme';
 import { initDatabase } from '@/infrastructure/database/db';
+import { DashboardProvider } from '@/context/DashboardContext';
 import { TranslationProvider } from '@/core/i18n/useTranslation';
 import { CurrencyProvider } from '@/core/currency/useCurrency';
 import {
@@ -79,16 +80,18 @@ function RootWithTheme() {
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <ThemeProvider value={navigationTheme}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: 'slide_from_right',
-            gestureEnabled: true,
-            contentStyle: { backgroundColor: colors.background },
-          }}
-        >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
+        <DashboardProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: 'slide_from_right',
+              gestureEnabled: true,
+              contentStyle: { backgroundColor: colors.background },
+            }}
+          >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
+        </DashboardProvider>
       </ThemeProvider>
     </>
   );

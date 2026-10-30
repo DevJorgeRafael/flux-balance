@@ -1,4 +1,4 @@
-import { Directory, File, Paths } from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import { readAsStringAsync } from 'expo-file-system/legacy';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
@@ -6,7 +6,6 @@ import { Platform } from 'react-native';
 import type { BackupFile } from '../../core/models/backup';
 import {
   getBackupFileName,
-  getSafetyBackupFileName,
   serializeBackup,
 } from '../../core/services/backup-format';
 
@@ -90,16 +89,3 @@ export async function pickBackupFileText(): Promise<string | null> {
   }
 }
 
-export async function saveSafetyBackup(
-  backup: BackupFile,
-  date: Date = new Date()
-): Promise<string> {
-  const directory = new Directory(Paths.document, 'backups');
-  if (!directory.exists) {
-    directory.create({ intermediates: true });
-  }
-
-  const file = new File(directory, getSafetyBackupFileName(date));
-  await writeFile(file, serializeBackup(backup));
-  return file.uri;
-}
