@@ -276,9 +276,6 @@ export function ImportBackupModal({
                   >
                     {t('backupImportWarning')}
                   </Text>
-                  <Text style={[styles.safetyNote, { color: colors.textLight }]}>
-                    {t('backupImportSafetyNote')}
-                  </Text>
 
                   <View style={styles.actions}>
                     <DialogButton
@@ -382,12 +379,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     fontSize: fontSize.sm,
     fontWeight: '700',
-    lineHeight: lineHeight.md,
-  },
-  safetyNote: {
-    marginTop: spacing.sm,
-    fontSize: fontSize.sm,
-    fontWeight: '600',
     lineHeight: lineHeight.md,
   },
   errorList: {

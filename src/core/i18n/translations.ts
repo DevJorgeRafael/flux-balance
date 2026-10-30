@@ -1,9 +1,11 @@
 import { backupExcelTranslations } from './backup-excel-translations';
+import { dataTransferTranslations } from './data-transfer-translations';
 
 export type Language = 'es' | 'en';
 
 export const translations = {
   es: {
+    ...dataTransferTranslations.es,
     ...backupExcelTranslations.es,
     home: 'Inicio',
     accountsTab: 'Cuentas',
@@ -126,7 +128,6 @@ export const translations = {
     backupSummaryExportedAt: 'Exportado',
     backupSummaryCurrency: 'Moneda',
     backupImportWarning: 'Se reemplazarán todas las cuentas, categorías, movimientos y depósitos actuales. La moneda de visualización también cambiará a la del respaldo. Esta acción no se puede deshacer.',
-    backupImportSafetyNote: 'Antes de reemplazar, se guardará un respaldo automático del estado actual en la carpeta de la app.',
     backupImportReplace: 'Reemplazar datos',
     backupImportErrorsTitle: 'El respaldo tiene errores',
     backupImportErrorsMessage: 'No se importó nada. Corrige el archivo o elige otro respaldo.',
@@ -216,6 +217,7 @@ export const translations = {
     months: 'meses',
   },
   en: {
+    ...dataTransferTranslations.en,
     ...backupExcelTranslations.en,
     home: 'Home',
     accountsTab: 'Accounts',
@@ -338,7 +340,6 @@ export const translations = {
     backupSummaryExportedAt: 'Exported',
     backupSummaryCurrency: 'Currency',
     backupImportWarning: 'All current accounts, categories, movements, and deposits will be replaced. The display currency will also change to the backup currency. This action cannot be undone.',
-    backupImportSafetyNote: 'Before replacing, a safety backup of the current state will be saved in the app folder.',
     backupImportReplace: 'Replace data',
     backupImportErrorsTitle: 'The backup has errors',
     backupImportErrorsMessage: 'Nothing was imported. Fix the file or choose another backup.',

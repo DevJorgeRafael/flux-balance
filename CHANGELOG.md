@@ -2,6 +2,10 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.6.2] - 2026-10-30
+
+Exportación e importación rediseñadas con opciones JSON/Excel y sin respaldo previo.
+
 ## [1.6.1] - 2026-10-30
 
 Exportación e importación de respaldos en Excel.

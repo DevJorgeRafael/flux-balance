@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 
 import {
   getBackupFileName,
-  getSafetyBackupFileName,
   hasBackupData,
   serializeBackup,
 } from './backup-format.ts';
@@ -248,12 +247,8 @@ test('serializa el respaldo con salto de línea y detecta datos', () => {
   );
 });
 
-test('genera nombres de archivo estables', () => {
+test('genera el nombre de archivo de exportación estable', () => {
   const date = new Date(2026, 0, 2, 3, 4, 5);
 
   assert.equal(getBackupFileName(date), 'flux-balance-backup-2026-01-02.json');
-  assert.equal(
-    getSafetyBackupFileName(date),
-    'flux-balance-pre-import-2026-01-02T03-04-05.json'
-  );
 });
