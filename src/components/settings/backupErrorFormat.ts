@@ -1,3 +1,4 @@
+import { MAX_AMOUNT } from '@/core/constants/inputLimits';
 import type { TranslationKey } from '@/core/i18n/translations';
 import type { BackupValidationError } from '@/core/models/backup';
 
@@ -14,7 +15,7 @@ export function formatBackupError(
   error: BackupValidationError,
   t: Translate
 ): string {
-  const path = error.path ?? '';
+  const path = error.path ?? String(error.params?.path ?? '');
   const id = String(error.params?.id ?? '');
   const version = String(error.params?.version ?? '?');
   const supported = String(error.params?.supported ?? '?');
@@ -23,6 +24,11 @@ export function formatBackupError(
   const name = String(error.params?.name ?? '');
   const value = String(error.params?.value ?? '');
   const type = String(error.params?.type ?? '');
+  const limit = String(error.params?.limit ?? '?');
+  const count = String(error.params?.count ?? '?');
+  const expected = String(error.params?.expected ?? '?');
+  const actual = String(error.params?.actual ?? '?');
+  const max = String(MAX_AMOUNT);
 
   let message: string;
   switch (error.code) {
@@ -57,13 +63,26 @@ export function formatBackupError(
       message = t('backupErrorInvalidType', { path });
       break;
     case 'invalidAmount':
-      message = t('backupErrorInvalidAmount', { path });
+      message = t('backupErrorInvalidAmount', { path, max });
       break;
     case 'invalidPositiveAmount':
       message = t('backupErrorInvalidPositiveAmount', { path });
       break;
     case 'invalidDate':
       message = t('backupErrorInvalidDate', { path });
+      break;
+    case 'invalidId':
+      message = t('backupErrorInvalidId', { path, id });
+      break;
+    case 'invalidSplitTotal':
+      message = t('backupErrorInvalidSplitTotal', {
+        path,
+        expected,
+        actual,
+      });
+      break;
+    case 'tooManyItems':
+      message = t('backupErrorTooManyItems', { path, limit, count });
       break;
     case 'duplicateId':
       message = t('backupErrorDuplicateId', { path, id });

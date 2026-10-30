@@ -1,0 +1,5 @@
+export const MAX_AMOUNT = 1_000_000_000_000;
+export const MAX_ACCOUNT_NAME_LENGTH = 80;
+export const MAX_TRANSACTION_DESCRIPTION_LENGTH = 200;
+export const MAX_ANNUAL_RATE_PERCENT = 1000;
+export const MAX_TERM_MONTHS = 120;

@@ -164,6 +164,105 @@ test('rechaza montos inválidos', () => {
   assert.equal(error.path, 'accounts[0].balance');
 });
 
+test('rechaza montos negativos o demasiado grandes', () => {
+  const negative = createValidBackup();
+  negative.accounts[0].balance = -1;
+  assert.equal(firstError(validateBackup(negative)).code, 'invalidAmount');
+
+  const tooLarge = createValidBackup();
+  tooLarge.transactions[0].totalAmount = 1_000_000_000_001;
+  const error = firstError(validateBackup(tooLarge));
+
+  assert.equal(error.code, 'invalidAmount');
+  assert.equal(error.path, 'transactions[0].totalAmount');
+});
+
+test('rechaza ids inválidos, vacíos o demasiado largos', () => {
+  const invalid = createValidBackup();
+  invalid.accounts[0].id = 'cuenta con espacios';
+  const invalidError = firstError(validateBackup(invalid));
+
+  assert.equal(invalidError.code, 'invalidId');
+  assert.equal(invalidError.path, 'accounts[0].id');
+
+  const empty = createValidBackup();
+  empty.accounts[0].id = '';
+  const emptyError = firstError(validateBackup(empty));
+
+  assert.equal(emptyError.code, 'invalidId');
+  assert.equal(emptyError.path, 'accounts[0].id');
+
+  const long = createValidBackup();
+  long.transactions[0].id = 'a'.repeat(129);
+  const longError = firstError(validateBackup(long));
+
+  assert.equal(longError.code, 'invalidId');
+  assert.equal(longError.path, 'transactions[0].id');
+});
+
+test('rechaza fechas inexistentes', () => {
+  const backup = createValidBackup();
+  backup.accounts[0].createdAt = '2026-02-30T10:00:00.000Z';
+
+  const error = firstError(validateBackup(backup));
+
+  assert.equal(error.code, 'invalidDate');
+  assert.equal(error.path, 'accounts[0].createdAt');
+});
+
+test('rechaza una suma de splits que no coincide con el total', () => {
+  const backup = createValidBackup();
+  backup.transactions[0].splits[0].amount = 24;
+
+  const error = firstError(validateBackup(backup));
+
+  assert.equal(error.code, 'invalidSplitTotal');
+  assert.equal(error.path, 'transactions[0].splits');
+  assert.deepEqual(error.params, { expected: 25, actual: 24 });
+});
+
+test('acepta la tolerancia de redondeo en la suma de splits', () => {
+  const backup = createValidBackup();
+  const baseSplit = backup.transactions[0].splits[0];
+  backup.transactions[0].totalAmount = 0.3;
+  backup.transactions[0].splits = [
+    { ...baseSplit, id: 'split-1', amount: 0.1 },
+    { ...baseSplit, id: 'split-2', amount: 0.2 },
+  ];
+
+  const result = validateBackup(backup);
+
+  assert.equal(result.ok, true);
+});
+
+test('rechaza respaldos que superan los límites de elementos', () => {
+  const accounts = createValidBackup();
+  const baseAccount = accounts.accounts[0];
+  accounts.accounts = Array.from({ length: 1001 }, (_, index) => ({
+    ...clone(baseAccount),
+    id: `acc-${index}`,
+    name: `Cuenta ${index}`,
+  }));
+
+  const accountsError = firstError(validateBackup(accounts));
+  assert.equal(accountsError.code, 'tooManyItems');
+  assert.equal(accountsError.path, 'accounts');
+
+  const splits = createValidBackup();
+  const baseSplit = splits.transactions[0].splits[0];
+  splits.transactions[0].splits = Array.from(
+    { length: 101 },
+    (_, index) => ({
+      ...clone(baseSplit),
+      id: `split-${index}`,
+    })
+  );
+
+  const splitsError = firstError(validateBackup(splits));
+  assert.equal(splitsError.code, 'tooManyItems');
+  assert.equal(splitsError.path, 'transactions[0].splits');
+});
+
 test('rechaza referencias a cuentas inexistentes', () => {
   const backup = createValidBackup();
   backup.transactions[0].splits[0].accountId = 'acc-inexistente';

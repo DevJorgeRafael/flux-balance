@@ -1,7 +1,9 @@
 import type { BackupValidationError } from '../models/backup';
 import type { CategoryType } from '../models/category';
 import {
+  BACKUP_LIMITS,
   addError,
+  checkArrayLimit,
   isOneOf,
   isRecord,
   registerId,
@@ -9,11 +11,13 @@ import {
   requireArray,
   requireBoolean,
   requireDate,
+  requireId,
   requireInteger,
   requireNullableAmount,
   requireNullableString,
   requirePositiveInteger,
   requireString,
+  validateId,
 } from './backup-validation-helpers';
 
 const ACCOUNT_TYPES = ['CHECKING', 'FLEXIBLE_SAVINGS', 'FIXED_TERM'] as const;
@@ -33,13 +37,18 @@ function validateDeposit(
   }
 
   registerId(
-    requireString(value, 'id', `${path}.id`, errors),
+    requireId(value, 'id', `${path}.id`, errors),
     depositIds,
     `${path}.id`,
     errors
   );
 
-  const accountId = requireString(value, 'accountId', `${path}.accountId`, errors);
+  const accountId = requireId(
+    value,
+    'accountId',
+    `${path}.accountId`,
+    errors
+  );
   if (accountId && parentAccountId && accountId !== parentAccountId) {
     addError(errors, 'invalidValue', `${path}.accountId`, {
       expected: parentAccountId,
@@ -73,7 +82,7 @@ function validateAccount(
     return;
   }
 
-  const id = requireString(value, 'id', `${path}.id`, errors);
+  const id = requireId(value, 'id', `${path}.id`, errors);
   registerId(id, accountIds, `${path}.id`, errors);
 
   requireString(value, 'name', `${path}.name`, errors);
@@ -96,15 +105,25 @@ function validateAccount(
     `${path}.fixedTermDeposits`,
     errors
   );
-  deposits?.forEach((deposit, index) => {
-    validateDeposit(
-      deposit,
-      `${path}.fixedTermDeposits[${index}]`,
+  if (
+    deposits &&
+    checkArrayLimit(
       errors,
-      id,
-      depositIds
-    );
-  });
+      `${path}.fixedTermDeposits`,
+      deposits,
+      BACKUP_LIMITS.depositsPerAccount
+    )
+  ) {
+    deposits.forEach((deposit, index) => {
+      validateDeposit(
+        deposit,
+        `${path}.fixedTermDeposits[${index}]`,
+        errors,
+        id,
+        depositIds
+      );
+    });
+  }
 }
 
 function validateCategoryList(
@@ -118,6 +137,11 @@ function validateCategoryList(
     addError(errors, 'invalidType', path);
     return;
   }
+  if (
+    !checkArrayLimit(errors, path, value, BACKUP_LIMITS.categoriesPerType)
+  ) {
+    return;
+  }
 
   value.forEach((category, index) => {
     const itemPath = `${path}[${index}]`;
@@ -127,7 +151,7 @@ function validateCategoryList(
     }
 
     registerId(
-      requireString(category, 'id', `${itemPath}.id`, errors),
+      requireId(category, 'id', `${itemPath}.id`, errors),
       categoryIds,
       `${itemPath}.id`,
       errors
@@ -160,44 +184,62 @@ function validateTransactionSplit(
   incomeCategoryIds: Set<string>,
   expenseCategoryIds: Set<string>,
   splitIds: Set<string>
-): void {
+): number | null {
   if (!isRecord(value)) {
     addError(errors, 'invalidType', path);
-    return;
+    return null;
   }
 
   registerId(
-    requireString(value, 'id', `${path}.id`, errors),
+    requireId(value, 'id', `${path}.id`, errors),
     splitIds,
     `${path}.id`,
     errors
   );
 
-  const transactionId = requireString(
+  const transactionId = requireId(
     value,
     'transactionId',
     `${path}.transactionId`,
     errors
   );
-  if (transactionId && parentTransactionId && transactionId !== parentTransactionId) {
+  if (
+    transactionId &&
+    parentTransactionId &&
+    transactionId !== parentTransactionId
+  ) {
     addError(errors, 'invalidValue', `${path}.transactionId`, {
       expected: parentTransactionId,
       actual: transactionId,
     });
   }
 
-  const accountId = requireString(value, 'accountId', `${path}.accountId`, errors);
+  const accountId = requireId(
+    value,
+    'accountId',
+    `${path}.accountId`,
+    errors
+  );
   if (accountId && !accountIds.has(accountId)) {
-    addError(errors, 'missingAccount', `${path}.accountId`, { id: accountId });
+    addError(errors, 'missingAccount', `${path}.accountId`, {
+      id: accountId,
+    });
   }
 
-  const categoryId = requireString(
+  const rawCategoryId = requireString(
     value,
     'categoryId',
     `${path}.categoryId`,
     errors,
     true
   );
+  let categoryId: string | null = null;
+  if (rawCategoryId !== null) {
+    categoryId =
+      rawCategoryId.length === 0
+        ? ''
+        : validateId(rawCategoryId, `${path}.categoryId`, errors);
+  }
   if (categoryId) {
     if (parentType === 'INCOME' && !incomeCategoryIds.has(categoryId)) {
       addError(errors, 'missingCategory', `${path}.categoryId`, {
@@ -210,15 +252,19 @@ function validateTransactionSplit(
         type: 'EXPENSE',
       });
     }
-  } else if (parentType === 'INCOME' || parentType === 'EXPENSE') {
+  } else if (
+    categoryId === '' &&
+    (parentType === 'INCOME' || parentType === 'EXPENSE')
+  ) {
     addError(errors, 'invalidValue', `${path}.categoryId`, {
       expected: 'non-empty category id',
       actual: '',
     });
   }
 
-  requireAmount(value, 'amount', `${path}.amount`, errors);
+  const amount = requireAmount(value, 'amount', `${path}.amount`, errors);
   requireNullableString(value, 'notes', `${path}.notes`, errors);
+  return amount;
 }
 
 function validateTransaction(
@@ -229,14 +275,15 @@ function validateTransaction(
   incomeCategoryIds: Set<string>,
   expenseCategoryIds: Set<string>,
   transactionIds: Set<string>,
-  splitIds: Set<string>
+  splitIds: Set<string>,
+  currencyDecimals: number
 ): void {
   if (!isRecord(value)) {
     addError(errors, 'invalidType', path);
     return;
   }
 
-  const id = requireString(value, 'id', `${path}.id`, errors);
+  const id = requireId(value, 'id', `${path}.id`, errors);
   registerId(id, transactionIds, `${path}.id`, errors);
 
   const type = requireString(value, 'type', `${path}.type`, errors);
@@ -244,25 +291,64 @@ function validateTransaction(
     addError(errors, 'invalidValue', `${path}.type`, { value: type });
   }
 
-  requireAmount(value, 'totalAmount', `${path}.totalAmount`, errors);
+  const totalAmount = requireAmount(
+    value,
+    'totalAmount',
+    `${path}.totalAmount`,
+    errors
+  );
   requireNullableString(value, 'description', `${path}.description`, errors);
   requireDate(value, 'date', `${path}.date`, errors);
   requireDate(value, 'createdAt', `${path}.createdAt`, errors);
 
   const splits = requireArray(value, 'splits', `${path}.splits`, errors);
-  splits?.forEach((split, index) => {
-    validateTransactionSplit(
-      split,
-      `${path}.splits[${index}]`,
-      errors,
-      id,
-      type,
-      accountIds,
-      incomeCategoryIds,
-      expenseCategoryIds,
-      splitIds
-    );
-  });
+  const splitsWithinLimit = Boolean(
+    splits &&
+      checkArrayLimit(
+        errors,
+        `${path}.splits`,
+        splits,
+        BACKUP_LIMITS.splitsPerTransaction
+      )
+  );
+  let splitTotal = 0;
+  let splitAmountsValid = true;
+  if (splits && splitsWithinLimit) {
+    splits.forEach((split, index) => {
+      const amount = validateTransactionSplit(
+        split,
+        `${path}.splits[${index}]`,
+        errors,
+        id,
+        type,
+        accountIds,
+        incomeCategoryIds,
+        expenseCategoryIds,
+        splitIds
+      );
+      if (amount === null) {
+        splitAmountsValid = false;
+      } else {
+        splitTotal += amount;
+      }
+    });
+  }
+
+  if (
+    splits &&
+    splitsWithinLimit &&
+    splits.length > 0 &&
+    totalAmount !== null &&
+    splitAmountsValid
+  ) {
+    const tolerance = 0.5 * 10 ** -currencyDecimals + 1e-9;
+    if (Math.abs(splitTotal - totalAmount) > tolerance) {
+      addError(errors, 'invalidSplitTotal', `${path}.splits`, {
+        expected: totalAmount,
+        actual: splitTotal,
+      });
+    }
+  }
 }
 
 export {

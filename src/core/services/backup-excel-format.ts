@@ -1,6 +1,7 @@
 import type { AccountType, FixedTermDeposit } from '../models/account';
 import type { CategoryType } from '../models/category';
 import type { TransactionType } from '../models/transaction';
+import { isValidDateString } from './backup-validation-helpers';
 
 export type ExcelLanguage = 'es' | 'en';
 
@@ -321,19 +322,11 @@ export function excelSerialToDate(serial: number): Date {
 
 export function isoToExcelSerial(value: string): number | null {
   const trimmed = value.trim();
-  if (!trimmed) return null;
+  if (!isValidDateString(trimmed)) return null;
 
   if (DATE_ONLY_PATTERN.test(trimmed)) {
     const [year, month, day] = trimmed.split('-').map(Number);
-    const date = new Date(Date.UTC(year, month - 1, day));
-    if (
-      date.getUTCFullYear() !== year ||
-      date.getUTCMonth() !== month - 1 ||
-      date.getUTCDate() !== day
-    ) {
-      return null;
-    }
-    return dateToExcelSerial(date);
+    return dateToExcelSerial(new Date(Date.UTC(year, month - 1, day)));
   }
 
   const timestamp = Date.parse(trimmed.replace(' ', 'T'));

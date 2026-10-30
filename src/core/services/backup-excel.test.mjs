@@ -128,13 +128,15 @@ function createMinimalWorkbook({
   language = 'es',
   movementHeaders,
   movementRows,
+  accountRows: customAccountRows,
+  categoryRows: customCategoryRows,
   deleteMovements = false,
 } = {}) {
   const workbook = XLSX.utils.book_new();
-  const accountRows = [
+  const accountRows = customAccountRows ?? [
     ['Cuenta', 'Corriente', '1.234,56', 'EUR', null, 'No'],
   ];
-  const categoryRows = [
+  const categoryRows = customCategoryRows ?? [
     ['Salario', 'Ingreso', null, null, 'No', 0],
     ['Comida', 'Gasto', null, null, 'No', 1],
   ];
@@ -311,6 +313,111 @@ test('rechaza un monto no positivo', () => {
   const error = firstError(parseWorkbook(workbook));
 
   assert.equal(error.code, 'invalidPositiveAmount');
+  assert.equal(error.sheet, 'Movimientos');
+});
+
+test('rechaza montos negativos o demasiado grandes en Excel', () => {
+  const negative = createMinimalWorkbook({
+    movementRows: [
+      [
+        isoToExcelSerial('2026-01-02'),
+        'Gasto',
+        'Cuenta',
+        'Comida',
+        'Compra',
+        -5,
+      ],
+    ],
+  });
+  const negativeError = firstError(parseWorkbook(negative));
+  assert.equal(negativeError.code, 'invalidAmount');
+  assert.equal(negativeError.sheet, 'Movimientos');
+
+  const tooLarge = createMinimalWorkbook({
+    movementRows: [
+      [
+        isoToExcelSerial('2026-01-02'),
+        'Gasto',
+        'Cuenta',
+        'Comida',
+        'Compra',
+        1_000_000_000_001,
+      ],
+    ],
+  });
+  const tooLargeError = firstError(parseWorkbook(tooLarge));
+  assert.equal(tooLargeError.code, 'invalidAmount');
+  assert.equal(tooLargeError.sheet, 'Movimientos');
+});
+
+test('rechaza un saldo negativo en la hoja de cuentas', () => {
+  const workbook = createMinimalWorkbook({
+    accountRows: [['Cuenta', 'Corriente', '-1', 'EUR', null, 'No']],
+  });
+  const error = firstError(parseWorkbook(workbook));
+
+  assert.equal(error.code, 'invalidAmount');
+  assert.equal(error.sheet, 'Cuentas');
+});
+
+test('rechaza un serial de fecha fuera de rango', () => {
+  const workbook = createMinimalWorkbook({
+    movementRows: [
+      [
+        1_000_000_000,
+        'Gasto',
+        'Cuenta',
+        'Comida',
+        'Compra',
+        10,
+      ],
+    ],
+  });
+  const error = firstError(parseWorkbook(workbook));
+
+  assert.equal(error.code, 'invalidDate');
+  assert.equal(error.sheet, 'Movimientos');
+});
+
+test('rechaza ids inválidos en los metadatos de Excel', () => {
+  const backup = createBackup();
+  backup.accounts[0].id = 'cuenta con espacios';
+  const bytes = createExcelWorkbookBytes(backup, 'es');
+  const result = parseExcelWorkbookBytes(bytes, {
+    language: 'es',
+    appVersion: '1.6.0',
+    fallbackCurrency: 'EUR',
+    now: NOW,
+  });
+  const error = firstError(result);
+
+  assert.equal(error.code, 'invalidId');
+  assert.equal(error.sheet, 'Cuentas');
+});
+
+test('rechaza demasiados splits agrupados en Excel', () => {
+  const backup = createBackup();
+  const baseSplit = backup.transactions[0].splits[0];
+  backup.transactions[0].splits = Array.from(
+    { length: 101 },
+    (_, index) => ({
+      ...baseSplit,
+      id: `split-${index}`,
+      amount: 0.1,
+    })
+  );
+  backup.transactions[0].totalAmount = 10.1;
+
+  const bytes = createExcelWorkbookBytes(backup, 'es');
+  const result = parseExcelWorkbookBytes(bytes, {
+    language: 'es',
+    appVersion: '1.6.0',
+    fallbackCurrency: 'EUR',
+    now: NOW,
+  });
+  const error = firstError(result);
+
+  assert.equal(error.code, 'tooManyItems');
   assert.equal(error.sheet, 'Movimientos');
 });
 
