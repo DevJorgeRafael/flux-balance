@@ -4,37 +4,35 @@
     "slug": "flux-balance",
     "version": "1.6.2",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logos-app/flux-balance-logo-512.png",
     "scheme": "fluxbalance",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#0A0E1A",
     "ios": {
-      "buildNumber": "1",
-      "icon": "./assets/expo.icon"
+      "buildNumber": "1"
     },
     "android": {
       "versionCode": 1,
       "allowBackup": false,
+      "icon": "./assets/images/logos-app/flux-balance-logo-512.png",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#1642AF",
+        "foregroundImage": "./assets/images/logos-app/flux-balance-logo-512.png"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/logos-app/flux-balance-logo-512.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#1642AF",
+          "image": "./assets/images/logos-app/flux-balance-logo-512.png",
+          "imageWidth": 200
         }
       ],
       "expo-sqlite",
