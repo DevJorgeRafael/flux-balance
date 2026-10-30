@@ -1,7 +1,12 @@
 import React, { useCallback, useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { Download, RotateCcw, Upload } from 'lucide-react-native';
+import {
+  Download,
+  FileSpreadsheet,
+  RotateCcw,
+  Upload,
+} from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { spacing } from '@/components/ui/theme';
 import type {
@@ -16,8 +21,11 @@ import { useDashboard } from '@/context/DashboardContext';
 import {
   buildCurrentBackup,
   pickAndValidateBackup,
+  pickAndValidateExcelBackup,
   replaceAllDataWithBackup,
   shareBackup,
+  shareExcelBackup,
+  shareExcelTemplate,
 } from '@/infrastructure/backup/backupService';
 import { BackupFileError } from '@/infrastructure/backup/backupFiles';
 import { BackupProgressModal } from './BackupProgressModal';
@@ -32,8 +40,8 @@ interface PendingImport {
 }
 
 export function DataSection() {
-  const { t } = useTranslation();
-  const { setCurrency } = useCurrency();
+  const { language, t } = useTranslation();
+  const { currency, setCurrency } = useCurrency();
   const {
     handleResetAllData,
     handleDataImported,
@@ -41,6 +49,7 @@ export function DataSection() {
 
   const [isResetModalVisible, setIsResetModalVisible] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isImportModalVisible, setIsImportModalVisible] = useState(false);
   const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
@@ -74,8 +83,34 @@ export function DataSection() {
     }
   }, [t]);
 
+  const runExportExcel = useCallback(async () => {
+    setIsExportingExcel(true);
+
+    try {
+      const backup = await buildCurrentBackup();
+      if (!hasBackupData(backup)) {
+        Alert.alert(t('backupNoDataTitle'), t('backupNoDataMessage'));
+        return;
+      }
+
+      await shareExcelBackup(backup, language, t('exportExcel'));
+    } catch (error) {
+      console.error('Error exporting Excel backup:', error);
+      if (
+        error instanceof BackupFileError &&
+        error.code === 'sharingUnavailable'
+      ) {
+        Alert.alert(t('error'), t('backupErrorShareUnavailable'));
+      } else {
+        Alert.alert(t('error'), t('backupErrorExportFailed'));
+      }
+    } finally {
+      setIsExportingExcel(false);
+    }
+  }, [language, t]);
+
   const handleExport = useCallback(() => {
-    if (isExporting || isImporting) return;
+    if (isExporting || isExportingExcel || isImporting) return;
 
     Alert.alert(t('backupExportWarningTitle'), t('backupExportWarningMessage'), [
       { text: t('cancel'), style: 'cancel' },
@@ -86,10 +121,45 @@ export function DataSection() {
         },
       },
     ]);
-  }, [isExporting, isImporting, runExport, t]);
+  }, [isExporting, isExportingExcel, isImporting, runExport, t]);
+
+  const handleExportExcel = useCallback(() => {
+    if (isExporting || isExportingExcel || isImporting) return;
+
+    Alert.alert(t('backupExportWarningTitle'), t('backupExportWarningMessage'), [
+      { text: t('cancel'), style: 'cancel' },
+      {
+        text: t('backupExportContinue'),
+        onPress: () => {
+          void runExportExcel();
+        },
+      },
+    ]);
+  }, [isExporting, isExportingExcel, isImporting, runExportExcel, t]);
+
+  const handleExportTemplate = useCallback(async () => {
+    if (isExporting || isExportingExcel || isImporting) return;
+
+    setIsExportingExcel(true);
+    try {
+      await shareExcelTemplate(language, currency, t('backupExcelTemplate'));
+    } catch (error) {
+      console.error('Error exporting Excel template:', error);
+      if (
+        error instanceof BackupFileError &&
+        error.code === 'sharingUnavailable'
+      ) {
+        Alert.alert(t('error'), t('backupErrorShareUnavailable'));
+      } else {
+        Alert.alert(t('error'), t('backupErrorExportFailed'));
+      }
+    } finally {
+      setIsExportingExcel(false);
+    }
+  }, [currency, isExporting, isExportingExcel, isImporting, language, t]);
 
   const handleImport = useCallback(async () => {
-    if (isExporting || isImporting) return;
+    if (isExporting || isExportingExcel || isImporting) return;
 
     try {
       const result = await pickAndValidateBackup();
@@ -116,7 +186,37 @@ export function DataSection() {
         Alert.alert(t('error'), t('backupErrorImportFailed'));
       }
     }
-  }, [isExporting, isImporting, t]);
+  }, [isExporting, isExportingExcel, isImporting, t]);
+
+  const handleImportExcel = useCallback(async () => {
+    if (isExporting || isExportingExcel || isImporting) return;
+
+    try {
+      const result = await pickAndValidateExcelBackup(language, currency);
+      if (result.status === 'canceled') return;
+
+      if (result.status === 'invalid') {
+        setPendingImport(null);
+        setImportErrors(result.errors);
+        setIsImportModalVisible(true);
+        return;
+      }
+
+      setImportErrors(null);
+      setPendingImport({
+        backup: result.backup,
+        preview: result.preview,
+      });
+      setIsImportModalVisible(true);
+    } catch (error) {
+      console.error('Error reading Excel file:', error);
+      if (error instanceof BackupFileError && error.code === 'readFailed') {
+        Alert.alert(t('error'), t('backupErrorFileRead'));
+      } else {
+        Alert.alert(t('error'), t('backupErrorImportFailed'));
+      }
+    }
+  }, [currency, isExporting, isExportingExcel, isImporting, language, t]);
 
   const handleCloseImportModal = useCallback(() => {
     if (isImporting) return;
@@ -172,6 +272,20 @@ export function DataSection() {
           }}
         />
         <SettingsRow
+          icon={FileSpreadsheet}
+          label={t('exportExcel')}
+          showChevron
+          onPress={handleExportExcel}
+        />
+        <SettingsRow
+          icon={FileSpreadsheet}
+          label={t('importExcel')}
+          showChevron
+          onPress={() => {
+            void handleImportExcel();
+          }}
+        />
+        <SettingsRow
           icon={RotateCcw}
           label={t('resetData')}
           destructive
@@ -191,15 +305,23 @@ export function DataSection() {
         preview={pendingImport?.preview ?? null}
         errors={importErrors}
         isImporting={isImporting}
+        isExportingTemplate={isExportingExcel}
         onClose={handleCloseImportModal}
         onConfirm={() => {
           void handleConfirmImport();
         }}
+        onExportTemplate={() => {
+          void handleExportTemplate();
+        }}
       />
 
       <BackupProgressModal
-        visible={isExporting}
-        message={t('backupExportProgress')}
+        visible={isExporting || isExportingExcel}
+        message={
+          isExportingExcel
+            ? t('backupExcelExportProgress')
+            : t('backupExportProgress')
+        }
       />
     </>
   );

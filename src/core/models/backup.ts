@@ -89,22 +89,39 @@ export interface BackupPreview {
 export type BackupValidationErrorCode =
   | 'invalidJson'
   | 'invalidFormat'
+  | 'invalidExcelFormat'
   | 'invalidSchemaVersion'
   | 'futureSchemaVersion'
   | 'unsupportedSchemaVersion'
   | 'missingField'
+  | 'missingSheet'
+  | 'missingColumn'
   | 'invalidType'
   | 'invalidAmount'
+  | 'invalidPositiveAmount'
   | 'invalidDate'
   | 'duplicateId'
+  | 'duplicateName'
   | 'missingAccount'
   | 'missingCategory'
+  | 'unknownAccount'
+  | 'unknownCategory'
+  | 'invalidAccountType'
+  | 'invalidCategoryType'
+  | 'invalidTransactionType'
+  | 'invalidBoolean'
+  | 'invalidRate'
+  | 'invalidTerm'
+  | 'invalidStatus'
   | 'invalidCurrency'
   | 'invalidValue';
 
 export interface BackupValidationError {
   code: BackupValidationErrorCode;
   path?: string;
+  sheet?: string;
+  row?: number;
+  column?: string;
   params?: Record<string, string | number>;
 }
 

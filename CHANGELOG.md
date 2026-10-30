@@ -2,6 +2,23 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.6.1] - 2026-10-30
+
+Exportación e importación de respaldos en Excel.
+
+### Añadido
+
+- Exportar e importar copias de seguridad en Excel.
+- Hojas de cuentas, categorías y movimientos en español e inglés.
+- Plantilla de Excel cuando faltan hojas o columnas.
+- Se conservan depósitos a plazo y movimientos divididos.
+- Errores de importación con hoja y fila.
+- Respaldo automático antes de reemplazar los datos.
+
+### Corregido
+
+- La importación de Excel lee el archivo elegido en Android y Expo Go.
+
 ## [1.6.0] - 2026-10-29
 
 Exportación e importación de copias de seguridad.

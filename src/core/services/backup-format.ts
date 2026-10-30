@@ -61,6 +61,13 @@ export function getBackupFileName(date: Date): string {
   return `flux-balance-backup-${year}-${month}-${day}.json`;
 }
 
+export function getExcelFileName(date: Date): string {
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  return `flux-balance-backup-${year}-${month}-${day}.xlsx`;
+}
+
 export function getSafetyBackupFileName(date: Date): string {
   const year = date.getFullYear();
   const month = pad(date.getMonth() + 1);
