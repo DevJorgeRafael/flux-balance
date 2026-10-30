@@ -2,7 +2,7 @@
   "expo": {
     "name": "flux-balance",
     "slug": "flux-balance",
-    "version": "1.5.4",
+    "version": "1.6.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "fluxbalance",
@@ -42,7 +42,8 @@
       "expo-font",
       "expo-image",
       "expo-status-bar",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,
