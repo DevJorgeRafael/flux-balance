@@ -33,10 +33,10 @@ function createDatabase() {
     async getAllAsync(sql, params = []) {
       return raw.prepare(sql).all(...params);
     },
-    async withTransactionAsync(task) {
+    async withExclusiveTransactionAsync(task) {
       raw.exec('BEGIN');
       try {
-        await task();
+        await task(this);
         raw.exec('COMMIT');
       } catch (error) {
         raw.exec('ROLLBACK');

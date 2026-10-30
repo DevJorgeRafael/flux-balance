@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 
+import {
+  createExcelWorkbookBytes,
+  parseExcelWorkbookBytes,
+} from '../../core/services/backup-excel.ts';
 import { createBackupFile, serializeBackup } from '../../core/services/backup-format.ts';
 import { parseBackupText } from '../../core/services/backup-validation.ts';
 import { buildBackupFromDatabase, importBackupIntoDatabase } from './backup.ts';
@@ -9,9 +13,9 @@ import { SCHEMA_DDL } from './schema.sql.ts';
 
 const TIMESTAMP = '2026-01-02T10:00:00.000Z';
 
-function createDatabase() {
+function createDatabase({ failOn, foreignKeys = true } = {}) {
   const raw = new DatabaseSync(':memory:');
-  raw.exec('PRAGMA foreign_keys = ON;');
+  raw.exec(`PRAGMA foreign_keys = ${foreignKeys ? 'ON' : 'OFF'};`);
   raw.exec(SCHEMA_DDL);
   raw.exec(
     'CREATE TABLE app_settings (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)'
@@ -19,21 +23,25 @@ function createDatabase() {
 
   const db = {
     async execAsync(sql) {
+      if (failOn?.(sql)) throw new Error('forced failure');
       raw.exec(sql);
     },
     async runAsync(sql, params = []) {
+      if (failOn?.(sql)) throw new Error('forced failure');
       return raw.prepare(sql).run(...params);
     },
     async getFirstAsync(sql, params = []) {
+      if (failOn?.(sql)) throw new Error('forced failure');
       return raw.prepare(sql).get(...params) ?? null;
     },
     async getAllAsync(sql, params = []) {
+      if (failOn?.(sql)) throw new Error('forced failure');
       return raw.prepare(sql).all(...params);
     },
-    async withTransactionAsync(task) {
+    async withExclusiveTransactionAsync(task) {
       raw.exec('BEGIN');
       try {
-        await task();
+        await task(this);
         raw.exec('COMMIT');
       } catch (error) {
         raw.exec('ROLLBACK');
@@ -247,4 +255,66 @@ test('revierte el reemplazo completo si falla una inserción', async () => {
   assert.equal(count(raw, 'accounts'), 2);
   assert.equal(count(raw, 'transactions'), 2);
   assert.equal(count(raw, 'transaction_splits'), 2);
+});
+
+test('rechaza backups con referencias inválidas aunque las foreign keys estén desactivadas', async () => {
+  const { raw, db } = createDatabase({ foreignKeys: false });
+  const fixture = createBackupFixture();
+  fixture.transactions[0].splits[0].accountId = 'missing-account';
+  const backupFile = createBackupFile(fixture, {
+    appVersion: '1.5.5',
+    exportedAt: TIMESTAMP,
+    currency: 'EUR',
+  });
+
+  await assert.rejects(
+    () => importBackupIntoDatabase(db, backupFile),
+    /referencias inválidas/
+  );
+
+  assert.equal(count(raw, 'accounts'), 0);
+  assert.equal(count(raw, 'transactions'), 0);
+  assert.equal(count(raw, 'transaction_splits'), 0);
+});
+
+test('la importación desde Excel revierte si falla una inserción', async () => {
+  const { raw, db } = createDatabase({
+    failOn: (sql) => sql.includes('INSERT INTO transactions'),
+  });
+  const fixture = createBackupFixture();
+  fixture.accounts[0] = {
+    ...fixture.accounts[0],
+    type: 'FIXED_TERM',
+    annualRate: 0.25,
+    fixedTermDeposits: fixture.accounts[0].fixedTermDeposits.map((deposit) => ({
+      ...deposit,
+      annualRate: 0.25,
+    })),
+  };
+  const backupFile = createBackupFile(fixture, {
+    appVersion: '1.5.5',
+    exportedAt: TIMESTAMP,
+    currency: 'EUR',
+  });
+  const bytes = createExcelWorkbookBytes(backupFile, 'es');
+  const parsed = parseExcelWorkbookBytes(bytes, {
+    language: 'es',
+    appVersion: '1.5.5',
+    fallbackCurrency: 'EUR',
+    now: TIMESTAMP,
+  });
+
+  assert.equal(parsed.ok, true);
+
+  await assert.rejects(
+    () => importBackupIntoDatabase(db, parsed.backup),
+    /forced failure/
+  );
+
+  assert.equal(count(raw, 'accounts'), 0);
+  assert.equal(count(raw, 'fixed_term_deposits'), 0);
+  assert.equal(count(raw, 'income_categories'), 0);
+  assert.equal(count(raw, 'expense_categories'), 0);
+  assert.equal(count(raw, 'transactions'), 0);
+  assert.equal(count(raw, 'transaction_splits'), 0);
 });

@@ -8,7 +8,7 @@ import {
   getCategoryUsageCount,
 } from './categoryManagement.ts';
 
-function createDb() {
+function createDb({ failOn } = {}) {
   const raw = new DatabaseSync(':memory:');
   raw.exec(`
     CREATE TABLE income_categories (
@@ -53,15 +53,17 @@ function createDb() {
 
   const db = {
     async getFirstAsync(sql, params = []) {
+      if (failOn?.(sql)) throw new Error('forced failure');
       return raw.prepare(sql).get(...params) ?? null;
     },
     async runAsync(sql, params = []) {
+      if (failOn?.(sql)) throw new Error('forced failure');
       return raw.prepare(sql).run(...params);
     },
-    async withTransactionAsync(task) {
+    async withExclusiveTransactionAsync(task) {
       raw.exec('BEGIN');
       try {
-        await task();
+        await task(this);
         raw.exec('COMMIT');
       } catch (error) {
         raw.exec('ROLLBACK');
@@ -112,6 +114,26 @@ test('deletes only the selected type and moves its movements to uncategorized', 
     .get();
   assert.equal(income.count, 1);
   assert.equal(expense.count, 0);
+});
+
+test('revierte la eliminación si falla el DELETE de la categoría', async () => {
+  const { raw, db } = createDb({
+    failOn: (sql) => sql.startsWith('DELETE FROM expense_categories'),
+  });
+  const before = splitCategories(raw);
+
+  await assert.rejects(
+    () => deleteCategoryAndUncategorize(db, 'cat_custom', 'EXPENSE'),
+    /forced failure/
+  );
+
+  assert.deepEqual(splitCategories(raw), before);
+  assert.equal(
+    raw
+      .prepare("SELECT COUNT(*) AS count FROM expense_categories WHERE id = 'cat_custom'")
+      .get().count,
+    1
+  );
 });
 
 test('does not allow deleting default or missing categories', async () => {

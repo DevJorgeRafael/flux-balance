@@ -16,7 +16,7 @@ type MigrationDatabase = Pick<
   | 'getAllAsync'
   | 'getFirstAsync'
   | 'runAsync'
-  | 'withTransactionAsync'
+  | 'withExclusiveTransactionAsync'
 >;
 
 const BACKUP_TABLE = 'categories_backup_v1';
@@ -195,36 +195,36 @@ export async function migrateCategories(
   db: MigrationDatabase,
   migratedAt: Date = new Date()
 ): Promise<void> {
-  await db.withTransactionAsync(async () => {
-    await db.execAsync(CATEGORY_TABLES_DDL);
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    await txn.execAsync(CATEGORY_TABLES_DDL);
 
-    const legacyTableExists = await tableExists(db, 'categories');
+    const legacyTableExists = await tableExists(txn, 'categories');
 
     if (legacyTableExists) {
-      await copyLegacyCategoriesToBackup(db, migratedAt.toISOString());
+      await copyLegacyCategoriesToBackup(txn, migratedAt.toISOString());
 
-      const legacyCategories = await db.getAllAsync<LegacyCategoryRow>(
+      const legacyCategories = await txn.getAllAsync<LegacyCategoryRow>(
         `SELECT id, name, type, icon, color, is_default, created_at
          FROM categories
          ORDER BY is_default DESC, name COLLATE NOCASE, id`
       );
       const plan = buildCategoryMigrationPlan(legacyCategories);
 
-      await insertMigratedCategories(db, 'income_categories', plan.income);
-      await insertMigratedCategories(db, 'expense_categories', plan.expense);
-      await ensureAllLegacyCategoriesWereMigrated(db);
+      await insertMigratedCategories(txn, 'income_categories', plan.income);
+      await insertMigratedCategories(txn, 'expense_categories', plan.expense);
+      await ensureAllLegacyCategoriesWereMigrated(txn);
 
-      if (await hasLegacyCategoryForeignKey(db)) {
-        await rebuildTransactionSplits(db);
+      if (await hasLegacyCategoryForeignKey(txn)) {
+        await rebuildTransactionSplits(txn);
       }
 
-      await db.execAsync('DROP TABLE categories;');
-    } else if (await hasLegacyCategoryForeignKey(db)) {
-      await rebuildTransactionSplits(db);
+      await txn.execAsync('DROP TABLE categories;');
+    } else if (await hasLegacyCategoryForeignKey(txn)) {
+      await rebuildTransactionSplits(txn);
     }
 
-    await db.execAsync(CATEGORY_INDEXES_DDL);
-    await db.execAsync(SPLIT_INDEXES_DDL);
-    await migrateStoredCategoryColors(db);
+    await txn.execAsync(CATEGORY_INDEXES_DDL);
+    await txn.execAsync(SPLIT_INDEXES_DDL);
+    await migrateStoredCategoryColors(txn);
   });
 }
