@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { formatMoney } from './money.ts';
+import { formatMoney, parseAmountInput } from './money.ts';
 
 const ES = 'es-ES';
 const EN = 'en-US';
@@ -68,4 +68,81 @@ test('keeps the sign when the currency code is omitted', () => {
 test('formats large amounts', () => {
   assert.equal(formatMoney(9876543210.99, 'USD', EN), 'USD 9,876,543,210.99');
   assert.equal(formatMoney(9876543210.99, 'USD', ES), 'USD 9.876.543.210,99');
+});
+
+test('parsea montos con separadores locales', () => {
+  assert.deepEqual(parseAmountInput('1.234,56', ES, 2), {
+    ok: true,
+    value: 1234.56,
+  });
+  assert.deepEqual(parseAmountInput('1,234.56', EN, 2), {
+    ok: true,
+    value: 1234.56,
+  });
+  assert.deepEqual(parseAmountInput('1.234', ES, 2), {
+    ok: true,
+    value: 1234,
+  });
+  assert.deepEqual(parseAmountInput('1,234', EN, 2), {
+    ok: true,
+    value: 1234,
+  });
+  assert.deepEqual(parseAmountInput('0,5', ES, 2), {
+    ok: true,
+    value: 0.5,
+  });
+  assert.deepEqual(parseAmountInput('1 234,56', ES, 2), {
+    ok: true,
+    value: 1234.56,
+  });
+});
+
+test('rechaza montos vacíos, negativos o con formato inválido', () => {
+  assert.deepEqual(parseAmountInput('', ES, 2), {
+    ok: false,
+    error: 'empty',
+  });
+  assert.deepEqual(parseAmountInput('-1', EN, 2), {
+    ok: false,
+    error: 'negative',
+  });
+  assert.deepEqual(parseAmountInput('1.2.3', ES, 2), {
+    ok: false,
+    error: 'invalid',
+  });
+  assert.deepEqual(parseAmountInput('1e309', EN, 2), {
+    ok: false,
+    error: 'invalid',
+  });
+  assert.deepEqual(parseAmountInput('12,345', ES, 2), {
+    ok: false,
+    error: 'tooManyDecimals',
+  });
+});
+
+test('aplica cero, decimales de moneda y monto máximo', () => {
+  assert.deepEqual(parseAmountInput('0', EN, 2), {
+    ok: false,
+    error: 'zero',
+  });
+  assert.deepEqual(parseAmountInput('0', EN, 2, { allowZero: true }), {
+    ok: true,
+    value: 0,
+  });
+  assert.deepEqual(parseAmountInput('1.5', EN, 0), {
+    ok: false,
+    error: 'tooManyDecimals',
+  });
+  assert.deepEqual(parseAmountInput('1234', EN, 0), {
+    ok: true,
+    value: 1234,
+  });
+  assert.deepEqual(parseAmountInput('1000000000000.01', EN, 2), {
+    ok: false,
+    error: 'tooLarge',
+  });
+  assert.deepEqual(parseAmountInput('1000000000000', EN, 2), {
+    ok: true,
+    value: 1000000000000,
+  });
 });

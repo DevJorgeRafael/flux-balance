@@ -3,6 +3,7 @@ import type {
   BackupValidationErrorCode,
 } from '../models/backup';
 import {
+  excelSerialToDate,
   excelSerialToIsoDate,
   excelSerialToIsoDateTime,
   isoToExcelSerial,
@@ -77,6 +78,17 @@ export function rowDate(
   }
 
   if (serial === null) {
+    addRowError(errors, table, row, 'invalidDate', key, { path: key });
+    return null;
+  }
+
+  const date = excelSerialToDate(serial);
+  const year = date.getUTCFullYear();
+  if (
+    !Number.isFinite(date.getTime()) ||
+    year < 1900 ||
+    year > 9999
+  ) {
     addRowError(errors, table, row, 'invalidDate', key, { path: key });
     return null;
   }

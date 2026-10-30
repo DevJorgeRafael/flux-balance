@@ -1,5 +1,6 @@
 import { backupExcelTranslations } from './backup-excel-translations';
 import { dataTransferTranslations } from './data-transfer-translations';
+import { validationTranslations } from './validation-translations';
 
 export type Language = 'es' | 'en';
 
@@ -7,6 +8,7 @@ export const translations = {
   es: {
     ...dataTransferTranslations.es,
     ...backupExcelTranslations.es,
+    ...validationTranslations.es,
     home: 'Inicio',
     accountsTab: 'Cuentas',
     stats: 'Stats',
@@ -112,7 +114,7 @@ export const translations = {
     backupErrorUnsupportedVersion: 'No se puede migrar el respaldo desde la versión {{version}} a la {{supported}}.',
     backupErrorMissingField: 'Falta el campo "{{path}}".',
     backupErrorInvalidType: 'El campo "{{path}}" tiene un tipo inválido.',
-    backupErrorInvalidAmount: 'El monto en "{{path}}" no es un número válido.',
+    backupErrorInvalidAmount: 'El monto en "{{path}}" debe ser un número finito entre 0 y {{max}}.',
     backupErrorInvalidDate: 'La fecha en "{{path}}" no es válida.',
     backupErrorDuplicateId: 'Hay un id duplicado en "{{path}}": {{id}}.',
     backupErrorMissingAccount: 'El movimiento "{{path}}" usa una cuenta que no existe en el archivo: {{id}}.',
@@ -219,6 +221,7 @@ export const translations = {
   en: {
     ...dataTransferTranslations.en,
     ...backupExcelTranslations.en,
+    ...validationTranslations.en,
     home: 'Home',
     accountsTab: 'Accounts',
     stats: 'Stats',
@@ -324,7 +327,7 @@ export const translations = {
     backupErrorUnsupportedVersion: 'The backup cannot be migrated from version {{version}} to {{supported}}.',
     backupErrorMissingField: 'The field "{{path}}" is missing.',
     backupErrorInvalidType: 'The field "{{path}}" has an invalid type.',
-    backupErrorInvalidAmount: 'The amount in "{{path}}" is not a valid number.',
+    backupErrorInvalidAmount: 'The amount in "{{path}}" must be a finite number between 0 and {{max}}.',
     backupErrorInvalidDate: 'The date in "{{path}}" is not valid.',
     backupErrorDuplicateId: 'There is a duplicate id in "{{path}}": {{id}}.',
     backupErrorMissingAccount: 'The movement "{{path}}" references an account that is not in the file: {{id}}.',

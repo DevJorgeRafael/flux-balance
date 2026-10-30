@@ -12,6 +12,7 @@ import {
   type ExcelLanguage,
   type ExcelSheetKey,
 } from './backup-excel-format';
+import { BACKUP_LIMITS } from './backup-validation-helpers';
 
 export interface ExcelRow {
   rowNumber: number;
@@ -139,6 +140,16 @@ export function readSheetTable(
   const range = decodeRange(worksheet['!ref']);
   if (!range) {
     addExcelError(errors, 'missingSheet', sheetName);
+    return null;
+  }
+
+  const rowCount = range.endRow - range.startRow + 1;
+  if (rowCount > BACKUP_LIMITS.excelRowsPerSheet) {
+    addExcelError(errors, 'tooManyItems', sheetName, undefined, undefined, {
+      path: sheetName,
+      limit: BACKUP_LIMITS.excelRowsPerSheet,
+      count: rowCount,
+    });
     return null;
   }
 

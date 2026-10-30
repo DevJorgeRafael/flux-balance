@@ -13,6 +13,10 @@ import {
 } from './backup-excel-format';
 import type { AccountIndex, CategoryIndex } from './backup-excel-shared';
 import {
+  BACKUP_LIMITS,
+  isValidBackupAmount,
+} from './backup-validation-helpers';
+import {
   getCell,
   getRowMeta,
   isRowEmpty,
@@ -69,7 +73,7 @@ function parseAmount(
     return null;
   }
   const amount = rowNumberValue(table, row, 'amount');
-  if (amount === null) {
+  if (amount === null || !isValidBackupAmount(amount)) {
     addRowError(errors, table, row, 'invalidAmount', 'amount', {
       path: 'amount',
     });
@@ -302,6 +306,14 @@ export function parseMovementRows(
 
   for (const drafts of groups.values()) {
     const first = drafts[0];
+    if (drafts.length > BACKUP_LIMITS.splitsPerTransaction) {
+      addRowError(errors, table, first.row, 'tooManyItems', undefined, {
+        path: 'splits',
+        limit: BACKUP_LIMITS.splitsPerTransaction,
+        count: drafts.length,
+      });
+      continue;
+    }
     for (const draft of drafts.slice(1)) {
       if (draft.type !== first.type) {
         addGroupError(errors, table, draft, 'type', first.type, draft.type);
@@ -360,12 +372,20 @@ export function parseMovementRows(
 
     if (!first.noSplit && splits.length === 0) continue;
 
+    const totalAmount = first.noSplit
+      ? first.amount
+      : splits.reduce((total, split) => total + split.amount, 0);
+    if (!isValidBackupAmount(totalAmount)) {
+      addRowError(errors, table, first.row, 'invalidAmount', 'amount', {
+        path: 'amount',
+      });
+      continue;
+    }
+
     transactions.push({
       id: first.transactionId,
       type: first.type,
-      totalAmount: first.noSplit
-        ? first.amount
-        : splits.reduce((total, split) => total + split.amount, 0),
+      totalAmount,
       description: first.description || null,
       date: first.transactionDate,
       createdAt: first.createdAt,

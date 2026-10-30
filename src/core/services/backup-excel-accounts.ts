@@ -243,9 +243,12 @@ export function parseAccountRows(
     );
     const createdAt =
       readMetaDate(meta, 'createdAt', table, row, errors) ?? now;
-    const startIso = readMetaString(meta, 'startDate') ?? startDate.isoDate;
+    const startIso =
+      readMetaDate(meta, 'startDate', table, row, errors) ??
+      startDate.isoDate;
     const maturityIso =
-      readMetaString(meta, 'maturityDate') ?? maturityDate.isoDate;
+      readMetaDate(meta, 'maturityDate', table, row, errors) ??
+      maturityDate.isoDate;
     const deposit: BackupFixedTermDeposit = {
       id: depositId,
       accountId: account.id,

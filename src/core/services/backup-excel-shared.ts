@@ -9,6 +9,10 @@ import {
   type ExcelRow,
   type ExcelSheetTable,
 } from './backup-excel-rows';
+import {
+  isValidBackupAmount,
+  isValidBackupId,
+} from './backup-validation-helpers';
 import { addRowError, rowNumberValue } from './backup-excel-values';
 
 export type IdFactory = (prefix: string) => string;
@@ -53,13 +57,23 @@ export function uniqueId(
   errors: BackupValidationError[],
   nextId: IdFactory
 ): string {
-  if (!preferred) return nextId(prefix);
-  if (!ids.has(preferred)) {
-    ids.add(preferred);
-    return preferred;
+  let candidate = preferred;
+  if (candidate && !isValidBackupId(candidate)) {
+    addRowError(errors, table, row, 'invalidId', 'meta', {
+      id:
+        candidate.length > 40
+          ? `${candidate.slice(0, 40)}...`
+          : candidate,
+    });
+    candidate = null;
+  }
+  if (!candidate) return nextId(prefix);
+  if (!ids.has(candidate)) {
+    ids.add(candidate);
+    return candidate;
   }
 
-  addRowError(errors, table, row, 'duplicateId', 'meta', { id: preferred });
+  addRowError(errors, table, row, 'duplicateId', 'meta', { id: candidate });
   const generated = nextId(prefix);
   ids.add(generated);
   return generated;
@@ -78,7 +92,7 @@ export function parseRequiredAmount(
   }
 
   const value = rowNumberValue(table, row, key);
-  if (value === null) {
+  if (value === null || !isValidBackupAmount(value)) {
     addRowError(errors, table, row, 'invalidAmount', key, { path: key });
     return null;
   }
@@ -97,7 +111,7 @@ export function parseOptionalRate(
 ): number | null {
   if (isEmptyCell(getCell(table, row, key))) return null;
   const value = rowNumberValue(table, row, key);
-  if (value === null || value < 0) {
+  if (value === null || !isValidBackupAmount(value)) {
     addRowError(errors, table, row, 'invalidRate', key, { path: key });
     return null;
   }
