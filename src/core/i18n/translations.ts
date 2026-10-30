@@ -1,7 +1,10 @@
+import { backupExcelTranslations } from './backup-excel-translations';
+
 export type Language = 'es' | 'en';
 
 export const translations = {
   es: {
+    ...backupExcelTranslations.es,
     home: 'Inicio',
     accountsTab: 'Cuentas',
     stats: 'Stats',
@@ -213,6 +216,7 @@ export const translations = {
     months: 'meses',
   },
   en: {
+    ...backupExcelTranslations.en,
     home: 'Home',
     accountsTab: 'Accounts',
     stats: 'Stats',

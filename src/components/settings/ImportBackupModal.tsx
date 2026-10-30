@@ -24,14 +24,20 @@ import type {
   BackupValidationError,
 } from '@/core/models/backup';
 import { useTranslation } from '@/core/i18n/useTranslation';
+import {
+  formatBackupError,
+  isExcelFormatError,
+} from './backupErrorFormat';
 
 interface ImportBackupModalProps {
   visible: boolean;
   preview: BackupPreview | null;
   errors: BackupValidationError[] | null;
   isImporting: boolean;
+  isExportingTemplate?: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  onExportTemplate?: () => void;
 }
 
 interface SummaryRowProps {
@@ -106,8 +112,10 @@ export function ImportBackupModal({
   preview,
   errors,
   isImporting,
+  isExportingTemplate = false,
   onClose,
   onConfirm,
+  onExportTemplate,
 }: ImportBackupModalProps) {
   const colors = useColors();
   const insets = useInsets();
@@ -116,48 +124,9 @@ export function ImportBackupModal({
   const hasErrors = Boolean(errors && errors.length > 0);
   const shownErrors = errors?.slice(0, 5) ?? [];
   const remainingErrors = Math.max((errors?.length ?? 0) - shownErrors.length, 0);
-
-  const formatError = (error: BackupValidationError): string => {
-    const path = error.path ?? '';
-    const id = String(error.params?.id ?? '');
-    const version = String(error.params?.version ?? '?');
-    const supported = String(error.params?.supported ?? '?');
-
-    switch (error.code) {
-      case 'invalidJson':
-        return t('backupErrorInvalidJson');
-      case 'invalidFormat':
-        return t('backupErrorInvalidFormat');
-      case 'invalidSchemaVersion':
-        return t('backupErrorInvalidSchemaVersion');
-      case 'futureSchemaVersion':
-        return t('backupErrorFutureVersion', { version, supported });
-      case 'unsupportedSchemaVersion':
-        return t('backupErrorUnsupportedVersion', { version, supported });
-      case 'missingField':
-        return t('backupErrorMissingField', { path });
-      case 'invalidType':
-        return t('backupErrorInvalidType', { path });
-      case 'invalidAmount':
-        return t('backupErrorInvalidAmount', { path });
-      case 'invalidDate':
-        return t('backupErrorInvalidDate', { path });
-      case 'duplicateId':
-        return t('backupErrorDuplicateId', { path, id });
-      case 'missingAccount':
-        return t('backupErrorMissingAccount', { path, id });
-      case 'missingCategory':
-        return t('backupErrorMissingCategory', { path, id });
-      case 'invalidCurrency':
-        return t('backupErrorInvalidCurrency', {
-          currency: String(error.params?.currency ?? ''),
-        });
-      case 'invalidValue':
-        return t('backupErrorInvalidValue', { path });
-      default:
-        return t('backupErrorInvalidFormat');
-    }
-  };
+  const canExportTemplate = Boolean(
+    onExportTemplate && errors?.some(isExcelFormatError)
+  );
 
   const exportedAt = preview
     ? new Date(preview.exportedAt).toLocaleString(
@@ -228,7 +197,7 @@ export function ImportBackupModal({
                         key={`${error.code}-${error.path ?? index}`}
                         style={[styles.errorItem, { color: colors.errorText }]}
                       >
-                        • {formatError(error)}
+                        • {formatBackupError(error, t)}
                       </Text>
                     ))}
                   </View>
@@ -240,6 +209,15 @@ export function ImportBackupModal({
                   ) : null}
 
                   <View style={styles.actions}>
+                    {canExportTemplate ? (
+                      <DialogButton
+                        label={t('backupExcelTemplate')}
+                        onPress={onExportTemplate ?? (() => {})}
+                        variant="secondary"
+                        disabled={isExportingTemplate}
+                        loading={isExportingTemplate}
+                      />
+                    ) : null}
                     <DialogButton
                       label={t('close')}
                       onPress={handleClose}
