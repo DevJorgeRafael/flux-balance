@@ -6,6 +6,8 @@ import * as SystemUI from 'expo-system-ui';
 import * as SplashScreen from 'expo-splash-screen';
 
 import { StatusBar } from 'expo-status-bar';
+import { AppErrorBoundary } from '@/components/errors/AppErrorBoundary';
+import { FatalErrorScreen } from '@/components/errors/FatalErrorScreen';
 import {
   UIProvider,
   useColors,
@@ -13,9 +15,11 @@ import {
   type ThemeMode,
 } from '@/components/ui/theme';
 import { initDatabase } from '@/infrastructure/database/db';
+import { cleanupExportCache } from '@/infrastructure/backup/exportCache';
 import { DashboardProvider } from '@/context/DashboardContext';
 import { TranslationProvider } from '@/core/i18n/useTranslation';
 import { CurrencyProvider } from '@/core/currency/useCurrency';
+import { runStartup } from '@/core/services/startup';
 import {
   loadStoredPreferences,
   saveThemePreference,
@@ -97,23 +101,31 @@ function RootWithTheme() {
   );
 }
 
-export default function RootLayout() {
+function RootLayoutContent() {
   const [preferences, setPreferences] = useState<StoredPreferences | null>(null);
+  const [startupError, setStartupError] = useState<Error | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     async function prepare() {
-      try {
-        await initDatabase();
-      } catch (error) {
-        console.error('Failed to initialize database', error);
-      }
+      const result = await runStartup({
+        cleanup: cleanupExportCache,
+        initialize: initDatabase,
+        loadPreferences: loadStoredPreferences,
+      });
 
-      const storedPreferences = await loadStoredPreferences();
-      if (!cancelled) {
-        setPreferences(storedPreferences);
+      if (cancelled) return;
+
+      if (result.ok) {
+        setPreferences(result.preferences);
+        setStartupError(null);
+      } else {
+        setStartupError(result.error);
       }
+      setRetrying(false);
     }
 
     void prepare();
@@ -121,13 +133,32 @@ export default function RootLayout() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [attempt]);
 
   useEffect(() => {
-    if (preferences) {
+    if (preferences || startupError) {
       SplashScreen.hide();
     }
-  }, [preferences]);
+  }, [preferences, startupError]);
+
+  const handleRetry = useCallback(() => {
+    if (retrying) return;
+    setRetrying(true);
+    setAttempt((value) => value + 1);
+  }, [retrying]);
+
+  if (startupError) {
+    return (
+      <SafeAreaProvider>
+        <FatalErrorScreen
+          kind="startup"
+          error={startupError}
+          onRetry={handleRetry}
+          retrying={retrying}
+        />
+      </SafeAreaProvider>
+    );
+  }
 
   if (!preferences) {
     return null;
@@ -137,5 +168,13 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <RootNavigator initialPreferences={preferences} />
     </SafeAreaProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AppErrorBoundary>
+      <RootLayoutContent />
+    </AppErrorBoundary>
   );
 }

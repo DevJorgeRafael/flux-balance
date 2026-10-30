@@ -5,6 +5,7 @@ import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 import { getExcelFileName } from '../../core/services/backup-format';
 import { BackupFileError } from './backupFiles';
+import { deleteCachedFile } from './exportCache';
 
 const XLSX_MIME_TYPE =
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -20,6 +21,7 @@ export async function writeExcelFile(
     await file.write(bytes);
     return file;
   } catch {
+    deleteCachedFile(file);
     throw new BackupFileError('writeFailed');
   }
 }
@@ -28,15 +30,19 @@ export async function shareExcelFile(
   file: File,
   dialogTitle: string
 ): Promise<void> {
-  if (!(await Sharing.isAvailableAsync())) {
-    throw new BackupFileError('sharingUnavailable');
-  }
+  try {
+    if (!(await Sharing.isAvailableAsync())) {
+      throw new BackupFileError('sharingUnavailable');
+    }
 
-  await Sharing.shareAsync(file.uri, {
-    dialogTitle,
-    mimeType: XLSX_MIME_TYPE,
-    UTI: XLSX_UTI,
-  });
+    await Sharing.shareAsync(file.uri, {
+      dialogTitle,
+      mimeType: XLSX_MIME_TYPE,
+      UTI: XLSX_UTI,
+    });
+  } finally {
+    deleteCachedFile(file);
+  }
 }
 
 const BASE64_CHARS =
@@ -68,10 +74,7 @@ async function readExcelBytes(uri: string): Promise<Uint8Array> {
   } catch (error) {
     if (uri.startsWith('content://')) throw error;
 
-    console.warn('File.bytes() falló, reintentando con readAsStringAsync:', {
-      uri,
-      error,
-    });
+    console.warn('File.bytes() falló, reintentando con readAsStringAsync.');
     const base64 = await readAsStringAsync(uri, { encoding: 'base64' });
     return decodeBase64(base64);
   }
@@ -88,11 +91,8 @@ export async function pickExcelFileBytes(): Promise<Uint8Array | null> {
 
   try {
     return await readExcelBytes(result.assets[0].uri);
-  } catch (error) {
-    console.error('Error reading Excel file:', {
-      error,
-      asset: result.assets[0],
-    });
+  } catch {
+    console.error('Error reading Excel file.');
     throw new BackupFileError('readFailed');
   }
 }

@@ -1,5 +1,6 @@
 import { backupExcelTranslations } from './backup-excel-translations';
 import { dataTransferTranslations } from './data-transfer-translations';
+import { startupTranslations } from './startup-translations';
 import { validationTranslations } from './validation-translations';
 
 export type Language = 'es' | 'en';
@@ -9,6 +10,7 @@ export const translations = {
     ...dataTransferTranslations.es,
     ...backupExcelTranslations.es,
     ...validationTranslations.es,
+    ...startupTranslations.es,
     home: 'Inicio',
     accountsTab: 'Cuentas',
     stats: 'Stats',
@@ -222,6 +224,7 @@ export const translations = {
     ...dataTransferTranslations.en,
     ...backupExcelTranslations.en,
     ...validationTranslations.en,
+    ...startupTranslations.en,
     home: 'Home',
     accountsTab: 'Accounts',
     stats: 'Stats',
