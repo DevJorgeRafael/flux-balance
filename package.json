@@ -1,7 +1,7 @@
 {
   "name": "flux-balance",
   "main": "expo-router/entry",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "license": "MIT",
   "dependencies": {
     "@expo/ui": "~58.0.23",
@@ -45,6 +45,7 @@
     "eslint-config-expo": "~58.0.4",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
+    "sharp": "^0.35.5",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -56,6 +57,7 @@
     "lint": "expo lint",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import=./scripts/test-ts-resolver.mjs --test src/constants/about.test.mjs src/constants/appConfig.test.mjs src/core/services/startup.test.mjs src/core/services/exportCachePolicy.test.mjs src/core/services/errorReport.test.mjs src/core/services/license-search.test.mjs src/core/constants/categoryPalettes.test.mjs src/core/services/stats-breakdown.test.mjs src/core/services/account-distribution.test.mjs src/core/services/category-resolution.test.mjs src/core/services/category-management.test.mjs src/core/utils/money.test.mjs src/core/preferences/preferences.test.mjs src/core/constants/environment.test.mjs src/core/services/reset-data-confirmation.test.mjs src/components/ui/theme/colors.test.mjs src/components/ui/alert/createAppAlert.test.mjs src/infrastructure/database/demoData.test.mjs src/infrastructure/database/categoryMigration.test.mjs src/infrastructure/database/categoryManagement.test.mjs src/infrastructure/database/resetFinancialData.test.mjs src/core/services/interest-calculator.test.mjs src/core/services/backup-excel.test.mjs src/core/services/backup-validation.test.mjs src/infrastructure/database/backup.test.mjs src/infrastructure/repositories/sqliteDataIntegrity.test.mjs",
     "licenses:generate": "node scripts/generate-licenses.mjs",
+    "icons:generate": "node scripts/generate-icons.mjs",
     "prepare": "husky"
   },
   "lint-staged": {

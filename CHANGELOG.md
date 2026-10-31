@@ -2,6 +2,25 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.6.4] - 2026-10-31
+
+Nuevo ícono, splash y arranque más consistente.
+
+### Añadido
+
+- Ícono de app 1024 y variantes adaptive y monochrome.
+- Splash con variantes clara y oscura.
+- Nombre visible `Flux Balance`.
+
+### Cambiado
+
+- El splash espera base de datos, preferencias y moneda.
+- Tope de 8 s con pantalla de error si el arranque falla.
+
+### Corregido
+
+- La moneda guardada ya no parpadea al iniciar.
+
 ## [1.6.3] - 2026-10-31
 
 Alertas migradas a orn-ui y atribución de licencias.
