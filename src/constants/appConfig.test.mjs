@@ -9,3 +9,8 @@ const appConfig = JSON.parse(
 test('desactiva las copias de seguridad automáticas de Android', () => {
   assert.equal(appConfig.expo.android.allowBackup, false);
 });
+
+test('define identificadores de tienda distintos por plataforma', () => {
+  assert.equal(appConfig.expo.android.package, 'com.devjorgerafael.flux_balance');
+  assert.equal(appConfig.expo.ios.bundleIdentifier, 'com.devjorgerafael.flux-balance');
+});
