@@ -4,7 +4,7 @@ import { categoryTableForType } from '../../core/services/category-resolution';
 
 type CategoryManagementDatabase = Pick<
   SQLiteDatabase,
-  'getFirstAsync' | 'runAsync' | 'withTransactionAsync'
+  'getFirstAsync' | 'runAsync' | 'withExclusiveTransactionAsync'
 >;
 
 interface CategoryStateRow {
@@ -53,8 +53,8 @@ export async function deleteCategoryAndUncategorize(
   const table = categoryTableForType(type);
   let usageCount = 0;
 
-  await db.withTransactionAsync(async () => {
-    const category = await db.getFirstAsync<CategoryStateRow>(
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    const category = await txn.getFirstAsync<CategoryStateRow>(
       `SELECT is_default FROM ${table} WHERE id = ?`,
       [categoryId]
     );
@@ -62,9 +62,9 @@ export async function deleteCategoryAndUncategorize(
     if (!category) throw new CategoryNotFoundError();
     if (category.is_default === 1) throw new DefaultCategoryDeletionError();
 
-    usageCount = await getCategoryUsageCount(db, categoryId, type);
+    usageCount = await getCategoryUsageCount(txn, categoryId, type);
 
-    await db.runAsync(
+    await txn.runAsync(
       `UPDATE transaction_splits
        SET category_id = ''
        WHERE category_id = ?
@@ -72,7 +72,7 @@ export async function deleteCategoryAndUncategorize(
       [categoryId, type]
     );
 
-    await db.runAsync(`DELETE FROM ${table} WHERE id = ? AND is_default = 0`, [
+    await txn.runAsync(`DELETE FROM ${table} WHERE id = ? AND is_default = 0`, [
       categoryId,
     ]);
   });

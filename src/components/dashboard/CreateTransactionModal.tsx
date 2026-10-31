@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,9 +7,9 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { X } from 'lucide-react-native';
+import { appAlert } from '@/components/ui/alert/appAlert';
 import { TransactionType } from '@/core/models/transaction';
 import { Account } from '@/core/models/account';
 import { Category } from '@/core/models/category';
@@ -19,6 +19,13 @@ import { SqliteTransactionRepository } from '@/infrastructure/repositories';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
+import { getCurrencyDecimals } from '@/core/constants/currencies';
+import {
+  MAX_AMOUNT,
+  MAX_TRANSACTION_DESCRIPTION_LENGTH,
+} from '@/core/constants/inputLimits';
+import { getAmountInputErrorKey } from '@/core/i18n/validationMessages';
+import { parseAmountInput } from '@/core/utils/money';
 
 interface CreateTransactionModalProps {
   visible: boolean;
@@ -43,8 +50,9 @@ export function CreateTransactionModal({
 }: CreateTransactionModalProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
-  const { currency } = useCurrency();
+  const { currency, format, locale } = useCurrency();
   const { t } = useTranslation();
+  const submittingRef = useRef(false);
 
   const [txType, setTxType] = useState<TransactionType>(initialType);
   const [txAmount, setTxAmount] = useState('');
@@ -73,15 +81,32 @@ export function CreateTransactionModal({
   };
 
   const handleCreate = async () => {
-    const amountVal = parseFloat(txAmount);
-    if (isNaN(amountVal) || amountVal <= 0) {
-      Alert.alert('Monto inválido', 'Por favor ingresa un monto válido mayor a 0.');
+    if (submittingRef.current) return;
+
+    const decimals = getCurrencyDecimals(currency);
+    const amountResult = parseAmountInput(txAmount, locale, decimals);
+    if (!amountResult.ok) {
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t(getAmountInputErrorKey(amountResult.error), {
+          decimals,
+          max: format(MAX_AMOUNT, { showCurrency: false }),
+        }),
+        buttons: [{ text: t('accept') }],
+      });
       return;
     }
+    const amountVal = amountResult.value;
 
     const accountId = selectedAccountId || accounts[0]?.id;
     if (!accountId) {
-      Alert.alert('Sin cuentas', 'Debes crear una cuenta antes de registrar un movimiento.');
+      void appAlert({
+        type: 'warning',
+        title: t('error'),
+        message: t('noAccountsForMovement'),
+        buttons: [{ text: t('accept') }],
+      });
       return;
     }
 
@@ -90,6 +115,7 @@ export function CreateTransactionModal({
       typeCategories[0]?.id ??
       '';
 
+    submittingRef.current = true;
     try {
       setIsSubmitting(true);
       await transactionRepo.createWithSplits({
@@ -111,8 +137,14 @@ export function CreateTransactionModal({
       onTransactionCreated();
     } catch (err: unknown) {
       console.error('Error creating transaction:', err);
-      Alert.alert('Error', 'No se pudo guardar la transacción.');
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t('createTransactionError'),
+        buttons: [{ text: t('accept') }],
+      });
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
@@ -197,7 +229,7 @@ export function CreateTransactionModal({
                 borderColor: colors.border,
               },
             ]}
-            placeholder="0.00"
+            placeholder={format(0, { showCurrency: false })}
             placeholderTextColor={colors.textLight}
             keyboardType="decimal-pad"
             value={txAmount}
@@ -220,6 +252,7 @@ export function CreateTransactionModal({
             placeholderTextColor={colors.textLight}
             value={txDesc}
             onChangeText={setTxDesc}
+            maxLength={MAX_TRANSACTION_DESCRIPTION_LENGTH}
           />
 
           {/* Selector de Categoría */}

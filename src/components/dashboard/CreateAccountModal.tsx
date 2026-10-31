@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,10 +7,10 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { X, CreditCard, TrendingUp, Calendar } from 'lucide-react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { appAlert } from '@/components/ui/alert/appAlert';
 import { AccountType } from '@/core/models/account';
 import { useColors, useThemeMode } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
@@ -23,6 +23,15 @@ import { AccountProjectionPreview } from '@/components/dashboard/AccountProjecti
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
+import { getCurrencyDecimals } from '@/core/constants/currencies';
+import {
+  MAX_ACCOUNT_NAME_LENGTH,
+  MAX_AMOUNT,
+  MAX_ANNUAL_RATE_PERCENT,
+  MAX_TERM_MONTHS,
+} from '@/core/constants/inputLimits';
+import { parseAmountInput } from '@/core/utils/money';
+import { validateAccountForm } from './accountFormValidation';
 
 interface CreateAccountModalProps {
   visible: boolean;
@@ -41,8 +50,9 @@ export function CreateAccountModal({
 }: CreateAccountModalProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
-  const { currency } = useCurrency();
+  const { currency, format, locale } = useCurrency();
   const { t } = useTranslation();
+  const submittingRef = useRef(false);
 
   const [accName, setAccName] = useState('');
   const [accType, setAccType] = useState<AccountType>('CHECKING');
@@ -60,32 +70,51 @@ export function CreateAccountModal({
   };
 
   const handleCreate = async () => {
-    if (!accName.trim()) {
-      Alert.alert('Nombre requerido', 'Por favor ingresa un nombre para la cuenta.');
+    if (submittingRef.current) return;
+
+    const validation = validateAccountForm({
+      name: accName,
+      type: accType,
+      balance: accBalance,
+      annualRate: accTNA,
+      termMonths: accTermMonths,
+      locale,
+      currency,
+    });
+    if (!validation.ok) {
+      const params = {
+        ...validation.params,
+        ...(validation.maxAmount
+          ? { max: format(MAX_AMOUNT, { showCurrency: false }) }
+          : {}),
+      };
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t(validation.errorKey, params),
+        buttons: [{ text: t('accept') }],
+      });
       return;
     }
 
-    const parsedBalance = parseFloat(accBalance) || 0;
-    const parsedTNA = accTNA ? parseFloat(accTNA) / 100 : undefined;
-    const parsedMonths = parseInt(accTermMonths, 10) || 3;
-
+    submittingRef.current = true;
     try {
       setIsCreatingAccount(true);
 
       const fixedDeposit =
         accType === 'FIXED_TERM'
           ? {
-              principalAmount: parsedBalance,
-              annualRate: parsedTNA ?? 0.4,
-              termMonths: parsedMonths,
+              principalAmount: validation.balance,
+              annualRate: validation.annualRate ?? 0.4,
+              termMonths: validation.termMonths,
             }
           : undefined;
 
       await accountRepo.create({
-        name: accName.trim(),
+        name: validation.name,
         type: accType,
-        initialBalance: parsedBalance,
-        annualRate: parsedTNA,
+        initialBalance: validation.balance,
+        annualRate: validation.annualRate,
         initialFixedTermDeposit: fixedDeposit,
       });
 
@@ -94,23 +123,50 @@ export function CreateAccountModal({
       onAccountCreated();
     } catch (err) {
       console.error('Error creating account:', err);
-      Alert.alert('Error', 'No se pudo crear la cuenta.');
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t('createAccountError'),
+        buttons: [{ text: t('accept') }],
+      });
     } finally {
+      submittingRef.current = false;
       setIsCreatingAccount(false);
     }
   };
 
-  const previewCapital = Math.max(0, parseFloat(accBalance) || 0);
-  const enteredPreviewRate = parseFloat(accTNA);
-  const previewRate = Math.max(
-    0,
-    Number.isFinite(enteredPreviewRate)
-      ? enteredPreviewRate
-      : accType === 'FIXED_TERM'
-        ? 40
-        : 0
+  const previewBalance = parseAmountInput(
+    accBalance,
+    locale,
+    getCurrencyDecimals(currency),
+    { allowZero: true }
   );
-  const previewMonths = Math.max(1, parseInt(accTermMonths, 10) || 3);
+  const previewCapital = previewBalance.ok ? previewBalance.value : 0;
+  const previewRateResult = parseAmountInput(accTNA, locale, 2, {
+    allowZero: true,
+  });
+  const enteredPreviewRate = previewRateResult.ok
+    ? previewRateResult.value
+    : NaN;
+  const previewRate = Math.min(
+    MAX_ANNUAL_RATE_PERCENT,
+    Math.max(
+      0,
+      Number.isFinite(enteredPreviewRate)
+        ? enteredPreviewRate
+        : accType === 'FIXED_TERM'
+          ? 40
+          : 0
+    )
+  );
+  const previewMonthsValue = Number(accTermMonths);
+  const previewMonths = Math.min(
+    MAX_TERM_MONTHS,
+    Math.max(
+      1,
+      Number.isInteger(previewMonthsValue) ? previewMonthsValue : 3
+    )
+  );
   const previewFixedMaturity =
     accType === 'FIXED_TERM'
       ? calculateFixedTermMaturity(previewCapital, previewRate, previewMonths)
@@ -199,6 +255,7 @@ export function CreateAccountModal({
               placeholderTextColor={colors.textLight}
               value={accName}
               onChangeText={setAccName}
+              maxLength={MAX_ACCOUNT_NAME_LENGTH}
             />
 
             {/* Saldo Inicial / Capital */}

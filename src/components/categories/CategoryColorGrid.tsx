@@ -3,7 +3,11 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { CATEGORY_COLOR_PALETTES } from '@/core/constants/categoryPalettes';
 import type { CategoryType } from '@/core/models/category';
-import { useColors } from '@/components/ui/theme';
+import {
+  getReadableBackgroundColor,
+  getReadableTextColor,
+  useColors,
+} from '@/components/ui/theme';
 
 interface CategoryColorGridProps {
   type: CategoryType;
@@ -26,6 +30,8 @@ export function CategoryColorGrid({
         <View key={`${type}-${rowIndex}`} style={styles.row}>
           {row.map((color) => {
             const isSelected = normalizedSelected === color.toLowerCase();
+            const badgeBackgroundColor = getReadableBackgroundColor(color);
+            const badgeTextColor = getReadableTextColor(badgeBackgroundColor, colors.text);
 
             return (
               <Pressable
@@ -42,8 +48,8 @@ export function CategoryColorGrid({
                 ]}
               >
                 {isSelected ? (
-                  <View style={[styles.checkBadge, { backgroundColor: colors.swatchBadge }]}>
-                    <Check size={14} color={colors.white} strokeWidth={4} />
+                  <View style={[styles.checkBadge, { backgroundColor: badgeBackgroundColor }]}>
+                    <Check size={14} color={badgeTextColor} strokeWidth={4} />
                   </View>
                 ) : null}
               </Pressable>

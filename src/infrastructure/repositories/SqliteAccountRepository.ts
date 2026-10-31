@@ -1,5 +1,6 @@
-import { IAccountRepository } from '@/core/repositories/IAccountRepository';
-import {
+import type { SQLiteDatabase } from 'expo-sqlite';
+import type { IAccountRepository } from '@/core/repositories/IAccountRepository';
+import type {
   Account,
   AccountType,
   CreateAccountDTO,
@@ -8,6 +9,9 @@ import {
   CreateFixedTermDepositDTO,
 } from '@/core/models/account';
 import { getDatabase } from '../database/db';
+
+type DatabaseProvider = () => Promise<SQLiteDatabase>;
+type AccountWriteDatabase = Pick<SQLiteDatabase, 'getFirstAsync' | 'runAsync'>;
 
 interface AccountRow {
   id: string;
@@ -63,8 +67,14 @@ function mapDeposit(row: DepositRow): FixedTermDeposit {
 }
 
 export class SqliteAccountRepository implements IAccountRepository {
+  private readonly getDb: DatabaseProvider;
+
+  constructor(getDb: DatabaseProvider = getDatabase) {
+    this.getDb = getDb;
+  }
+
   async getAll(includeArchived = false): Promise<Account[]> {
-    const db = await getDatabase();
+    const db = await this.getDb();
     const query = includeArchived
       ? 'SELECT * FROM accounts ORDER BY created_at ASC'
       : 'SELECT * FROM accounts WHERE is_archived = 0 ORDER BY created_at ASC';
@@ -89,7 +99,7 @@ export class SqliteAccountRepository implements IAccountRepository {
 
   async getById(id: string): Promise<Account | null> {
     if (!id) return null;
-    const db = await getDatabase();
+    const db = await this.getDb();
     const row = await db.getFirstAsync<AccountRow>(
       'SELECT * FROM accounts WHERE id = ?',
       [id]
@@ -108,7 +118,7 @@ export class SqliteAccountRepository implements IAccountRepository {
   }
 
   async create(data: CreateAccountDTO): Promise<Account> {
-    const db = await getDatabase();
+    const db = await this.getDb();
     const id = `acc_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const now = new Date().toISOString();
     // A fixed-term account gets its initial balance when the deposit is added
@@ -118,29 +128,31 @@ export class SqliteAccountRepository implements IAccountRepository {
         ? 0
         : data.initialBalance ?? 0;
     const currency = data.currency ?? 'USD';
-
-    if (typeof data.annualRate === 'number') {
-      await db.runAsync(
-        `INSERT INTO accounts (id, name, type, balance, currency, annual_rate, is_archived, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`,
-        [id, data.name, data.type, balance, currency, data.annualRate, now, now]
-      );
-    } else {
-      await db.runAsync(
-        `INSERT INTO accounts (id, name, type, balance, currency, is_archived, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, 0, ?, ?)`,
-        [id, data.name, data.type, balance, currency, now, now]
-      );
-    }
-
     let deposits: FixedTermDeposit[] | undefined;
-    if (data.type === 'FIXED_TERM' && data.initialFixedTermDeposit) {
-      const dep = await this.addFixedTermDeposit({
-        accountId: id,
-        ...data.initialFixedTermDeposit,
-      });
-      deposits = [dep];
-    }
+
+    await db.withExclusiveTransactionAsync(async (txn) => {
+      if (typeof data.annualRate === 'number') {
+        await txn.runAsync(
+          `INSERT INTO accounts (id, name, type, balance, currency, annual_rate, is_archived, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+          [id, data.name, data.type, balance, currency, data.annualRate, now, now]
+        );
+      } else {
+        await txn.runAsync(
+          `INSERT INTO accounts (id, name, type, balance, currency, is_archived, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, 0, ?, ?)`,
+          [id, data.name, data.type, balance, currency, now, now]
+        );
+      }
+
+      if (data.type === 'FIXED_TERM' && data.initialFixedTermDeposit) {
+        const dep = await this.insertFixedTermDeposit(txn, {
+          accountId: id,
+          ...data.initialFixedTermDeposit,
+        });
+        deposits = [dep];
+      }
+    });
 
     return {
       id,
@@ -157,7 +169,7 @@ export class SqliteAccountRepository implements IAccountRepository {
   }
 
   async update(id: string, data: UpdateAccountDTO): Promise<Account> {
-    const db = await getDatabase();
+    const db = await this.getDb();
     const existing = await this.getById(id);
     if (!existing) throw new Error(`Account not found: ${id}`);
 
@@ -189,7 +201,7 @@ export class SqliteAccountRepository implements IAccountRepository {
   }
 
   async updateBalance(id: string, deltaAmount: number): Promise<void> {
-    const db = await getDatabase();
+    const db = await this.getDb();
     const now = new Date().toISOString();
     await db.runAsync(
       'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
@@ -198,7 +210,20 @@ export class SqliteAccountRepository implements IAccountRepository {
   }
 
   async addFixedTermDeposit(data: CreateFixedTermDepositDTO): Promise<FixedTermDeposit> {
-    const db = await getDatabase();
+    const db = await this.getDb();
+    let deposit: FixedTermDeposit | null = null;
+
+    await db.withExclusiveTransactionAsync(async (txn) => {
+      deposit = await this.insertFixedTermDeposit(txn, data);
+    });
+
+    return deposit!;
+  }
+
+  private async insertFixedTermDeposit(
+    db: AccountWriteDatabase,
+    data: CreateFixedTermDepositDTO
+  ): Promise<FixedTermDeposit> {
     const id = `dep_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const now = new Date().toISOString();
     const startDate = data.startDate ?? now.split('T')[0];
@@ -207,13 +232,29 @@ export class SqliteAccountRepository implements IAccountRepository {
     start.setMonth(start.getMonth() + data.termMonths);
     const maturityDate = start.toISOString().split('T')[0];
 
+    const account = await db.getFirstAsync<{ id: string }>(
+      'SELECT id FROM accounts WHERE id = ?',
+      [data.accountId]
+    );
+
+    if (!account) {
+      throw new Error(`La cuenta ${data.accountId} no existe.`);
+    }
+
     await db.runAsync(
       `INSERT INTO fixed_term_deposits (id, account_id, principal_amount, annual_rate, term_months, start_date, maturity_date, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, 'ACTIVE', ?)`,
       [id, data.accountId, data.principalAmount, data.annualRate, data.termMonths, startDate, maturityDate, now]
     );
 
-    await this.updateBalance(data.accountId, data.principalAmount);
+    const result = await db.runAsync(
+      'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
+      [data.principalAmount, now, data.accountId]
+    );
+
+    if (result.changes === 0) {
+      throw new Error(`La cuenta ${data.accountId} no existe.`);
+    }
 
     return {
       id,
@@ -229,7 +270,7 @@ export class SqliteAccountRepository implements IAccountRepository {
   }
 
   async getFixedTermDeposits(accountId: string): Promise<FixedTermDeposit[]> {
-    const db = await getDatabase();
+    const db = await this.getDb();
     const rows = await db.getAllAsync<DepositRow>(
       'SELECT * FROM fixed_term_deposits WHERE account_id = ? ORDER BY maturity_date ASC',
       [accountId]
@@ -238,7 +279,7 @@ export class SqliteAccountRepository implements IAccountRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const db = await getDatabase();
+    const db = await this.getDb();
     await db.runAsync('DELETE FROM accounts WHERE id = ?', [id]);
   }
 }

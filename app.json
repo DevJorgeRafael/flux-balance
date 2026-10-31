@@ -1,37 +1,45 @@
 {
   "expo": {
-    "name": "flux-balance",
+    "name": "Flux Balance",
     "slug": "flux-balance",
-    "version": "1.5.2",
+    "version": "1.6.4",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logos-app/icon-1024.png",
     "scheme": "fluxbalance",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#0A0E1A",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "bundleIdentifier": "com.devjorgerafael.flux-balance",
+      "buildNumber": "1"
     },
     "android": {
+      "package": "com.devjorgerafael.flux_balance",
+      "versionCode": 1,
+      "allowBackup": false,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#1642AF",
+        "foregroundImage": "./assets/images/logos-app/logo-foreground-1024.png",
+        "monochromeImage": "./assets/images/logos-app/logo-monochrome-1024.png"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/logos-app/icon-1024.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#1642AF",
+          "image": "./assets/images/logos-app/logo-splash.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "dark": {
+            "image": "./assets/images/logos-app/logo-splash.png",
+            "backgroundColor": "#0A0E1A"
+          }
         }
       ],
       "expo-sqlite",
@@ -40,7 +48,8 @@
       "expo-font",
       "expo-image",
       "expo-status-bar",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,

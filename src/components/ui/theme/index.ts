@@ -5,6 +5,7 @@ export {
   fontWeight,
   lineHeight,
   duration,
+  shadow,
   cardShadow,
   cardShadowSm,
   categoryPalettes,
@@ -16,9 +17,10 @@ export type {
   CardShadowToken,
   CategoryColorPalette,
   HeroGradientToken,
+  ShadowToken,
   Tokens,
 } from './tokens';
-export { lightPalette, darkPalette } from './palettes';
+export { lightPalette, darkPalette, readableTextCandidates } from './palettes';
 export type { ThemeColors } from './palettes';
 export { createTheme, defaultTheme } from './createTheme';
 export type { Theme, ThemePair, ThemeOverrides, BrandAccent, DeepPartial } from './types';
@@ -27,11 +29,14 @@ export {
   contrast,
   luminance,
   bestTextColor,
+  getReadableTextColor,
+  getReadableBackgroundColor,
+  getReadableChipColors,
   isHexColor,
   withAlpha,
   AA_CONTRAST,
 } from './colors';
-export type { AccentRoles } from './colors';
+export type { AccentRoles, ReadableChipColors } from './colors';
 export { defaultLabels } from './labels';
 export type { Labels } from './labels';
 export { zeroInsets } from './insets';

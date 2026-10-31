@@ -1,5 +1,9 @@
-import { ITransactionRepository, MonthlyTotals } from '@/core/repositories/ITransactionRepository';
-import {
+import type { SQLiteDatabase } from 'expo-sqlite';
+import type {
+  ITransactionRepository,
+  MonthlyTotals,
+} from '@/core/repositories/ITransactionRepository';
+import type {
   Transaction,
   TransactionType,
   TransactionSplit,
@@ -8,6 +12,12 @@ import {
 } from '@/core/models/transaction';
 import { categoryTableForType } from '@/core/services/category-resolution';
 import { getDatabase } from '../database/db';
+
+type DatabaseProvider = () => Promise<SQLiteDatabase>;
+type TransactionReadDatabase = Pick<
+  SQLiteDatabase,
+  'getFirstAsync' | 'getAllAsync'
+>;
 
 interface TransactionRow {
   id: string;
@@ -32,8 +42,14 @@ interface SplitRow {
 }
 
 export class SqliteTransactionRepository implements ITransactionRepository {
+  private readonly getDb: DatabaseProvider;
+
+  constructor(getDb: DatabaseProvider = getDatabase) {
+    this.getDb = getDb;
+  }
+
   async getAll(filter?: TransactionFilterDTO): Promise<Transaction[]> {
-    const db = await getDatabase();
+    const db = await this.getDb();
     let query = 'SELECT DISTINCT t.* FROM transactions t';
     const params: (string | number)[] = [];
     const conditions: string[] = [];
@@ -83,7 +99,7 @@ export class SqliteTransactionRepository implements ITransactionRepository {
       : await db.getAllAsync<TransactionRow>(query);
     if (txRows.length === 0) return [];
 
-    const txIds = txRows.map((r) => `'${r.id}'`).join(',');
+    const txIds = txRows.map((r) => r.id);
     const splitRows = await db.getAllAsync<SplitRow>(`
       SELECT
         s.*,
@@ -96,8 +112,8 @@ export class SqliteTransactionRepository implements ITransactionRepository {
       LEFT JOIN accounts a ON a.id = s.account_id
       LEFT JOIN income_categories ic ON t.type = 'INCOME' AND ic.id = s.category_id
       LEFT JOIN expense_categories ec ON t.type = 'EXPENSE' AND ec.id = s.category_id
-      WHERE s.transaction_id IN (${txIds})
-    `);
+      WHERE s.transaction_id IN (SELECT value FROM json_each(?))
+    `, [JSON.stringify(txIds)]);
 
     const splitsByTx: Record<string, TransactionSplit[]> = {};
     for (const s of splitRows) {
@@ -129,7 +145,14 @@ export class SqliteTransactionRepository implements ITransactionRepository {
 
   async getById(id: string): Promise<Transaction | null> {
     if (!id) return null;
-    const db = await getDatabase();
+    const db = await this.getDb();
+    return this.getByIdWithDb(db, id);
+  }
+
+  private async getByIdWithDb(
+    db: TransactionReadDatabase,
+    id: string
+  ): Promise<Transaction | null> {
     const tx = await db.getFirstAsync<TransactionRow>(
       'SELECT * FROM transactions WHERE id = ?',
       [id]
@@ -176,97 +199,114 @@ export class SqliteTransactionRepository implements ITransactionRepository {
   }
 
   async createWithSplits(data: CreateTransactionDTO): Promise<Transaction> {
-    const db = await getDatabase();
+    const db = await this.getDb();
     const txId = `tx_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const now = new Date().toISOString();
     const splits = data.splits.map((split) => ({
       ...split,
       categoryId: split.categoryId?.trim() ?? '',
     }));
+    let created: Transaction | null = null;
 
-    if (data.type === 'INCOME' || data.type === 'EXPENSE') {
-      const table = categoryTableForType(data.type);
+    await db.withExclusiveTransactionAsync(async (txn) => {
+      if (data.type === 'INCOME' || data.type === 'EXPENSE') {
+        const table = categoryTableForType(data.type);
 
-      for (const split of splits) {
-        if (!split.categoryId) continue;
+        for (const split of splits) {
+          if (!split.categoryId) continue;
 
-        const category = await db.getFirstAsync<{ id: string }>(
-          `SELECT id FROM ${table} WHERE id = ?`,
-          [split.categoryId]
-        );
-
-        if (!category) {
-          throw new Error(
-            `La categoría ${split.categoryId} no existe para movimientos ${data.type}.`
+          const category = await txn.getFirstAsync<{ id: string }>(
+            `SELECT id FROM ${table} WHERE id = ?`,
+            [split.categoryId]
           );
+
+          if (!category) {
+            throw new Error(
+              `La categoría ${split.categoryId} no existe para movimientos ${data.type}.`
+            );
+          }
         }
       }
-    }
 
-    // 1. Insertar transacción principal
-    if (data.description) {
-      await db.runAsync(
-        `INSERT INTO transactions (id, type, total_amount, description, date, created_at)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [txId, data.type, data.totalAmount, data.description, data.date, now]
-      );
-    } else {
-      await db.runAsync(
-        `INSERT INTO transactions (id, type, total_amount, date, created_at)
-         VALUES (?, ?, ?, ?, ?)`,
-        [txId, data.type, data.totalAmount, data.date, now]
-      );
-    }
+      for (const split of splits) {
+        const account = await txn.getFirstAsync<{ id: string }>(
+          'SELECT id FROM accounts WHERE id = ?',
+          [split.accountId]
+        );
 
-    // 2. Insertar cada división (split) y actualizar saldo de la cuenta correspondiente
-    for (const split of splits) {
-      const splitId = `sp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-      if (split.notes) {
-        await db.runAsync(
-          `INSERT INTO transaction_splits (id, transaction_id, account_id, category_id, amount, notes)
+        if (!account) {
+          throw new Error(`La cuenta ${split.accountId} no existe.`);
+        }
+      }
+
+      // 1. Insertar transacción principal
+      if (data.description) {
+        await txn.runAsync(
+          `INSERT INTO transactions (id, type, total_amount, description, date, created_at)
            VALUES (?, ?, ?, ?, ?, ?)`,
-          [splitId, txId, split.accountId, split.categoryId, split.amount, split.notes]
+          [txId, data.type, data.totalAmount, data.description, data.date, now]
         );
       } else {
-        await db.runAsync(
-          `INSERT INTO transaction_splits (id, transaction_id, account_id, category_id, amount)
+        await txn.runAsync(
+          `INSERT INTO transactions (id, type, total_amount, date, created_at)
            VALUES (?, ?, ?, ?, ?)`,
-          [splitId, txId, split.accountId, split.categoryId, split.amount]
+          [txId, data.type, data.totalAmount, data.date, now]
         );
       }
 
-      // Actualizar saldo: los ingresos suman, los gastos restan
-      const balanceDelta = data.type === 'INCOME' ? split.amount : -split.amount;
-      await db.runAsync(
-        'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
-        [balanceDelta, now, split.accountId]
-      );
-    }
+      // 2. Insertar cada división (split) y actualizar saldo de la cuenta correspondiente
+      for (const split of splits) {
+        const splitId = `sp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        if (split.notes) {
+          await txn.runAsync(
+            `INSERT INTO transaction_splits (id, transaction_id, account_id, category_id, amount, notes)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [splitId, txId, split.accountId, split.categoryId, split.amount, split.notes]
+          );
+        } else {
+          await txn.runAsync(
+            `INSERT INTO transaction_splits (id, transaction_id, account_id, category_id, amount)
+             VALUES (?, ?, ?, ?, ?)`,
+            [splitId, txId, split.accountId, split.categoryId, split.amount]
+          );
+        }
 
-    const created = await this.getById(txId);
+        // Actualizar saldo: los ingresos suman, los gastos restan
+        const balanceDelta = data.type === 'INCOME' ? split.amount : -split.amount;
+        await txn.runAsync(
+          'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
+          [balanceDelta, now, split.accountId]
+        );
+      }
+
+      created = await this.getByIdWithDb(txn, txId);
+    });
+
     return created!;
   }
 
   async delete(id: string): Promise<void> {
-    const db = await getDatabase();
-    const tx = await this.getById(id);
-    if (!tx) return;
+    const db = await this.getDb();
+    await db.withExclusiveTransactionAsync(async (txn) => {
+      const tx = await this.getByIdWithDb(txn, id);
+      if (!tx) return;
 
-    const now = new Date().toISOString();
-    // Revertir cambios de saldo
-    for (const split of tx.splits) {
-      const revertDelta = tx.type === 'INCOME' ? -split.amount : split.amount;
-      await db.runAsync(
-        'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
-        [revertDelta, now, split.accountId]
-      );
-    }
-    // Eliminar transacción
-    await db.runAsync('DELETE FROM transactions WHERE id = ?', [id]);
+      const now = new Date().toISOString();
+      // Revertir cambios de saldo
+      for (const split of tx.splits) {
+        const revertDelta = tx.type === 'INCOME' ? -split.amount : split.amount;
+        await txn.runAsync(
+          'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
+          [revertDelta, now, split.accountId]
+        );
+      }
+      // Eliminar transacción
+      await txn.runAsync('DELETE FROM transactions WHERE id = ?', [id]);
+    });
   }
 
   async getMonthlyTotals(yearMonth: string): Promise<MonthlyTotals> {
-    const db = await getDatabase();
+    const db = await this.getDb();
     const start = `${yearMonth}-01`;
     const end = `${yearMonth}-31T23:59:59`;
 

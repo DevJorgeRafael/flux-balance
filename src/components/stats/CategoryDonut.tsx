@@ -22,6 +22,7 @@ const RADIUS = 82;
 const STROKE_WIDTH = 24;
 const SELECTED_STROKE_WIDTH = 30;
 const SEGMENT_GAP = 3;
+const INNER_DIAMETER = 2 * (RADIUS - SELECTED_STROKE_WIDTH / 2);
 
 export function CategoryDonut({ slices, total, selectedId }: CategoryDonutProps) {
   const colors = useColors();
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
   },
   center: {
     position: 'absolute',
-    width: 132,
+    width: INNER_DIAMETER,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
@@ -114,7 +115,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   centerAmount: {
-    maxWidth: '100%',
+    maxWidth: INNER_DIAMETER,
     fontSize: 20,
     fontWeight: '900',
     letterSpacing: -0.6,

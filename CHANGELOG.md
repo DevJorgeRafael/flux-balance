@@ -2,6 +2,119 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.6.4] - 2026-10-31
+
+Nuevo ícono, splash y arranque más consistente.
+
+### Añadido
+
+- Ícono de app 1024 y variantes adaptive y monochrome.
+- Splash con variantes clara y oscura.
+- Nombre visible `Flux Balance`.
+
+### Cambiado
+
+- El splash espera base de datos, preferencias y moneda.
+- Tope de 8 s con pantalla de error si el arranque falla.
+
+### Corregido
+
+- La moneda guardada ya no parpadea al iniciar.
+
+## [1.6.3] - 2026-10-31
+
+Alertas migradas a orn-ui y atribución de licencias.
+
+### Cambiado
+
+- Alertas y confirmaciones usan orn-ui.
+- Las alertas respetan el tema y el idioma.
+- Licencias de terceros incluye orn-ui, versión y MIT.
+
+### Añadido
+
+- `THIRD_PARTY_LICENSES.md` con la atribución de orn-ui.
+
+## [1.6.2] - 2026-10-30
+
+Exportación e importación rediseñadas con opciones JSON/Excel y sin respaldo previo.
+
+## [1.6.1] - 2026-10-30
+
+Exportación e importación de respaldos en Excel.
+
+### Añadido
+
+- Exportar e importar copias de seguridad en Excel.
+- Hojas de cuentas, categorías y movimientos en español e inglés.
+- Plantilla de Excel cuando faltan hojas o columnas.
+- Se conservan depósitos a plazo y movimientos divididos.
+- Errores de importación con hoja y fila.
+- Respaldo automático antes de reemplazar los datos.
+
+### Corregido
+
+- La importación de Excel lee el archivo elegido en Android y Expo Go.
+
+## [1.6.0] - 2026-10-29
+
+Exportación e importación de copias de seguridad.
+
+### Añadido
+
+- Exportar cuentas, categorías, movimientos y moneda a un JSON.
+- Importar un respaldo con validación, resumen y confirmación.
+- Respaldo automático antes de reemplazar los datos.
+- Reemplazo transaccional de todos los datos.
+
+### Corregido
+
+- La importación lee el archivo elegido en Android y Expo Go.
+
+## [1.5.5] - 2026-10-29
+
+Ajustes reorganizados y reinicio de datos seguro.
+
+### Añadido
+
+- Sección Datos con Reiniciar datos.
+- Doble confirmación escribiendo BORRAR o DELETE.
+- Reinicio transaccional que conserva moneda, tema e idioma y restaura las categorías por defecto.
+- Pruebas de visibilidad, confirmación y rollback.
+
+### Cambiado
+
+- Modo desarrollador solo conserva Cargar datos demo.
+- Modo desarrollador sigue oculto en producción.
+- Datos queda visible en producción.
+- Tras reiniciar, la app vuelve al inicio y actualiza todas las pantallas sin reiniciar.
+
+## [1.5.4] - 2026-10-28
+
+Sección Acerca de y catálogo de licencias.
+
+### Añadido
+
+- Sección Acerca de con versión, código abierto, licencias y apoyo.
+- Pantalla de licencias de terceros agrupada por licencia.
+- Buscador de paquetes y textos de licencia colapsables.
+- Apoyo voluntario mediante Ko-fi.
+- Licencia MIT del proyecto y enlace al archivo `LICENSE`.
+
+## [1.5.3] - 2026-10-28
+
+Contraste AA en chips de Stats y ajustes visuales.
+
+### Corregido
+
+- Chips de porcentaje de Stats con texto blanco y fondo oscurecido hasta contraste AA; el donut mantiene el color original.
+- Check del selector de color de categorías legible sobre cualquier muestra.
+
+### Cambiado
+
+- El total del donut se ajusta al diámetro interior.
+- El placeholder de importe usa el separador decimal del idioma (`0,00` / `0.00`).
+
 ## [1.5.2] - 2026-10-27
 
 Tema e idioma persistentes con opción Sistema.

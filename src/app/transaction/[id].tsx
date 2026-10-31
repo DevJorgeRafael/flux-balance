@@ -5,12 +5,13 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Trash } from 'lucide-react-native';
+import { appAlert, appConfirm } from '@/components/ui/alert/appAlert';
 import { useColors, useInsets } from '@/components/ui/theme';
+import { useTranslation } from '@/core/i18n/useTranslation';
 import { SqliteTransactionRepository } from '@/infrastructure/repositories';
 import { Transaction } from '@/core/models/transaction';
 import { TransactionDetailCard } from '@/components/transactions/TransactionDetailCard';
@@ -22,6 +23,7 @@ export default function TransactionDetailScreen() {
   const id = Array.isArray(rawParams.id) ? rawParams.id[0] : rawParams.id;
   const colors = useColors();
   const insets = useInsets();
+  const { t } = useTranslation();
 
   const [transaction, setTransaction] = useState<Transaction | null>(null);
   const [isLoading, setIsLoading] = useState(() => Boolean(id));
@@ -52,31 +54,32 @@ export default function TransactionDetailScreen() {
     };
   }, [id]);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!id || !transaction) return;
 
-    Alert.alert(
-      '¿Eliminar movimiento?',
-      'Esta acción revertirá automáticamente el saldo de la cuenta asociada y no se puede deshacer.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setIsDeleting(true);
-              await transactionRepo.delete(id);
-              router.back();
-            } catch (err) {
-              console.error('Error eliminando transacción:', err);
-              Alert.alert('Error', 'No se pudo eliminar el movimiento.');
-              setIsDeleting(false);
-            }
-          },
-        },
-      ]
-    );
+    const confirmed = await appConfirm({
+      title: t('deleteTransactionTitle'),
+      message: t('deleteTransactionMessage'),
+      confirmText: t('delete'),
+      cancelText: t('cancel'),
+      destructive: true,
+    });
+    if (!confirmed) return;
+
+    try {
+      setIsDeleting(true);
+      await transactionRepo.delete(id);
+      router.back();
+    } catch (err) {
+      console.error('Error eliminando transacción:', err);
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t('deleteTransactionError'),
+        buttons: [{ text: t('accept') }],
+      });
+      setIsDeleting(false);
+    }
   };
 
   if (isLoading) {

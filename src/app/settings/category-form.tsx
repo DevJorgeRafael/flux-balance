@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,6 +12,7 @@ import {
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Check, Trash } from 'lucide-react-native';
+import { appAlert, appConfirm } from '@/components/ui/alert/appAlert';
 import { CategoryColorGrid } from '@/components/categories/CategoryColorGrid';
 import { bestTextColor, useColors, useInsets } from '@/components/ui/theme';
 import {
@@ -166,7 +166,12 @@ export default function CategoryFormScreen() {
       if (error instanceof Error && error.message === 'CATEGORY_NAME_DUPLICATE') {
         setDuplicateError();
       } else {
-        Alert.alert(t('error'), t('errorSavingCategory'));
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('errorSavingCategory'),
+          buttons: [{ text: t('accept') }],
+        });
       }
     } finally {
       setIsSaving(false);
@@ -179,41 +184,43 @@ export default function CategoryFormScreen() {
     try {
       setIsDeleting(true);
       const usageCount = await categoryRepo.getUsageCount(category.id, type);
-      const messageKey =
-        usageCount === 1
-          ? 'deleteCategoryMessageOne'
-          : 'deleteCategoryMessageOther';
+      const messageKey = usageCount === 1 ? 'deleteCategoryMessageOne' : 'deleteCategoryMessageOther';
 
-      Alert.alert(
-        t('deleteCategoryTitle'),
-        t(messageKey, { count: usageCount }),
-        [
-          {
-            text: t('cancel'),
-            style: 'cancel',
-            onPress: () => setIsDeleting(false),
-          },
-          {
-            text: t('delete'),
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                await categoryRepo.delete(category.id, type);
-                router.back();
-              } catch (error) {
-                console.error('Error deleting category:', error);
-                Alert.alert(t('error'), t('errorDeletingCategory'));
-                setIsDeleting(false);
-              }
-            },
-          },
-        ],
-        { cancelable: true, onDismiss: () => setIsDeleting(false) }
-      );
+      const confirmed = await appConfirm({
+        title: t('deleteCategoryTitle'),
+        message: t(messageKey, { count: usageCount }),
+        confirmText: t('delete'),
+        cancelText: t('cancel'),
+        destructive: true,
+      });
+
+      if (!confirmed) {
+        setIsDeleting(false);
+        return;
+      }
+
+      try {
+        await categoryRepo.delete(category.id, type);
+        router.back();
+      } catch (error) {
+        console.error('Error deleting category:', error);
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('errorDeletingCategory'),
+          buttons: [{ text: t('accept') }],
+        });
+        setIsDeleting(false);
+      }
     } catch (error) {
       console.error('Error counting category movements:', error);
       setIsDeleting(false);
-      Alert.alert(t('error'), t('errorDeletingCategory'));
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t('errorDeletingCategory'),
+        buttons: [{ text: t('accept') }],
+      });
     }
   };
 
