@@ -1,4 +1,9 @@
 {
   "path": "src/components/ui",
-  "installed": []
+  "installed": [
+    "alert",
+    "alert-provider",
+    "button",
+    "core"
+  ]
 }

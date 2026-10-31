@@ -1,3 +1,4 @@
+import { alertTranslations } from './alert-translations';
 import { backupExcelTranslations } from './backup-excel-translations';
 import { dataTransferTranslations } from './data-transfer-translations';
 import { startupTranslations } from './startup-translations';
@@ -7,6 +8,7 @@ export type Language = 'es' | 'en';
 
 export const translations = {
   es: {
+    ...alertTranslations.es,
     ...dataTransferTranslations.es,
     ...backupExcelTranslations.es,
     ...validationTranslations.es,
@@ -211,6 +213,7 @@ export const translations = {
     hideLicenseText: 'Ocultar texto de licencia',
     combinedLicenseNote: 'Combina varias licencias; consulta el texto de cada una en su grupo.',
     licenseTextUnavailable: 'El paquete no incluye el texto de esta licencia; consulta su repositorio.',
+    ornUiAttribution: 'Código copiado con la CLI de orn-ui. Copyright (c) David Trujillo. Licencia MIT.',
     noPackagesFound: 'No se encontraron paquetes.',
     privacyPolicy: 'Política de privacidad',
     supportProject: 'Apoyar el proyecto',
@@ -221,6 +224,7 @@ export const translations = {
     months: 'meses',
   },
   en: {
+    ...alertTranslations.en,
     ...dataTransferTranslations.en,
     ...backupExcelTranslations.en,
     ...validationTranslations.en,
@@ -425,6 +429,7 @@ export const translations = {
     hideLicenseText: 'Hide license text',
     combinedLicenseNote: 'Combines multiple licenses; see each license text in its group.',
     licenseTextUnavailable: 'The package does not include this license text; check its repository.',
+    ornUiAttribution: 'Code copied with the orn-ui CLI. Copyright (c) David Trujillo. MIT License.',
     noPackagesFound: 'No packages found.',
     privacyPolicy: 'Privacy policy',
     supportProject: 'Support the project',

@@ -4,11 +4,11 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import { ChevronRight, Plus, Minus } from 'lucide-react-native';
 import { MotiView } from 'moti';
+import { appAlert } from '@/components/ui/alert/appAlert';
 import { Transaction } from '@/core/models/transaction';
 import { spacing, useColors, useThemeMode } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
@@ -41,7 +41,12 @@ export function RecentTransactionsList({
         params: { id: targetId },
       });
     } else {
-      Alert.alert('Sin cuentas', 'Crea una cuenta para ver su historial detallado.');
+      void appAlert({
+        type: 'info',
+        title: t('noAccountsHistoryTitle'),
+        message: t('noAccountsHistoryMessage'),
+        buttons: [{ text: t('accept') }],
+      });
     }
   };
 

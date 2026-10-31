@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { appAlert } from '@/components/ui/alert/appAlert';
+import { useTranslation } from '@/core/i18n/useTranslation';
 import { Account } from '@/core/models/account';
 import { Category } from '@/core/models/category';
 import { MonthlyTotals } from '@/core/repositories/ITransactionRepository';
@@ -16,6 +17,7 @@ const transactionRepo = new SqliteTransactionRepository();
 const categoryRepo = new SqliteCategoryRepository();
 
 export function useDashboardStats() {
+  const { t } = useTranslation();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [monthlyTotals, setMonthlyTotals] = useState<MonthlyTotals>({
@@ -89,17 +91,27 @@ export function useDashboardStats() {
       setIsLoading(true);
       const result = await seedDemoData();
       await loadData();
-      Alert.alert(
-        'Datos cargados',
-        `Se agregaron ${result.accounts} cuentas y ${result.transactions} movimientos con la fecha actual.`
-      );
+      void appAlert({
+        type: 'success',
+        title: t('demoDataLoadedTitle'),
+        message: t('demoDataLoadedMessage', {
+          accounts: result.accounts,
+          transactions: result.transactions,
+        }),
+        buttons: [{ text: t('accept') }],
+      });
     } catch (err: unknown) {
       console.error('Error seeding demo data:', err);
-      Alert.alert('Error', 'No se pudieron cargar los datos demo.');
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t('demoDataLoadError'),
+        buttons: [{ text: t('accept') }],
+      });
     } finally {
       setIsLoading(false);
     }
-  }, [loadData]);
+  }, [loadData, t]);
 
   const handleResetAllData = useCallback(async () => {
     setIsLoading(true);

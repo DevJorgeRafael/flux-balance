@@ -7,10 +7,10 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { X, CreditCard, TrendingUp, Calendar } from 'lucide-react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { appAlert } from '@/components/ui/alert/appAlert';
 import { AccountType } from '@/core/models/account';
 import { useColors, useThemeMode } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
@@ -88,7 +88,12 @@ export function CreateAccountModal({
           ? { max: format(MAX_AMOUNT, { showCurrency: false }) }
           : {}),
       };
-      Alert.alert(t('error'), t(validation.errorKey, params));
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t(validation.errorKey, params),
+        buttons: [{ text: t('accept') }],
+      });
       return;
     }
 
@@ -118,7 +123,12 @@ export function CreateAccountModal({
       onAccountCreated();
     } catch (err) {
       console.error('Error creating account:', err);
-      Alert.alert(t('error'), t('createAccountError'));
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t('createAccountError'),
+        buttons: [{ text: t('accept') }],
+      });
     } finally {
       submittingRef.current = false;
       setIsCreatingAccount(false);

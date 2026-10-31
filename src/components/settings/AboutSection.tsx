@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   type LucideIcon,
 } from 'lucide-react-native';
+import { appAlert } from '@/components/ui/alert/appAlert';
 import { Card } from '@/components/ui/Card';
 import { fontSize, radius, spacing, useColors } from '@/components/ui/theme';
 import { SectionLabel } from './SectionLabel';
@@ -116,7 +117,12 @@ export function AboutSection() {
     try {
       await Linking.openURL(url);
     } catch {
-      Alert.alert(t('linkErrorTitle'), t('linkErrorMessage'));
+      void appAlert({
+        type: 'error',
+        title: t('linkErrorTitle'),
+        message: t('linkErrorMessage'),
+        buttons: [{ text: t('accept') }],
+      });
     }
   };
 

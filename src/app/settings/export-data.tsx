@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
 import { FileSpreadsheet, FileText } from 'lucide-react-native';
+import { appAlert } from '@/components/ui/alert/appAlert';
 import { BackupProgressModal } from '@/components/settings/BackupProgressModal';
 import {
   DataTransferScreen,
@@ -29,7 +29,12 @@ export default function ExportDataScreen() {
     try {
       const backup = await buildCurrentBackup();
       if (!hasBackupData(backup)) {
-        Alert.alert(t('backupNoDataTitle'), t('backupNoDataMessage'));
+        void appAlert({
+          type: 'warning',
+          title: t('backupNoDataTitle'),
+          message: t('backupNoDataMessage'),
+          buttons: [{ text: t('accept') }],
+        });
         return;
       }
 
@@ -40,9 +45,19 @@ export default function ExportDataScreen() {
         error instanceof BackupFileError &&
         error.code === 'sharingUnavailable'
       ) {
-        Alert.alert(t('error'), t('backupErrorShareUnavailable'));
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('backupErrorShareUnavailable'),
+          buttons: [{ text: t('accept') }],
+        });
       } else {
-        Alert.alert(t('error'), t('backupErrorExportFailed'));
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('backupErrorExportFailed'),
+          buttons: [{ text: t('accept') }],
+        });
       }
     } finally {
       setIsExporting(false);
@@ -55,7 +70,12 @@ export default function ExportDataScreen() {
     try {
       const backup = await buildCurrentBackup();
       if (!hasBackupData(backup)) {
-        Alert.alert(t('backupNoDataTitle'), t('backupNoDataMessage'));
+        void appAlert({
+          type: 'warning',
+          title: t('backupNoDataTitle'),
+          message: t('backupNoDataMessage'),
+          buttons: [{ text: t('accept') }],
+        });
         return;
       }
 
@@ -66,9 +86,19 @@ export default function ExportDataScreen() {
         error instanceof BackupFileError &&
         error.code === 'sharingUnavailable'
       ) {
-        Alert.alert(t('error'), t('backupErrorShareUnavailable'));
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('backupErrorShareUnavailable'),
+          buttons: [{ text: t('accept') }],
+        });
       } else {
-        Alert.alert(t('error'), t('backupErrorExportFailed'));
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('backupErrorExportFailed'),
+          buttons: [{ text: t('accept') }],
+        });
       }
     } finally {
       setIsExportingExcel(false);
@@ -78,29 +108,39 @@ export default function ExportDataScreen() {
   const handleExport = useCallback(() => {
     if (isBusy) return;
 
-    Alert.alert(t('backupExportWarningTitle'), t('backupExportWarningMessage'), [
-      { text: t('cancel'), style: 'cancel' },
-      {
-        text: t('backupExportContinue'),
-        onPress: () => {
-          void runExport();
+    void appAlert({
+      type: 'warning',
+      title: t('backupExportWarningTitle'),
+      message: t('backupExportWarningMessage'),
+      buttons: [
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: t('backupExportContinue'),
+          onPress: () => {
+            void runExport();
+          },
         },
-      },
-    ]);
+      ],
+    });
   }, [isBusy, runExport, t]);
 
   const handleExportExcel = useCallback(() => {
     if (isBusy) return;
 
-    Alert.alert(t('backupExportWarningTitle'), t('backupExportWarningMessage'), [
-      { text: t('cancel'), style: 'cancel' },
-      {
-        text: t('backupExportContinue'),
-        onPress: () => {
-          void runExportExcel();
+    void appAlert({
+      type: 'warning',
+      title: t('backupExportWarningTitle'),
+      message: t('backupExportWarningMessage'),
+      buttons: [
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: t('backupExportContinue'),
+          onPress: () => {
+            void runExportExcel();
+          },
         },
-      },
-    ]);
+      ],
+    });
   }, [isBusy, runExportExcel, t]);
 
   const options: DataTransferOption[] = [

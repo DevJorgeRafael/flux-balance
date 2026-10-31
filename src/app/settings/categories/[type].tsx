@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,6 +9,7 @@ import {
 } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Plus } from 'lucide-react-native';
+import { appAlert } from '@/components/ui/alert/appAlert';
 import { CategoryListRow } from '@/components/categories/CategoryListRow';
 import { bestTextColor, useColors, useInsets } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
@@ -43,7 +43,12 @@ export default function CategoryListScreen() {
     } catch (error) {
       console.error('Error loading categories:', error);
       setCategories((current) => current ?? []);
-      Alert.alert(t('error'), t('errorLoadingCategories'));
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t('errorLoadingCategories'),
+        buttons: [{ text: t('accept') }],
+      });
     }
   }, [t, type]);
 
