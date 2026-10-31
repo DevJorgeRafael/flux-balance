@@ -6,6 +6,7 @@ import * as SystemUI from 'expo-system-ui';
 import * as SplashScreen from 'expo-splash-screen';
 
 import { StatusBar } from 'expo-status-bar';
+import { AlertHost } from '@/components/ui/alert/AlertHost';
 import { AppErrorBoundary } from '@/components/errors/AppErrorBoundary';
 import { FatalErrorScreen } from '@/components/errors/FatalErrorScreen';
 import {
@@ -82,6 +83,7 @@ function RootWithTheme() {
 
   return (
     <>
+      <AlertHost />
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <ThemeProvider value={navigationTheme}>
         <DashboardProvider>

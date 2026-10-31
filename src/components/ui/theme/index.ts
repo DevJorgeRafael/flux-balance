@@ -5,6 +5,7 @@ export {
   fontWeight,
   lineHeight,
   duration,
+  shadow,
   cardShadow,
   cardShadowSm,
   categoryPalettes,
@@ -16,6 +17,7 @@ export type {
   CardShadowToken,
   CategoryColorPalette,
   HeroGradientToken,
+  ShadowToken,
   Tokens,
 } from './tokens';
 export { lightPalette, darkPalette, readableTextCandidates } from './palettes';

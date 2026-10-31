@@ -7,9 +7,9 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { X } from 'lucide-react-native';
+import { appAlert } from '@/components/ui/alert/appAlert';
 import { TransactionType } from '@/core/models/transaction';
 import { Account } from '@/core/models/account';
 import { Category } from '@/core/models/category';
@@ -86,20 +86,27 @@ export function CreateTransactionModal({
     const decimals = getCurrencyDecimals(currency);
     const amountResult = parseAmountInput(txAmount, locale, decimals);
     if (!amountResult.ok) {
-      Alert.alert(
-        t('error'),
-        t(getAmountInputErrorKey(amountResult.error), {
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t(getAmountInputErrorKey(amountResult.error), {
           decimals,
           max: format(MAX_AMOUNT, { showCurrency: false }),
-        })
-      );
+        }),
+        buttons: [{ text: t('accept') }],
+      });
       return;
     }
     const amountVal = amountResult.value;
 
     const accountId = selectedAccountId || accounts[0]?.id;
     if (!accountId) {
-      Alert.alert(t('error'), t('noAccountsForMovement'));
+      void appAlert({
+        type: 'warning',
+        title: t('error'),
+        message: t('noAccountsForMovement'),
+        buttons: [{ text: t('accept') }],
+      });
       return;
     }
 
@@ -130,7 +137,12 @@ export function CreateTransactionModal({
       onTransactionCreated();
     } catch (err: unknown) {
       console.error('Error creating transaction:', err);
-      Alert.alert(t('error'), t('createTransactionError'));
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t('createTransactionError'),
+        buttons: [{ text: t('accept') }],
+      });
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);

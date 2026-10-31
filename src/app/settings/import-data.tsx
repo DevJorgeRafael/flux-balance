@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
 import { router } from 'expo-router';
 import { FileSpreadsheet, FileText } from 'lucide-react-native';
+import { appAlert } from '@/components/ui/alert/appAlert';
 import { BackupProgressModal } from '@/components/settings/BackupProgressModal';
 import {
   DataTransferScreen,
@@ -70,9 +70,19 @@ export default function ImportDataScreen() {
     } catch (error) {
       console.error('Error reading backup file:', error);
       if (error instanceof BackupFileError && error.code === 'readFailed') {
-        Alert.alert(t('error'), t('backupErrorFileRead'));
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('backupErrorFileRead'),
+          buttons: [{ text: t('accept') }],
+        });
       } else {
-        Alert.alert(t('error'), t('backupErrorImportFailed'));
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('backupErrorImportFailed'),
+          buttons: [{ text: t('accept') }],
+        });
       }
     } finally {
       setIsReadingImport(false);
@@ -104,9 +114,19 @@ export default function ImportDataScreen() {
     } catch (error) {
       console.error('Error reading Excel file:', error);
       if (error instanceof BackupFileError && error.code === 'readFailed') {
-        Alert.alert(t('error'), t('backupErrorFileRead'));
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('backupErrorFileRead'),
+          buttons: [{ text: t('accept') }],
+        });
       } else {
-        Alert.alert(t('error'), t('backupErrorImportFailed'));
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('backupErrorImportFailed'),
+          buttons: [{ text: t('accept') }],
+        });
       }
     } finally {
       setIsReadingImport(false);
@@ -126,9 +146,19 @@ export default function ImportDataScreen() {
         error instanceof BackupFileError &&
         error.code === 'sharingUnavailable'
       ) {
-        Alert.alert(t('error'), t('backupErrorShareUnavailable'));
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('backupErrorShareUnavailable'),
+          buttons: [{ text: t('accept') }],
+        });
       } else {
-        Alert.alert(t('error'), t('backupErrorExportFailed'));
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('backupErrorExportFailed'),
+          buttons: [{ text: t('accept') }],
+        });
       }
     } finally {
       setIsExportingTemplate(false);
@@ -158,7 +188,12 @@ export default function ImportDataScreen() {
       router.navigate('/');
     } catch (error) {
       console.error('Error importing backup:', error);
-      Alert.alert(t('error'), t('backupErrorImportFailed'));
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t('backupErrorImportFailed'),
+        buttons: [{ text: t('accept') }],
+      });
     } finally {
       setIsImporting(false);
     }

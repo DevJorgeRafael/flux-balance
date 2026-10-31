@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   StyleSheet,
   Text,
@@ -13,6 +12,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { AlertTriangle, RefreshCw, Share2 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { appAlert } from '@/components/ui/alert/appAlert';
 import {
   darkPalette,
   fontSize,
@@ -73,7 +73,12 @@ export function FatalErrorScreen({
         shareError instanceof ErrorReportError && shareError.code === 'unavailable'
           ? copy.startupErrorReportUnavailable
           : copy.startupErrorReportFailed;
-      Alert.alert(copy.error, message);
+      void appAlert({
+        type: 'error',
+        title: copy.error,
+        message,
+        buttons: [{ text: copy.accept }],
+      });
     } finally {
       setSharing(false);
     }

@@ -26,12 +26,17 @@ import {
   countLicensePackages,
   filterLicenseGroups,
   isCombinedLicense,
+  mergeLicenseGroups,
   type LicenseGroup,
 } from '@/core/services/license-search';
+import type { TranslationKey } from '@/core/i18n/translations';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import licensesData from '@/constants/thirdPartyLicenses.json';
+import vendoredLicensesData from '@/constants/vendoredLicenses.json';
 
-const groups = (licensesData as { groups: LicenseGroup[] }).groups;
+const generatedGroups = (licensesData as { groups: LicenseGroup[] }).groups;
+const vendoredGroups = (vendoredLicensesData as { groups: LicenseGroup[] }).groups;
+const groups = mergeLicenseGroups(generatedGroups, vendoredGroups);
 const totalPackages = countLicensePackages(groups);
 
 type ListRow =
@@ -41,6 +46,7 @@ type ListRow =
       key: string;
       name: string;
       version: string;
+      noticeKey?: string;
       isLast: boolean;
     }
   | {
@@ -49,6 +55,7 @@ type ListRow =
       name: string;
       version: string;
       license: string;
+      noticeKey?: string;
     };
 
 function buildGroupedRows(groups: LicenseGroup[]): ListRow[] {
@@ -63,6 +70,7 @@ function buildGroupedRows(groups: LicenseGroup[]): ListRow[] {
         key: `pkg:${group.license}:${pkg.name}@${pkg.version}`,
         name: pkg.name,
         version: pkg.version,
+        noticeKey: pkg.noticeKey,
         isLast: index === group.packages.length - 1,
       });
     });
@@ -79,6 +87,7 @@ function buildSearchRows(groups: LicenseGroup[]): ListRow[] {
       name: pkg.name,
       version: pkg.version,
       license: group.license,
+      noticeKey: pkg.noticeKey,
     }))
   );
 }
@@ -182,9 +191,16 @@ export function LicenseCatalog() {
             item.isLast && styles.packageRowLast,
           ]}
         >
-          <Text style={[styles.packageName, { color: colors.text }]} numberOfLines={2}>
-            {item.name}
-          </Text>
+          <View style={styles.packageInfo}>
+            <Text style={[styles.packageName, { color: colors.text }]} numberOfLines={2}>
+              {item.name}
+            </Text>
+            {item.noticeKey ? (
+              <Text style={[styles.packageNotice, { color: colors.textLight }]}>
+                {t(item.noticeKey as TranslationKey)}
+              </Text>
+            ) : null}
+          </View>
           <Text style={[styles.packageVersion, { color: colors.textLight }]}>
             v{item.version}
           </Text>
@@ -200,6 +216,11 @@ export function LicenseCatalog() {
         <Text style={[styles.searchMeta, { color: colors.textLight }]} numberOfLines={2}>
           v{item.version} · {item.license}
         </Text>
+        {item.noticeKey ? (
+          <Text style={[styles.packageNotice, { color: colors.textLight }]}>
+            {t(item.noticeKey as TranslationKey)}
+          </Text>
+        ) : null}
       </Card>
     );
   };
@@ -397,10 +418,18 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: radius.card,
     borderBottomRightRadius: radius.card,
   },
-  packageName: {
+  packageInfo: {
     flex: 1,
+  },
+  packageName: {
     fontSize: fontSize.md,
     fontWeight: '600',
+  },
+  packageNotice: {
+    marginTop: spacing.xxs,
+    fontSize: fontSize.sm,
+    fontWeight: '500',
+    lineHeight: 16,
   },
   packageVersion: {
     fontSize: fontSize.sm,

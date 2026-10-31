@@ -2,6 +2,7 @@ import {
   CATEGORY_COLOR_PALETTES,
   type CategoryColorPalette,
 } from '@/core/constants/categoryPalettes';
+import { neutral } from './palettes';
 
 export { CATEGORY_COLOR_PALETTES as categoryPalettes };
 export type { CategoryColorPalette };
@@ -101,6 +102,49 @@ export const cardShadowSm: CardShadowToken = {
   opacityDark: 0.28,
 };
 
+export interface ShadowToken {
+  shadowColor: string;
+  shadowOffset: { width: number; height: number };
+  shadowOpacity: number;
+  shadowRadius: number;
+  elevation: number;
+}
+
+/**
+ * Sombras compatibles con los componentes copiados de orn-ui. Los valores
+ * numéricos siguen la escala de la librería; el color sale de la paleta.
+ */
+export const shadow: Record<'none' | 'sm' | 'md' | 'lg', ShadowToken> = {
+  none: {
+    shadowColor: neutral.black,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  sm: {
+    shadowColor: neutral.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  md: {
+    shadowColor: neutral.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  lg: {
+    shadowColor: neutral.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+};
+
 export interface HeroGradientToken {
   colors: readonly [string, string, ...string[]];
   locations: readonly [number, number, ...number[]];
@@ -134,6 +178,7 @@ export const tokens = {
   fontWeight,
   lineHeight,
   duration,
+  shadow,
   cardShadow,
   categoryPalettes: CATEGORY_COLOR_PALETTES,
   heroGradientLight,
