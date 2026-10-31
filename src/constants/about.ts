@@ -18,9 +18,14 @@ export const SUPPORT_URL = 'https://ko-fi.com/devjorgerafael';
 export const PRIVACY_URL = '';
 
 /** Interruptor general de la sección de apoyo. */
-export const SHOW_DONATION = true;
+export const SHOW_DONATION = false;
 
 /** El apoyo solo se muestra con la donación activa y una URL configurada. */
 export function isSupportVisible(showDonation: boolean, supportUrl: string): boolean {
   return showDonation && supportUrl.trim().length > 0;
+}
+
+/** La privacidad solo se muestra cuando hay una URL configurada. */
+export function isPrivacyVisible(privacyUrl: string): boolean {
+  return privacyUrl.trim().length > 0;
 }

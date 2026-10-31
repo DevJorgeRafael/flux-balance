@@ -23,6 +23,7 @@ import {
   PRIVACY_URL,
   SHOW_DONATION,
   SUPPORT_URL,
+  isPrivacyVisible,
   isSupportVisible,
 } from '@/constants/about';
 import { useTranslation } from '@/core/i18n/useTranslation';
@@ -110,7 +111,7 @@ function AboutRow({
 export function AboutSection() {
   const { t } = useTranslation();
   const supportVisible = isSupportVisible(SHOW_DONATION, SUPPORT_URL);
-  const privacyVisible = PRIVACY_URL.trim().length > 0;
+  const privacyVisible = isPrivacyVisible(PRIVACY_URL);
   const version = getAppVersion();
 
   const openExternalLink = async (url: string) => {

@@ -9,9 +9,11 @@
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#0A0E1A",
     "ios": {
+      "bundleIdentifier": "com.devjorgerafael.flux-balance",
       "buildNumber": "1"
     },
     "android": {
+      "package": "com.devjorgerafael.flux_balance",
       "versionCode": 1,
       "allowBackup": false,
       "adaptiveIcon": {
