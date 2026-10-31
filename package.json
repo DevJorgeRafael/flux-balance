@@ -1,7 +1,7 @@
 {
   "name": "flux-balance",
   "main": "expo-router/entry",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "license": "MIT",
   "dependencies": {
     "@expo/ui": "~58.0.23",
