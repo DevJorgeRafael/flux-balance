@@ -24,6 +24,11 @@ export interface FormatAmountOptions extends FormatMoneyOptions {
   hidden?: boolean;
 }
 
+export interface CurrencyProviderProps {
+  children: React.ReactNode;
+  initialCurrency?: string;
+}
+
 interface CurrencyContextValue {
   currency: string;
   setCurrency: (code: string) => void;
@@ -31,10 +36,23 @@ interface CurrencyContextValue {
 
 const CurrencyContext = createContext<CurrencyContextValue | null>(null);
 
-export function CurrencyProvider({ children }: { children: React.ReactNode }) {
-  const [currency, setCurrencyState] = useState<string>(DEFAULT_CURRENCY_CODE);
+export async function loadStoredCurrency(): Promise<string> {
+  try {
+    return resolveCurrencyCode(await getAppSetting(CURRENCY_SETTING_KEY));
+  } catch (error) {
+    console.error('Error loading currency preference:', error);
+    return DEFAULT_CURRENCY_CODE;
+  }
+}
+
+export function CurrencyProvider({ children, initialCurrency }: CurrencyProviderProps) {
+  const [currency, setCurrencyState] = useState<string>(() =>
+    resolveCurrencyCode(initialCurrency)
+  );
 
   useEffect(() => {
+    if (initialCurrency !== undefined) return;
+
     let cancelled = false;
 
     void getAppSetting(CURRENCY_SETTING_KEY)
@@ -51,7 +69,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialCurrency]);
 
   const setCurrency = useCallback((code: string) => {
     const nextCurrency = resolveCurrencyCode(code);
