@@ -2,6 +2,20 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.6.3] - 2026-10-31
+
+Alertas migradas a orn-ui y atribución de licencias.
+
+### Cambiado
+
+- Alertas y confirmaciones usan orn-ui.
+- Las alertas respetan el tema y el idioma.
+- Licencias de terceros incluye orn-ui, versión y MIT.
+
+### Añadido
+
+- `THIRD_PARTY_LICENSES.md` con la atribución de orn-ui.
+
 ## [1.6.2] - 2026-10-30
 
 Exportación e importación rediseñadas con opciones JSON/Excel y sin respaldo previo.
