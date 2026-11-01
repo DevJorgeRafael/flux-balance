@@ -14,8 +14,14 @@
     },
     "android": {
       "package": "com.devjorgerafael.flux_balance",
-      "versionCode": 1,
+      "versionCode": 3,
       "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.VIBRATE"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#1642AF",
         "foregroundImage": "./assets/images/logos-app/logo-foreground-1024.png",
@@ -49,7 +55,8 @@
       "expo-image",
       "expo-status-bar",
       "expo-web-browser",
-      "expo-sharing"
+      "expo-sharing",
+      "./plugins/withReleaseSigning"
     ],
     "extra": {
       "eas": {
