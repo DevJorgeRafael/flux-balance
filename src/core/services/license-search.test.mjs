@@ -5,7 +5,6 @@ import {
   countLicensePackages,
   filterLicenseGroups,
   isCombinedLicense,
-  mergeLicenseGroups,
 } from './license-search.ts';
 import { translations } from '../i18n/translations.ts';
 
@@ -13,12 +12,11 @@ function readLicenseData(relativePath) {
   return JSON.parse(readFileSync(new URL(relativePath, import.meta.url), 'utf8'));
 }
 
-const mergedGroups = mergeLicenseGroups(
-  readLicenseData('../../constants/thirdPartyLicenses.json').groups,
-  readLicenseData('../../constants/vendoredLicenses.json').groups
-);
+const catalog = readLicenseData('../../constants/thirdPartyLicenses.json');
+const groups = catalog.groups;
+const vendoredCatalog = readLicenseData('../../constants/vendoredLicenses.json');
 
-const groups = [
+const sampleGroups = [
   {
     license: 'MIT',
     text: 'MIT',
@@ -35,14 +33,14 @@ const groups = [
 ];
 
 test('devuelve todos los grupos y paquetes sin consulta', () => {
-  const result = filterLicenseGroups(groups, '   ');
+  const result = filterLicenseGroups(sampleGroups, '   ');
 
   assert.equal(result.groups.length, 2);
   assert.equal(result.total, 3);
 });
 
 test('filtra por nombre de paquete sin distinguir mayúsculas', () => {
-  const result = filterLicenseGroups(groups, 'EXPO');
+  const result = filterLicenseGroups(sampleGroups, 'EXPO');
 
   assert.equal(result.groups.length, 1);
   assert.equal(result.groups[0].license, 'MIT');
@@ -53,7 +51,7 @@ test('filtra por nombre de paquete sin distinguir mayúsculas', () => {
 });
 
 test('descarta los grupos sin coincidencias y conserva sus textos', () => {
-  const result = filterLicenseGroups(groups, 'bool');
+  const result = filterLicenseGroups(sampleGroups, 'bool');
 
   assert.equal(result.groups.length, 1);
   assert.equal(result.groups[0].license, 'ISC');
@@ -62,7 +60,7 @@ test('descarta los grupos sin coincidencias y conserva sus textos', () => {
 });
 
 test('cuenta los paquetes de todos los grupos', () => {
-  assert.equal(countLicensePackages(groups), 3);
+  assert.equal(countLicensePackages(sampleGroups), 3);
 });
 
 test('detecta expresiones de licencia combinadas', () => {
@@ -72,8 +70,60 @@ test('detecta expresiones de licencia combinadas', () => {
   assert.equal(isCombinedLicense('(MIT OR CC0-1.0)'), true);
 });
 
-test('incluye orn-ui con MIT y su aviso tras combinar licencias vendored', () => {
-  const ornGroup = mergedGroups.find(
+test('el catálogo generado incluye el resumen y está ordenado', () => {
+  assert.equal(catalog.summary.packages, countLicensePackages(groups));
+  assert.equal(catalog.summary.groups, groups.length);
+
+  for (let index = 1; index < groups.length; index += 1) {
+    const previous = groups[index - 1];
+    const current = groups[index];
+
+    assert.ok(previous.packages.length >= current.packages.length);
+
+    if (previous.packages.length === current.packages.length) {
+      assert.ok(
+        previous.license.localeCompare(current.license, 'en', {
+          sensitivity: 'base',
+        }) <= 0
+      );
+    }
+  }
+
+  for (const group of groups) {
+    for (let index = 1; index < group.packages.length; index += 1) {
+      const previous = group.packages[index - 1];
+      const current = group.packages[index];
+      const nameOrder = previous.name.localeCompare(current.name, 'en', {
+        sensitivity: 'base',
+      });
+
+      assert.ok(nameOrder <= 0);
+      if (nameOrder === 0) assert.ok(previous.version.localeCompare(current.version) <= 0);
+    }
+  }
+});
+
+test('el catálogo generado incluye las licencias vendorizadas', () => {
+  for (const vendoredGroup of vendoredCatalog.groups) {
+    const group = groups.find((candidate) => candidate.license === vendoredGroup.license);
+
+    assert.ok(group);
+
+    for (const vendoredPackage of vendoredGroup.packages) {
+      const pkg = group.packages.find(
+        (candidate) =>
+          candidate.name === vendoredPackage.name &&
+          candidate.version === vendoredPackage.version
+      );
+
+      assert.ok(pkg);
+      assert.equal(pkg.noticeKey, vendoredPackage.noticeKey);
+    }
+  }
+});
+
+test('incluye orn-ui con MIT y su aviso', () => {
+  const ornGroup = groups.find(
     (group) =>
       group.license === 'MIT' &&
       group.packages.some((pkg) => pkg.name === 'orn-ui')
@@ -88,7 +138,7 @@ test('incluye orn-ui con MIT y su aviso tras combinar licencias vendored', () =>
 });
 
 test('la búsqueda de orn incluye orn-ui y conserva acorn', () => {
-  const result = filterLicenseGroups(mergedGroups, 'orn');
+  const result = filterLicenseGroups(groups, 'orn');
   const names = result.groups.flatMap((group) =>
     group.packages.map((pkg) => pkg.name)
   );

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Flux Balance",
     "slug": "flux-balance",
-    "version": "1.6.4",
+    "version": "1.6.5",
     "orientation": "portrait",
     "icon": "./assets/images/logos-app/icon-1024.png",
     "scheme": "fluxbalance",
@@ -51,6 +51,11 @@
       "expo-web-browser",
       "expo-sharing"
     ],
+    "extra": {
+      "eas": {
+        "projectId": "4026deb6-47ca-4bd5-90a2-864716268936"
+      }
+    },
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

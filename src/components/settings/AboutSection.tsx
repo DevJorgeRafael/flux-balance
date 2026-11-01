@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
 import {
@@ -27,6 +27,8 @@ import {
   isSupportVisible,
 } from '@/constants/about';
 import { useTranslation } from '@/core/i18n/useTranslation';
+
+const LICENSE_PREFETCH_DELAY_MS = 800;
 
 function getAppVersion(): string {
   return Constants.expoConfig?.version ?? '—';
@@ -113,6 +115,29 @@ export function AboutSection() {
   const supportVisible = isSupportVisible(SHOW_DONATION, SUPPORT_URL);
   const privacyVisible = isPrivacyVisible(PRIVACY_URL);
   const version = getAppVersion();
+  const navigatingToLicenses = useRef(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      navigatingToLicenses.current = false;
+
+      const timeout = setTimeout(() => {
+        router.prefetch('/settings/licenses');
+      }, LICENSE_PREFETCH_DELAY_MS);
+
+      return () => {
+        navigatingToLicenses.current = false;
+        clearTimeout(timeout);
+      };
+    }, [])
+  );
+
+  const openLicenses = () => {
+    if (navigatingToLicenses.current) return;
+
+    navigatingToLicenses.current = true;
+    router.navigate('/settings/licenses');
+  };
 
   const openExternalLink = async (url: string) => {
     try {
@@ -150,7 +175,7 @@ export function AboutSection() {
           icon={FileText}
           label={t('thirdPartyLicenses')}
           isLast={!privacyVisible && !supportVisible}
-          onPress={() => router.push('/settings/licenses')}
+          onPress={openLicenses}
         />
 
         {privacyVisible ? (

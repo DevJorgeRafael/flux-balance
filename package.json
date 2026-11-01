@@ -1,7 +1,7 @@
 {
   "name": "flux-balance",
   "main": "expo-router/entry",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "license": "MIT",
   "dependencies": {
     "@expo/ui": "~58.0.23",
@@ -30,7 +30,7 @@
     "moti": "^0.30.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-native": "0.88.0",
+    "react-native": "0.88.1",
     "react-native-gesture-handler": "~3.3.0",
     "react-native-reanimated": "4.7.1",
     "react-native-safe-area-context": "~5.10.1",
@@ -42,6 +42,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
+    "babel-preset-expo": "~58.0.22",
     "eslint": "^9.21.0",
     "eslint-config-expo": "~58.0.4",
     "husky": "^9.1.7",
