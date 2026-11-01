@@ -2,6 +2,17 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.6.5] - 2026-10-31
+
+Migración del proyecto a npm.
+
+### Cambiado
+
+- Dependencias y scripts usan npm en lugar de pnpm.
+- README actualizado con los comandos de npm.
+- React Native actualizado a 0.88.1.
+- La generación de licencias lee `package-lock.json`.
+
 ## [1.6.4] - 2026-10-31
 
 Nuevo ícono, splash y arranque más consistente.

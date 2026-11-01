@@ -1,43 +1,62 @@
-import { execSync } from 'node:child_process';
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const lockPath = join(root, 'package-lock.json');
 const outputPath = join(root, 'src', 'constants', 'thirdPartyLicenses.json');
 const LICENSE_FILE_PATTERN = /^(licen[cs]e|copying)([.-].*)?$/i;
 const COMBINED_LICENSE_PATTERN = /\b(?:AND|OR)\b|[()]/;
+const NODE_MODULES_SEGMENT = 'node_modules/';
 
-// pnpm es la fuente de verdad del árbol instalado. --production (alias de
-// --prod) deja fuera las devDependencies y conserva las transitivas.
-const raw = execSync('pnpm licenses list --production --json', {
-  cwd: root,
-  encoding: 'utf8',
-  maxBuffer: 64 * 1024 * 1024,
-});
-
-const grouped = JSON.parse(raw);
+const lock = JSON.parse(readFileSync(lockPath, 'utf8'));
 const packageMap = new Map();
 
-for (const [groupLicense, entries] of Object.entries(grouped)) {
-  for (const entry of entries) {
-    const versions =
-      Array.isArray(entry.versions) && entry.versions.length > 0 ? entry.versions : [''];
-    const paths = Array.isArray(entry.paths) ? entry.paths : [];
-    const license = entry.license ?? groupLicense;
+function normalizeLicense(value) {
+  if (typeof value === 'string') return value.trim();
+  if (Array.isArray(value)) {
+    return value.map(normalizeLicense).filter(Boolean).join(' OR ');
+  }
+  if (value && typeof value === 'object' && typeof value.type === 'string') {
+    return value.type.trim();
+  }
+  return '';
+}
 
-    for (const version of versions) {
-      const key = `${entry.name}\u0000${version}\u0000${license}`;
-      const existing = packageMap.get(key);
+function readDeclaredLicense(location) {
+  try {
+    const pkg = JSON.parse(readFileSync(join(root, location, 'package.json'), 'utf8'));
+    return normalizeLicense(pkg.license) || normalizeLicense(pkg.licenses);
+  } catch {
+    return '';
+  }
+}
 
-      if (existing) {
-        for (const path of paths) {
-          if (!existing.paths.includes(path)) existing.paths.push(path);
-        }
-      } else {
-        packageMap.set(key, { name: entry.name, version, license, paths: [...paths] });
-      }
-    }
+for (const [location, entry] of Object.entries(lock.packages ?? {})) {
+  if (!location || entry.dev || entry.link || !entry.version) continue;
+
+  const markerIndex = location.lastIndexOf(NODE_MODULES_SEGMENT);
+  if (markerIndex < 0) continue;
+
+  const name = entry.name ?? location.slice(markerIndex + NODE_MODULES_SEGMENT.length);
+  if (!name) continue;
+
+  const license = normalizeLicense(entry.license) || readDeclaredLicense(location);
+  if (!license) continue;
+
+  const key = `${name}\u0000${entry.version}\u0000${license}`;
+  const existing = packageMap.get(key);
+  const packagePath = join(root, location);
+
+  if (existing) {
+    if (!existing.paths.includes(packagePath)) existing.paths.push(packagePath);
+  } else {
+    packageMap.set(key, {
+      name,
+      version: entry.version,
+      license,
+      paths: [packagePath],
+    });
   }
 }
 

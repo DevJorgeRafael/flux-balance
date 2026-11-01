@@ -1,19 +1,25 @@
-# Welcome to your Expo app 👋
+# Flux Balance
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Offline-first personal finance app built with Expo, React Native, and local SQLite.
+
+## Requirements
+
+- Node.js 22 or newer.
+- npm 10 or newer. The project uses `package-lock.json`; do not use pnpm.
+- Android Studio, a development build, or Expo Go for manual testing.
 
 ## Get started
 
 1. Install dependencies
 
    ```bash
-   pnpm install
+   npm install
    ```
 
 2. Start the app
 
    ```bash
-   pnpm start
+   npm start
    ```
 
 In the output, you'll find options to open the app in a
@@ -27,28 +33,22 @@ You can start developing by editing the files inside the **src/app** directory. 
 
 ## Useful commands
 
-- `pnpm start`: Start the Expo dev server
-- `pnpm run android`: Start on Android
-- `pnpm run ios`: Start on iOS
-- `pnpm run web`: Start on Web
-- `pnpm expo install <package>`: Install SDK-compatible packages
-- `pnpm run lint`: Lint code with Expo lint
+- `npm start`: Start the Expo dev server.
+- `npm run android`: Start on Android.
+- `npm run ios`: Start on iOS.
+- `npm run web`: Start on Web.
+- `npm exec expo install <package>`: Install SDK-compatible packages.
+- `npm run lint`: Lint code with Expo lint.
+- `npx tsc --noEmit`: Run the TypeScript check.
+- `npm test`: Run the `node:test` suite.
+- `npm run licenses:generate`: Regenerate the third-party license catalog.
+- `npm run icons:generate`: Regenerate the app icon set.
 
-## Get a fresh project
+## Tests
 
-When you're ready, run:
+The project uses Node's built-in test runner, not Jest. Test files are colocated with the code they cover and end in `.test.mjs`. Add every new test file to the `test` script in `package.json`.
 
-```bash
-pnpm run reset-project
-```
-
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `pnpm run lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+On Windows PowerShell, use `npm.cmd` and `npx.cmd` if script execution is restricted.
 
 ## Learn more
 
