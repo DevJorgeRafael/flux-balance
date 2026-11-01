@@ -53,13 +53,15 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import=./scripts/test-ts-resolver.mjs --test src/constants/about.test.mjs src/constants/appConfig.test.mjs src/core/services/startup.test.mjs src/core/services/exportCachePolicy.test.mjs src/core/services/errorReport.test.mjs src/core/services/license-search.test.mjs src/core/constants/categoryPalettes.test.mjs src/core/services/stats-breakdown.test.mjs src/core/services/account-distribution.test.mjs src/core/services/category-resolution.test.mjs src/core/services/category-management.test.mjs src/core/utils/money.test.mjs src/core/preferences/preferences.test.mjs src/core/constants/environment.test.mjs src/core/services/reset-data-confirmation.test.mjs src/components/ui/theme/colors.test.mjs src/components/ui/alert/createAppAlert.test.mjs src/infrastructure/database/demoData.test.mjs src/infrastructure/database/categoryMigration.test.mjs src/infrastructure/database/categoryManagement.test.mjs src/infrastructure/database/resetFinancialData.test.mjs src/core/services/interest-calculator.test.mjs src/core/services/backup-excel.test.mjs src/core/services/backup-validation.test.mjs src/infrastructure/database/backup.test.mjs src/infrastructure/repositories/sqliteDataIntegrity.test.mjs",
     "licenses:generate": "node scripts/generate-licenses.mjs",
     "icons:generate": "node scripts/generate-icons.mjs",
+    "aab:local": "expo prebuild --platform android --clean && cd android && gradlew.bat bundleRelease",
+    "apk:local": "expo prebuild --platform android --clean && cd android && gradlew.bat assembleRelease -PreactNativeArchitectures=arm64-v8a",
     "prepare": "husky"
   },
   "lint-staged": {
