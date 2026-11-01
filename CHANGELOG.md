@@ -13,6 +13,12 @@ Migración del proyecto a npm.
 - React Native actualizado a 0.88.1.
 - La generación de licencias lee `package-lock.json`.
 
+### Corregido
+
+- La pantalla de licencias aparece al instante con un indicador de carga.
+- El catálogo de licencias se genera agrupado y ordenado.
+- Los toques repetidos ya no apilan la pantalla de licencias.
+
 ## [1.6.4] - 2026-10-31
 
 Nuevo ícono, splash y arranque más consistente.

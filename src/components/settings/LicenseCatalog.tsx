@@ -1,6 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
-  FlatList,
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -8,89 +13,15 @@ import {
   View,
 } from 'react-native';
 import Constants from 'expo-constants';
+import { Search, X } from 'lucide-react-native';
+import { fontSize, radius, spacing, useColors, useInsets } from '@/components/ui/theme';
 import {
-  ChevronDown,
-  ChevronUp,
-  Search,
-  X,
-} from 'lucide-react-native';
-import { Card } from '@/components/ui/Card';
-import {
-  fontSize,
-  radius,
-  spacing,
-  useColors,
-  useInsets,
-} from '@/components/ui/theme';
-import {
-  countLicensePackages,
   filterLicenseGroups,
-  isCombinedLicense,
-  mergeLicenseGroups,
-  type LicenseGroup,
+  type LicenseCatalogData,
 } from '@/core/services/license-search';
-import type { TranslationKey } from '@/core/i18n/translations';
 import { useTranslation } from '@/core/i18n/useTranslation';
-import licensesData from '@/constants/thirdPartyLicenses.json';
-import vendoredLicensesData from '@/constants/vendoredLicenses.json';
-
-const generatedGroups = (licensesData as { groups: LicenseGroup[] }).groups;
-const vendoredGroups = (vendoredLicensesData as { groups: LicenseGroup[] }).groups;
-const groups = mergeLicenseGroups(generatedGroups, vendoredGroups);
-const totalPackages = countLicensePackages(groups);
-
-type ListRow =
-  | { type: 'group'; key: string; group: LicenseGroup }
-  | {
-      type: 'groupPackage';
-      key: string;
-      name: string;
-      version: string;
-      noticeKey?: string;
-      isLast: boolean;
-    }
-  | {
-      type: 'searchPackage';
-      key: string;
-      name: string;
-      version: string;
-      license: string;
-      noticeKey?: string;
-    };
-
-function buildGroupedRows(groups: LicenseGroup[]): ListRow[] {
-  const rows: ListRow[] = [];
-
-  for (const group of groups) {
-    rows.push({ type: 'group', key: `group:${group.license}`, group });
-
-    group.packages.forEach((pkg, index) => {
-      rows.push({
-        type: 'groupPackage',
-        key: `pkg:${group.license}:${pkg.name}@${pkg.version}`,
-        name: pkg.name,
-        version: pkg.version,
-        noticeKey: pkg.noticeKey,
-        isLast: index === group.packages.length - 1,
-      });
-    });
-  }
-
-  return rows;
-}
-
-function buildSearchRows(groups: LicenseGroup[]): ListRow[] {
-  return groups.flatMap((group) =>
-    group.packages.map((pkg) => ({
-      type: 'searchPackage' as const,
-      key: `search:${group.license}:${pkg.name}@${pkg.version}`,
-      name: pkg.name,
-      version: pkg.version,
-      license: group.license,
-      noticeKey: pkg.noticeKey,
-    }))
-  );
-}
+import { LicenseGroupList } from './LicenseGroupList';
+import { LicenseSearchList } from './LicenseSearchList';
 
 export function LicenseCatalog() {
   const colors = useColors();
@@ -98,148 +29,73 @@ export function LicenseCatalog() {
   const { t } = useTranslation();
   const appName = Constants.expoConfig?.name ?? 'Flux Balance';
 
+  const [catalog, setCatalog] = useState<LicenseCatalogData | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [query, setQuery] = useState('');
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const deferredQuery = useDeferredValue(query);
+  const searching = deferredQuery.trim().length > 0;
+  const isFiltering = query !== deferredQuery;
 
-  const filtered = useMemo(() => filterLicenseGroups(groups, query), [query]);
-  const searching = query.trim().length > 0;
+  useEffect(() => {
+    let active = true;
 
-  const rows = useMemo(
-    () => (searching ? buildSearchRows(filtered.groups) : buildGroupedRows(groups)),
-    [searching, filtered.groups]
+    const load = () => {
+      void import('@/constants/thirdPartyLicenses.json')
+        .then((module) => {
+          if (active) setCatalog(module.default as LicenseCatalogData);
+        })
+        .catch(() => {
+          if (active) setLoadFailed(true);
+        });
+    };
+
+    const handle = requestIdleCallback(load, { timeout: 800 });
+
+    return () => {
+      active = false;
+      cancelIdleCallback(handle);
+    };
+  }, []);
+
+  const filtered = useMemo(
+    () =>
+      catalog && deferredQuery.trim()
+        ? filterLicenseGroups(catalog.groups, deferredQuery)
+        : null,
+    [catalog, deferredQuery]
   );
 
-  const toggleExpanded = (license: string) => {
-    setExpanded((previous) => ({
-      ...previous,
-      [license]: !previous[license],
-    }));
-  };
-
-  const renderItem = ({ item }: { item: ListRow }) => {
-    if (item.type === 'group') {
-      const isExpanded = expanded[item.group.license] === true;
-      const hasText = item.group.text.trim().length > 0;
-      const combined = isCombinedLicense(item.group.license);
-
-      return (
-        <Card style={styles.groupCard} borderWidth={StyleSheet.hairlineWidth}>
-          <View style={styles.groupHeader}>
-            <Text
-              style={[styles.licenseName, { color: colors.text }]}
-              numberOfLines={2}
-            >
-              {item.group.license}
-            </Text>
-            <View style={[styles.countPill, { backgroundColor: colors.primarySoft }]}>
-              <Text style={[styles.countText, { color: colors.primaryText }]}>
-                {item.group.packages.length}
-              </Text>
-            </View>
-          </View>
-
-          {hasText ? (
-            <Pressable
-              onPress={() => toggleExpanded(item.group.license)}
-              style={({ pressed }) => [styles.textToggle, pressed && styles.pressed]}
-              accessibilityRole="button"
-              accessibilityLabel={`${item.group.license}: ${
-                isExpanded ? t('hideLicenseText') : t('viewLicenseText')
-              }`}
-              accessibilityState={{ expanded: isExpanded }}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={[styles.textToggleLabel, { color: colors.primaryText }]}>
-                {isExpanded ? t('hideLicenseText') : t('viewLicenseText')}
-              </Text>
-              {isExpanded ? (
-                <ChevronUp size={16} color={colors.primaryText} strokeWidth={2.5} />
-              ) : (
-                <ChevronDown size={16} color={colors.primaryText} strokeWidth={2.5} />
-              )}
-            </Pressable>
-          ) : null}
-
-          {isExpanded && hasText ? (
-            <View
-              style={[
-                styles.licenseTextBox,
-                { backgroundColor: colors.background, borderColor: colors.border },
-              ]}
-            >
-              <Text selectable style={[styles.licenseText, { color: colors.textLight }]}>
-                {item.group.text}
-              </Text>
-            </View>
-          ) : null}
-
-          {!hasText ? (
-            <Text style={[styles.groupNote, { color: colors.textLight }]}>
-              {combined ? t('combinedLicenseNote') : t('licenseTextUnavailable')}
-            </Text>
-          ) : null}
-        </Card>
-      );
-    }
-
-    if (item.type === 'groupPackage') {
-      return (
-        <View
-          style={[
-            styles.packageRow,
-            { backgroundColor: colors.surface, borderColor: colors.border },
-            item.isLast && styles.packageRowLast,
-          ]}
-        >
-          <View style={styles.packageInfo}>
-            <Text style={[styles.packageName, { color: colors.text }]} numberOfLines={2}>
-              {item.name}
-            </Text>
-            {item.noticeKey ? (
-              <Text style={[styles.packageNotice, { color: colors.textLight }]}>
-                {t(item.noticeKey as TranslationKey)}
-              </Text>
-            ) : null}
-          </View>
-          <Text style={[styles.packageVersion, { color: colors.textLight }]}>
-            v{item.version}
-          </Text>
-        </View>
-      );
-    }
-
+  if (loadFailed) {
     return (
-      <Card style={styles.searchResultCard}>
-        <Text style={[styles.packageName, { color: colors.text }]} numberOfLines={2}>
-          {item.name}
+      <View style={styles.centeredState}>
+        <Text style={[styles.stateText, { color: colors.textLight }]}>
+          {t('licenseLoadError')}
         </Text>
-        <Text style={[styles.searchMeta, { color: colors.textLight }]} numberOfLines={2}>
-          v{item.version} · {item.license}
-        </Text>
-        {item.noticeKey ? (
-          <Text style={[styles.packageNotice, { color: colors.textLight }]}>
-            {t(item.noticeKey as TranslationKey)}
-          </Text>
-        ) : null}
-      </Card>
+      </View>
     );
-  };
+  }
 
-  const listHeader = searching ? undefined : (
-    <Card style={styles.noticeCard}>
-      <Text style={[styles.notice, { color: colors.textLight }]}>
-        {t('thirdPartyNotice', { app: appName })}
-      </Text>
-    </Card>
-  );
+  if (!catalog) {
+    return (
+      <View
+        style={styles.centeredState}
+        accessibilityRole="progressbar"
+        accessibilityLabel={t('loadingLicenses')}
+      >
+        <ActivityIndicator size="small" color={colors.primaryText} />
+        <Text style={[styles.stateText, { color: colors.textLight }]}>
+          {t('loadingLicenses')}
+        </Text>
+      </View>
+    );
+  }
 
-  const emptyComponent = (
-    <View style={styles.emptyState}>
-      <Text style={[styles.emptyText, { color: colors.textLight }]}>
-        {t('noPackagesFound')}
-      </Text>
-    </View>
-  );
+  const summary = searching
+    ? t('searchResults', { count: filtered?.total ?? 0 })
+    : t('licenseSummary', {
+        packages: catalog.summary.packages,
+        groups: catalog.summary.groups,
+      });
 
   return (
     <View style={styles.container}>
@@ -275,32 +131,26 @@ export function LicenseCatalog() {
           ) : null}
         </View>
 
-        <Text style={[styles.summary, { color: colors.textLight }]}>
-          {searching
-            ? t('searchResults', { count: filtered.total })
-            : t('licenseSummary', {
-                packages: totalPackages,
-                groups: groups.length,
-              })}
-        </Text>
+        <View style={styles.summaryRow}>
+          <Text style={[styles.summary, { color: colors.textLight }]}>{summary}</Text>
+          {isFiltering ? (
+            <ActivityIndicator size="small" color={colors.textLight} />
+          ) : null}
+        </View>
       </View>
 
-      <FlatList<ListRow>
-        data={rows}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.key}
-        contentContainerStyle={[
-          styles.content,
-          { paddingBottom: insets.bottom + spacing.xxl },
-          rows.length === 0 && styles.emptyContent,
-        ]}
-        ListHeaderComponent={listHeader}
-        ListEmptyComponent={emptyComponent}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        showsVerticalScrollIndicator={false}
-        initialNumToRender={12}
-      />
+      {searching ? (
+        <LicenseSearchList
+          groups={filtered?.groups ?? []}
+          bottomInset={insets.bottom}
+        />
+      ) : (
+        <LicenseGroupList
+          groups={catalog.groups}
+          appName={appName}
+          bottomInset={insets.bottom}
+        />
+      )}
     </View>
   );
 }
@@ -327,136 +177,27 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     fontSize: 15,
   },
+  summaryRow: {
+    minHeight: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
   summary: {
-    marginTop: spacing.sm,
     fontSize: fontSize.sm,
     fontWeight: '600',
   },
-  content: {
-    paddingHorizontal: spacing.xxl,
-    paddingTop: spacing.sm,
-  },
-  emptyContent: {
-    flexGrow: 1,
-  },
-  noticeCard: {
-    padding: spacing.lg,
-  },
-  notice: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    lineHeight: 18,
-  },
-  groupCard: {
-    marginTop: spacing.md,
-    padding: spacing.lg,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    borderBottomWidth: 0,
-  },
-  groupHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.md,
-  },
-  licenseName: {
-    flex: 1,
-    fontSize: fontSize.md,
-    fontWeight: '800',
-    lineHeight: 20,
-  },
-  countPill: {
-    minWidth: 28,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 3,
-    borderRadius: radius.full,
-    alignItems: 'center',
-  },
-  countText: {
-    fontSize: fontSize.sm,
-    fontWeight: '800',
-  },
-  textToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: spacing.xs,
-    marginTop: spacing.sm,
-  },
-  textToggleLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: '700',
-  },
-  licenseTextBox: {
-    marginTop: spacing.md,
-    padding: spacing.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: radius.md,
-  },
-  licenseText: {
-    fontSize: fontSize.sm,
-    fontWeight: '400',
-    lineHeight: 18,
-  },
-  groupNote: {
-    marginTop: spacing.sm,
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    lineHeight: 18,
-  },
-  packageRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    borderRightWidth: StyleSheet.hairlineWidth,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  packageRowLast: {
-    borderBottomLeftRadius: radius.card,
-    borderBottomRightRadius: radius.card,
-  },
-  packageInfo: {
-    flex: 1,
-  },
-  packageName: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-  },
-  packageNotice: {
-    marginTop: spacing.xxs,
-    fontSize: fontSize.sm,
-    fontWeight: '500',
-    lineHeight: 16,
-  },
-  packageVersion: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-  },
-  searchResultCard: {
-    padding: spacing.lg,
-    gap: spacing.xxs,
-    marginBottom: spacing.sm,
-  },
-  searchMeta: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-  },
-  emptyState: {
+  centeredState: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: spacing.md,
     paddingHorizontal: spacing.xxl,
-    paddingVertical: spacing.xxl,
   },
-  emptyText: {
+  stateText: {
     fontSize: fontSize.md,
     fontWeight: '600',
     textAlign: 'center',
-  },
-  pressed: {
-    opacity: 0.7,
   },
 });

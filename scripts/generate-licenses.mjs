@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const lockPath = join(root, 'package-lock.json');
+const vendoredPath = join(root, 'src', 'constants', 'vendoredLicenses.json');
 const outputPath = join(root, 'src', 'constants', 'thirdPartyLicenses.json');
 const LICENSE_FILE_PATTERN = /^(licen[cs]e|copying)([.-].*)?$/i;
 const COMBINED_LICENSE_PATTERN = /\b(?:AND|OR)\b|[()]/;
@@ -211,6 +212,49 @@ for (const [license, packages] of packagesByLicense) {
   });
 }
 
+const vendored = JSON.parse(readFileSync(vendoredPath, 'utf8'));
+
+for (const vendoredGroup of vendored.groups ?? []) {
+  let group = groups.find((candidate) => candidate.license === vendoredGroup.license);
+
+  if (!group) {
+    group = {
+      license: vendoredGroup.license,
+      text: vendoredGroup.text ?? '',
+      packages: [],
+    };
+    groups.push(group);
+  }
+
+  for (const pkg of vendoredGroup.packages ?? []) {
+    const existingPackage = group.packages.find(
+      (candidate) => candidate.name === pkg.name && candidate.version === pkg.version
+    );
+
+    if (existingPackage) {
+      if (!existingPackage.noticeKey && pkg.noticeKey) {
+        existingPackage.noticeKey = pkg.noticeKey;
+      }
+    } else {
+      group.packages.push({
+        name: pkg.name,
+        version: pkg.version,
+        ...(pkg.noticeKey ? { noticeKey: pkg.noticeKey } : {}),
+      });
+    }
+  }
+
+  if (!group.text && vendoredGroup.text) group.text = vendoredGroup.text;
+}
+
+for (const group of groups) {
+  group.packages.sort(
+    (a, b) =>
+      a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }) ||
+      a.version.localeCompare(b.version)
+  );
+}
+
 groups.sort(
   (a, b) =>
     b.packages.length - a.packages.length ||
@@ -218,12 +262,13 @@ groups.sort(
 );
 
 const total = groups.reduce((sum, group) => sum + group.packages.length, 0);
+const summary = { groups: groups.length, packages: total };
 const combined = groups.filter((group) => isCombinedLicense(group.license)).length;
 const missing = groups
   .filter((group) => !group.text && !isCombinedLicense(group.license))
   .map((group) => group.license);
 
-writeFileSync(outputPath, `${JSON.stringify({ groups }, null, 2)}\n`);
+writeFileSync(outputPath, `${JSON.stringify({ summary, groups }, null, 2)}\n`);
 
 console.log(
   `Licencias: ${total} paquetes en ${groups.length} grupos (${combined} combinados) guardados en ${outputPath}`
