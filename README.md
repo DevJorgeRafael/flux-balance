@@ -71,3 +71,21 @@ Flux Balance se distribuye bajo la [licencia MIT](LICENSE).
 La app es gratuita y de código abierto. Si te resulta útil, puedes apoyar su desarrollo de forma voluntaria; no desbloquea funciones. El enlace de apoyo se configura en `src/constants/about.ts`.
 
 - [Repositorio](https://github.com/DevJorgeRafael/flux-balance)
+
+## Política de privacidad
+
+La política bilingüe está en [`docs/privacy/index.html`](docs/privacy/index.html).
+
+Para publicarla con GitHub Pages:
+
+1. Integra esta rama en `dev` y, cuando los cambios estén en `main`, activa GitHub Pages.
+2. En GitHub, abre **Settings > Pages**.
+3. En **Build and deployment**, selecciona **Deploy from a branch**.
+4. Elige la rama `main` y la carpeta `/docs`; guarda los cambios.
+5. Espera a que GitHub Pages publique el sitio.
+
+La URL final será:
+
+<https://devjorgerafael.github.io/flux-balance/privacy/>
+
+Cuando esa URL responda, actualiza `PRIVACY_URL` en `src/constants/about.ts` para mostrar el enlace dentro de la app.

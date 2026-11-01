@@ -2,6 +2,19 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.6.6] - 2026-11-01
+
+Versión para la prueba cerrada.
+
+### Añadido
+
+- Nueva política de privacidad.
+
+### Mejorado
+
+- La pantalla de licencias abre más rápido y ya no apila pantallas al tocar varias veces.
+- Nuevo splash y nuevos íconos.
+
 ## [1.6.5] - 2026-10-31
 
 Migración del proyecto a npm.
