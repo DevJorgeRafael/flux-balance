@@ -191,7 +191,11 @@ export function CreateAccountModal({
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
             {/* Selector de Tipo de Cuenta */}
             <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 4 }]}>{t('accountType')}</Text>
             <View style={styles.accountTypeSelectorRow}>

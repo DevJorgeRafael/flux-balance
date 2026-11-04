@@ -169,7 +169,7 @@ export function CreateTransactionModal({
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         style={{ flexGrow: 0 }}
-        contentContainerStyle={{ paddingBottom: 8 }}
+        contentContainerStyle={{ paddingBottom: 32 }}
       >
         {/* Segmented Control de Tipo */}
           <Card

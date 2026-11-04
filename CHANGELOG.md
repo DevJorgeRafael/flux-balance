@@ -2,6 +2,13 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [1.6.7] - 2026-11-04
+
+### Corregido
+
+- El teclado ya no tapa los campos ni el botón de guardar en los formularios de movimiento y cuenta.
+- El enlace de privacidad ya aparece en Acerca de.
+
 ## [1.6.6] - 2026-11-01
 
 Versión para la prueba cerrada.
