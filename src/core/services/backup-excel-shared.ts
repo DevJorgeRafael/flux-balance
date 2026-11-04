@@ -11,6 +11,7 @@ import {
 } from './backup-excel-rows';
 import {
   isValidBackupAmount,
+  isValidBackupBalance,
   isValidBackupId,
 } from './backup-validation-helpers';
 import { addRowError, rowNumberValue } from './backup-excel-values';
@@ -84,7 +85,8 @@ export function parseRequiredAmount(
   row: ExcelRow,
   key: string,
   errors: BackupValidationError[],
-  positive: boolean
+  positive: boolean,
+  allowNegative = false
 ): number | null {
   if (isEmptyCell(getCell(table, row, key))) {
     addRowError(errors, table, row, 'missingField', key, { path: key });
@@ -92,7 +94,12 @@ export function parseRequiredAmount(
   }
 
   const value = rowNumberValue(table, row, key);
-  if (value === null || !isValidBackupAmount(value)) {
+  if (
+    value === null ||
+    !(allowNegative
+      ? isValidBackupBalance(value)
+      : isValidBackupAmount(value))
+  ) {
     addRowError(errors, table, row, 'invalidAmount', key, { path: key });
     return null;
   }
