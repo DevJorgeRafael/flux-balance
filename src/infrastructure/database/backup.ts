@@ -191,7 +191,6 @@ export async function importBackupIntoDatabase(
       DELETE FROM accounts;
       DELETE FROM income_categories;
       DELETE FROM expense_categories;
-      CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);
     `);
 
     for (const account of backup.accounts) {

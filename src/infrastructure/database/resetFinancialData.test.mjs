@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 
 import { resetFinancialData } from './resetFinancialData.ts';
-import { SCHEMA_DDL, DEFAULT_CATEGORIES } from './schema.sql.ts';
+import { BASELINE_DDL } from './migrations/001_baseline.ts';
+import { DEFAULT_CATEGORIES } from './schema.sql.ts';
 
 const DEFAULT_INCOME_COUNT = DEFAULT_CATEGORIES.filter(
   (category) => category.type === 'INCOME'
@@ -15,7 +16,7 @@ const DEFAULT_EXPENSE_COUNT = DEFAULT_CATEGORIES.filter(
 function createDatabase() {
   const raw = new DatabaseSync(':memory:');
   raw.exec('PRAGMA foreign_keys = ON;');
-  raw.exec(SCHEMA_DDL);
+  raw.exec(BASELINE_DDL);
   raw.exec(
     'CREATE TABLE app_settings (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)'
   );

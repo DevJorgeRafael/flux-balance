@@ -1,7 +1,9 @@
 // Generado desde src/infrastructure/database. Última revisión: 2026-11-04.
+// Versión de esquema: user_version = 2.
 
-// Esquema SQLite de Flux Balance. Las tablas base se crean en schema.sql.ts;
-// app_settings y categories_backup_v1 se crean fuera de SCHEMA_DDL.
+// Esquema SQLite de Flux Balance. Las tablas base se crean en 001_baseline.ts
+// (migración 1); app_settings se crea en 002_app_settings.ts (migración 2).
+// categories_backup_v1 lo crea migrateCategories.ts durante la migración 1.
 
 Table accounts {
   id TEXT [pk, not null]
@@ -103,7 +105,7 @@ Table app_settings {
   key TEXT [pk, not null]
   value TEXT [not null]
 
-  Note: '''Creada de forma perezosa por appSettings.ts y backup.ts; no forma parte de SCHEMA_DDL.'''
+  Note: '''Creada por la migración 2 (002_app_settings.ts). Ya no se crea de forma perezosa en appSettings.ts ni backup.ts.'''
 }
 
 Table categories_backup_v1 {

@@ -9,14 +9,14 @@ import {
 import { createBackupFile, serializeBackup } from '../../core/services/backup-format.ts';
 import { parseBackupText } from '../../core/services/backup-validation.ts';
 import { buildBackupFromDatabase, importBackupIntoDatabase } from './backup.ts';
-import { SCHEMA_DDL } from './schema.sql.ts';
+import { BASELINE_DDL } from './migrations/001_baseline.ts';
 
 const TIMESTAMP = '2026-01-02T10:00:00.000Z';
 
 function createDatabase({ failOn, foreignKeys = true } = {}) {
   const raw = new DatabaseSync(':memory:');
   raw.exec(`PRAGMA foreign_keys = ${foreignKeys ? 'ON' : 'OFF'};`);
-  raw.exec(SCHEMA_DDL);
+  raw.exec(BASELINE_DDL);
   raw.exec(
     'CREATE TABLE app_settings (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)'
   );

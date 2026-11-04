@@ -1,6 +1,5 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
-import { SCHEMA_DDL } from './schema.sql';
-import { migrateCategories } from './migrateCategories';
+import { runMigrations } from './migrationRunner';
 import { resetFinancialData } from './resetFinancialData';
 import { seedDefaultCategories } from './seedDefaultCategories';
 
@@ -53,11 +52,10 @@ export async function initDatabase(): Promise<SQLiteDatabase> {
       console.warn('Pragma warning:', pragmaErr);
     }
 
-    // Creación de tablas e índices
-    await db.execAsync(SCHEMA_DDL);
+    // Migraciones versionadas (esquema base, app_settings y futuras versiones)
+    await runMigrations(db);
 
-    // Migración incremental de categorías y seed idempotente de defaults
-    await migrateCategories(db);
+    // Seed idempotente de categorías por defecto
     await db.withExclusiveTransactionAsync(async (txn) => {
       await seedDefaultCategories(txn);
     });

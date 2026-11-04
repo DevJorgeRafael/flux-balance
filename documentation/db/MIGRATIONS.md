@@ -26,8 +26,11 @@ Flux Balance usa SQLite (expo-sqlite). Las migraciones son funciones SQL version
 4. **La migración 1 debe ser idempotente.** Instalaciones existentes tienen versión 0 y tablas ya creadas, así que todo debe usar `IF NOT EXISTS` o guardas equivalentes.
 5. **Reconstrucciones de tabla** (como `transaction_splits`) requieren `PRAGMA foreign_keys = OFF`. Esa instrucción no tiene efecto dentro de una transacción, así que estas migraciones deben ejecutarse con la conexión fuera de transacción y reactivar las claves al final.
 6. **Un solo punto de entrada.** `getDatabase()` llama a `runMigrations()` antes de devolver la conexión. Si una migración falla, se lanza un error y la app no sigue con una base a medias.
-7. **Cada migración actualiza `documentation/db/schema.dbml`** en el mismo commit.
-8. **El formato del respaldo es independiente.** `BACKUP_SCHEMA_VERSION` solo cambia cuando cambia el JSON o Excel exportado. Al importar, el código mapea desde la versión del respaldo al esquema actual.
+7. **Check de claves foráneas.** Después de migrar, `foreign_key_check` advierte por consola si hay filas inválidas y no bloquea el arranque. Nunca borra ni repara datos automáticamente.
+8. **Cada migración actualiza `documentation/db/schema.dbml`** en el mismo commit.
+9. **El formato del respaldo es independiente.** `BACKUP_SCHEMA_VERSION` solo cambia cuando cambia el JSON o Excel exportado. Al importar, el código mapea desde la versión del respaldo al esquema actual.
+
+> Nota de implementación: la política del punto 7 se decidió al implementar el runner. Lanzar un error por filas huérfanas bloqueaba el arranque de la app en bases con datos inconsistentes; advertir por consola permite abrirla sin reparar ni borrar datos automáticamente.
 
 ## Estructura
 
@@ -56,3 +59,4 @@ export const migration = {
 - Base versión 0 con datos del esquema actual: migra sin perder filas.
 - Base con tabla legacy `categories`: migra y crea `categories_backup_v1`.
 - Migración que falla a propósito: `user_version` no cambia.
+- Base con filas huérfanas: `runMigrations` advierte por consola y no bloquea el arranque.
