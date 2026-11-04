@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   StyleSheet,
   View,
   type DimensionValue,
@@ -85,38 +87,46 @@ export function BottomSheetModal({
       statusBarTranslucent
       onRequestClose={handleClose}
     >
-      <BackdropBlur visible={isAnimatingIn} onPress={handleClose} blurTarget={blurTarget} />
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoider}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <BackdropBlur visible={isAnimatingIn} onPress={handleClose} blurTarget={blurTarget} />
 
-      <View style={styles.backdrop} pointerEvents="box-none">
-        <MotiView
-          animate={{
-            translateY: isAnimatingIn ? 0 : 500,
-            opacity: isAnimatingIn ? 1 : 0,
-          }}
-          transition={{
-            type: 'timing',
-            duration: isAnimatingIn ? OPEN_DURATION : CLOSE_DURATION,
-            easing: isAnimatingIn ? OPEN_EASING : CLOSE_EASING,
-          } as any}
-          layout={LinearTransition.duration(OPEN_DURATION).easing(OPEN_EASING)}
-          style={[
-            styles.sheet,
-            {
-              backgroundColor: colors.modal,
-              paddingBottom: insets.bottom + bottomPaddingExtra,
-              maxHeight,
-            },
-            sheetStyle,
-          ]}
-        >
-          {children}
-        </MotiView>
-      </View>
+        <View style={styles.backdrop} pointerEvents="box-none">
+          <MotiView
+            animate={{
+              translateY: isAnimatingIn ? 0 : 500,
+              opacity: isAnimatingIn ? 1 : 0,
+            }}
+            transition={{
+              type: 'timing',
+              duration: isAnimatingIn ? OPEN_DURATION : CLOSE_DURATION,
+              easing: isAnimatingIn ? OPEN_EASING : CLOSE_EASING,
+            } as any}
+            layout={LinearTransition.duration(OPEN_DURATION).easing(OPEN_EASING)}
+            style={[
+              styles.sheet,
+              {
+                backgroundColor: colors.modal,
+                paddingBottom: insets.bottom + bottomPaddingExtra,
+                maxHeight,
+              },
+              sheetStyle,
+            ]}
+          >
+            {children}
+          </MotiView>
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  keyboardAvoider: {
+    flex: 1,
+  },
   backdrop: {
     flex: 1,
     justifyContent: 'flex-end',
