@@ -1,0 +1,127 @@
+// Generado desde src/infrastructure/database. Última revisión: 2026-11-04.
+
+// Esquema SQLite de Flux Balance. Las tablas base se crean en schema.sql.ts;
+// app_settings y categories_backup_v1 se crean fuera de SCHEMA_DDL.
+
+Table accounts {
+  id TEXT [pk, not null]
+  name TEXT [not null]
+  type TEXT [not null]
+  balance REAL [not null, default: 0.0]
+  currency TEXT [not null, default: 'USD']
+  annual_rate REAL [default: null]
+  is_archived INTEGER [not null, default: 0]
+  created_at TEXT [not null, default: `(datetime('now'))`]
+  updated_at TEXT [not null, default: `(datetime('now'))`]
+
+  Note: '''CHECK (type IN ('CHECKING', 'FLEXIBLE_SAVINGS', 'FIXED_TERM'))'''
+}
+
+Table fixed_term_deposits {
+  id TEXT [pk, not null]
+  account_id TEXT [not null]
+  principal_amount REAL [not null]
+  annual_rate REAL [not null]
+  term_months INTEGER [not null]
+  start_date TEXT [not null]
+  maturity_date TEXT [not null]
+  status TEXT [not null, default: 'ACTIVE']
+  created_at TEXT [not null, default: `(datetime('now'))`]
+
+  indexes {
+    account_id [name: 'idx_fixed_deposits_account']
+  }
+
+  Note: '''CHECK (status IN ('ACTIVE', 'MATURED', 'CANCELLED'))'''
+}
+
+Table income_categories {
+  id TEXT [pk, not null]
+  name TEXT [not null]
+  color TEXT
+  icon TEXT
+  is_default INTEGER [not null, default: 0]
+  sort_order INTEGER [not null, default: 0]
+  created_at TEXT [not null, default: `(datetime('now'))`]
+
+  indexes {
+    (sort_order, name) [name: 'idx_income_categories_order']
+  }
+
+  Note: '''CHECK (is_default IN (0, 1))'''
+}
+
+Table expense_categories {
+  id TEXT [pk, not null]
+  name TEXT [not null]
+  color TEXT
+  icon TEXT
+  is_default INTEGER [not null, default: 0]
+  sort_order INTEGER [not null, default: 0]
+  created_at TEXT [not null, default: `(datetime('now'))`]
+
+  indexes {
+    (sort_order, name) [name: 'idx_expense_categories_order']
+  }
+
+  Note: '''CHECK (is_default IN (0, 1))'''
+}
+
+Table transactions {
+  id TEXT [pk, not null]
+  type TEXT [not null]
+  total_amount REAL [not null]
+  description TEXT
+  date TEXT [not null]
+  created_at TEXT [not null, default: `(datetime('now'))`]
+
+  indexes {
+    date [name: 'idx_transactions_date']
+  }
+
+  Note: '''CHECK (type IN ('INCOME', 'EXPENSE', 'TRANSFER'))'''
+}
+
+Table transaction_splits {
+  id TEXT [pk, not null]
+  transaction_id TEXT [not null]
+  account_id TEXT [not null]
+  category_id TEXT [not null]
+  amount REAL [not null]
+  notes TEXT
+
+  indexes {
+    transaction_id [name: 'idx_splits_tx']
+    account_id [name: 'idx_splits_account']
+    category_id [name: 'idx_splits_category']
+  }
+
+  Note: '''category_id referencia income_categories.id o expense_categories.id según transactions.type. No existe FK declarada porque el destino depende del tipo de transacción; la resolución se hace en SqliteTransactionRepository.'''
+}
+
+Table app_settings {
+  key TEXT [pk, not null]
+  value TEXT [not null]
+
+  Note: '''Creada de forma perezosa por appSettings.ts y backup.ts; no forma parte de SCHEMA_DDL.'''
+}
+
+Table categories_backup_v1 {
+  id TEXT [pk, not null]
+  name TEXT [not null]
+  type TEXT
+  icon TEXT
+  color TEXT
+  is_default INTEGER [not null]
+  created_at TEXT
+  backed_up_at TEXT [not null]
+
+  Note: '''Respaldo creado por migrateCategories.ts antes de migrar la tabla legacy categories. Solo existe en instalaciones que migraron desde versiones anteriores.'''
+}
+
+Ref: fixed_term_deposits.account_id > accounts.id [delete: cascade]
+Ref: transaction_splits.transaction_id > transactions.id [delete: cascade]
+Ref: transaction_splits.account_id > accounts.id [delete: restrict]
+
+// La tabla legacy categories y la tabla temporal transaction_splits_migrated
+// se eliminan durante migrateCategories.ts; no forman parte del esquema final.
