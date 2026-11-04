@@ -1,0 +1,58 @@
+# Migraciones de base de datos
+
+Flux Balance usa SQLite (expo-sqlite). Las migraciones son funciones SQL versionadas que se ejecutan en orden al abrir la base de datos.
+
+## Versión de esquema
+
+- La versión se guarda con `PRAGMA user_version` (entero dentro del archivo de la base).
+- `user_version = 0` significa base sin versionar. Todas las instalaciones actuales están en 0.
+- Cada migración sube la versión en una unidad.
+
+## Versiones
+
+| Versión | Archivo | Contenido |
+|---|---|---|
+| 1 | `migrations/001_baseline.ts` | Esquema actual: `accounts`, `fixed_term_deposits`, categorías, `transactions`, `transaction_splits`, índices y migración legacy de categorías. |
+| 2 | `migrations/002_app_settings.ts` | Crea `app_settings`. Reemplaza la creación perezosa en `appSettings.ts`. |
+| 3 | Pendiente | Tabla `reminders` para 2.0.0. |
+
+`categories_backup_v1` no tiene versión propia. Lo crea la migración 1 solo si existe la tabla legacy `categories`.
+
+## Reglas
+
+1. **Solo se agrega.** Nunca se edita una migración que ya se publicó. Un error se corrige con una migración nueva.
+2. **Sin `down`.** En el teléfono del usuario no hay forma práctica de revertir. Si algo sale mal, se corrige hacia adelante.
+3. **Cada migración corre en una transacción exclusiva.** `PRAGMA user_version` se actualiza dentro de la misma transacción, así que si falla, la versión no cambia y la base queda como antes.
+4. **La migración 1 debe ser idempotente.** Instalaciones existentes tienen versión 0 y tablas ya creadas, así que todo debe usar `IF NOT EXISTS` o guardas equivalentes.
+5. **Reconstrucciones de tabla** (como `transaction_splits`) requieren `PRAGMA foreign_keys = OFF`. Esa instrucción no tiene efecto dentro de una transacción, así que estas migraciones deben ejecutarse con la conexión fuera de transacción y reactivar las claves al final.
+6. **Un solo punto de entrada.** `getDatabase()` llama a `runMigrations()` antes de devolver la conexión. Si una migración falla, se lanza un error y la app no sigue con una base a medias.
+7. **Cada migración actualiza `documentation/db/schema.dbml`** en el mismo commit.
+8. **El formato del respaldo es independiente.** `BACKUP_SCHEMA_VERSION` solo cambia cuando cambia el JSON o Excel exportado. Al importar, el código mapea desde la versión del respaldo al esquema actual.
+
+## Estructura
+
+```
+src/infrastructure/database/
+  migrations/
+    001_baseline.ts
+    002_app_settings.ts
+    index.ts        # lista ordenada de migraciones
+  migrationRunner.ts
+```
+
+Cada migración exporta:
+
+```ts
+export const migration = {
+  version: 2,
+  name: 'app_settings',
+  up: async (txn) => { /* SQL */ },
+};
+```
+
+## Pruebas mínimas
+
+- Instalación nueva: termina en la última versión.
+- Base versión 0 con datos del esquema actual: migra sin perder filas.
+- Base con tabla legacy `categories`: migra y crea `categories_backup_v1`.
+- Migración que falla a propósito: `user_version` no cambia.
