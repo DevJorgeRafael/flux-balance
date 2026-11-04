@@ -9,6 +9,7 @@ import {
   registerId,
   requireAmount,
   requireArray,
+  requireBalance,
   requireBoolean,
   requireDate,
   requireId,
@@ -92,7 +93,7 @@ function validateAccount(
     addError(errors, 'invalidValue', `${path}.type`, { value: type });
   }
 
-  requireAmount(value, 'balance', `${path}.balance`, errors);
+  requireBalance(value, 'balance', `${path}.balance`, errors);
   requireString(value, 'currency', `${path}.currency`, errors);
   requireNullableAmount(value, 'annualRate', `${path}.annualRate`, errors);
   requireBoolean(value, 'isArchived', `${path}.isArchived`, errors);

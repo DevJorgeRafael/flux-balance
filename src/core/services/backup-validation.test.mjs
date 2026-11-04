@@ -164,10 +164,31 @@ test('rechaza montos inválidos', () => {
   assert.equal(error.path, 'accounts[0].balance');
 });
 
-test('rechaza montos negativos o demasiado grandes', () => {
-  const negative = createValidBackup();
-  negative.accounts[0].balance = -1;
-  assert.equal(firstError(validateBackup(negative)).code, 'invalidAmount');
+test('acepta saldos negativos y rechaza montos negativos no permitidos', () => {
+  const negativeBalance = createValidBackup();
+  negativeBalance.accounts[0].balance = -1;
+  assert.equal(validateBackup(negativeBalance).ok, true);
+
+  const negativeTotal = createValidBackup();
+  negativeTotal.transactions[0].totalAmount = -1;
+  assert.equal(
+    firstError(validateBackup(negativeTotal)).path,
+    'transactions[0].totalAmount'
+  );
+
+  const negativeSplit = createValidBackup();
+  negativeSplit.transactions[0].splits[0].amount = -1;
+  assert.equal(
+    firstError(validateBackup(negativeSplit)).path,
+    'transactions[0].splits[0].amount'
+  );
+
+  const negativePrincipal = createValidBackup();
+  negativePrincipal.accounts[0].fixedTermDeposits[0].principalAmount = -1;
+  assert.equal(
+    firstError(validateBackup(negativePrincipal)).path,
+    'accounts[0].fixedTermDeposits[0].principalAmount'
+  );
 
   const tooLarge = createValidBackup();
   tooLarge.transactions[0].totalAmount = 1_000_000_000_001;
