@@ -19,6 +19,14 @@ import {
   nextReminderRunAt,
 } from '@/core/services/reminder-schedule';
 import { getDatabase } from '../database/db';
+import {
+  isIsoUtcTimestamp,
+  mapReminder,
+  normalizeOptionalId,
+  type NormalizedReminderFields,
+  type ReminderFields,
+  type ReminderRow,
+} from './reminderRepositoryMapping';
 
 type DatabaseProvider = () => Promise<SQLiteDatabase>;
 type NowProvider = () => Date;
@@ -52,86 +60,12 @@ export class ReminderValidationError extends Error {
   }
 }
 
-interface ReminderRow {
-  id: string;
-  title: string;
-  type: ReminderType;
-  description: string | null;
-  amount: number | null;
-  account_id: string | null;
-  category_id: string | null;
-  recurrence: ReminderRecurrence;
-  time: string;
-  start_date: string;
-  next_run_at: string | null;
-  is_archived: number;
-  last_notified_at: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-interface ReminderFields {
-  title: string;
-  type: ReminderType;
-  description?: string | null;
-  amount?: number | null;
-  accountId?: string | null;
-  categoryId?: string | null;
-  recurrence: ReminderRecurrence;
-  time: string;
-  startDate: string;
-  isArchived: boolean;
-}
-
-interface NormalizedReminderFields {
-  title: string;
-  type: ReminderType;
-  description: string | null;
-  amount: number | null;
-  accountId: string | null;
-  categoryId: string | null;
-  recurrence: ReminderRecurrence;
-  time: string;
-  startDate: string;
-  isArchived: boolean;
-}
-
 const RECURRENCES: readonly ReminderRecurrence[] = [
   'ONCE',
   'DAILY',
   'WEEKLY',
   'MONTHLY',
 ];
-
-function mapReminder(row: ReminderRow): Reminder {
-  return {
-    id: row.id,
-    title: row.title,
-    type: row.type,
-    description: row.description,
-    amount: row.amount,
-    accountId: row.account_id,
-    categoryId: row.category_id,
-    recurrence: row.recurrence,
-    time: row.time,
-    startDate: row.start_date,
-    nextRunAt: row.next_run_at,
-    isArchived: row.is_archived === 1,
-    lastNotifiedAt: row.last_notified_at,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
-}
-
-function isIsoUtcTimestamp(value: string): boolean {
-  const date = new Date(value);
-  return !Number.isNaN(date.getTime()) && date.toISOString() === value;
-}
-
-function normalizeOptionalId(value: string | null | undefined): string | null {
-  const normalized = value?.trim();
-  return normalized ? normalized : null;
-}
 
 export class SqliteReminderRepository implements IReminderRepository {
   private readonly getDb: DatabaseProvider;
@@ -336,6 +270,43 @@ export class SqliteReminderRepository implements IReminderRepository {
         this.now().toISOString(),
         id,
       ]
+    );
+
+    return this.getByIdWithDb(db, id);
+  }
+
+  async reconcileNextRunAt(
+    id: string,
+    now: Date = this.now()
+  ): Promise<Reminder | null> {
+    const db = await this.getDb();
+    const existing = await this.getByIdWithDb(db, id);
+    if (!existing || existing.isArchived) return existing;
+
+    const nowIso = now.toISOString();
+    const isOneTime = existing.recurrence === 'ONCE';
+    if (
+      isOneTime &&
+      existing.nextRunAt &&
+      new Date(existing.nextRunAt).getTime() > now.getTime()
+    ) {
+      return existing;
+    }
+
+    const nextRunAt = isOneTime ? null : nextReminderRunAt(existing, now);
+    if (!isOneTime && !nextRunAt) {
+      throw new ReminderValidationError(
+        'SCHEDULE_INVALID',
+        'No se pudo calcular la próxima ejecución del recordatorio.'
+      );
+    }
+    if (!isOneTime && nextRunAt === existing.nextRunAt) return existing;
+
+    await db.runAsync(
+      `UPDATE reminders
+       SET next_run_at = ?, is_archived = ?, updated_at = ?
+       WHERE id = ?`,
+      [nextRunAt, isOneTime ? 1 : 0, nowIso, id]
     );
 
     return this.getByIdWithDb(db, id);

@@ -311,6 +311,76 @@ test('update recalcula el calendario y valida los cambios', async () => {
   );
 });
 
+test('reconcileNextRunAt archiva un ONCE vencido sin tocar last_notified_at', async () => {
+  const database = createDatabase();
+  const repository = createRepository(database);
+  const reminder = await repository.create(
+    reminderData({
+      title: 'Pago único',
+      recurrence: 'ONCE',
+      startDate: '2026-01-05',
+    })
+  );
+
+  const reconciled = await repository.reconcileNextRunAt(
+    reminder.id,
+    new Date(2026, 0, 6, 8)
+  );
+
+  assert.equal(reconciled.isArchived, true);
+  assert.equal(reconciled.nextRunAt, null);
+  assert.equal(reconciled.lastNotifiedAt, null);
+});
+
+test('reconcileNextRunAt avanza un recurrente y conserva el futuro', async () => {
+  const database = createDatabase();
+  const repository = createRepository(database);
+  const recurring = await repository.create(reminderData());
+  const future = await repository.create(
+    reminderData({
+      title: 'Futuro',
+      recurrence: 'ONCE',
+      startDate: '2026-03-05',
+    })
+  );
+
+  const reconciled = await repository.reconcileNextRunAt(
+    recurring.id,
+    new Date(2026, 1, 1, 8)
+  );
+  const untouched = await repository.reconcileNextRunAt(
+    future.id,
+    new Date(2026, 1, 1, 8)
+  );
+
+  assert.equal(reconciled.isArchived, false);
+  assert.equal(
+    new Date(reconciled.nextRunAt).getTime(),
+    new Date(2026, 1, 28, 9, 0, 0, 0).getTime()
+  );
+  assert.equal(untouched.nextRunAt, future.nextRunAt);
+  assert.equal(untouched.isArchived, false);
+});
+
+test('reconcileNextRunAt ignora archivados y devuelve null si no existe', async () => {
+  const database = createDatabase();
+  const repository = createRepository(database);
+  const archived = await repository.create(reminderData());
+  await repository.update(archived.id, { isArchived: true });
+
+  assert.deepEqual(
+    await repository.reconcileNextRunAt(
+      archived.id,
+      new Date(2027, 0, 1, 8)
+    ),
+    { ...archived, isArchived: true }
+  );
+  assert.equal(
+    await repository.reconcileNextRunAt('missing', new Date(2027, 0, 1, 8)),
+    null
+  );
+});
+
 test('delete elimina el recordatorio y la cuenta queda en null', async () => {
   const database = createDatabase();
   const repository = createRepository(database);
