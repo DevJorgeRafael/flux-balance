@@ -30,6 +30,7 @@ import {
 import { parseAmountInput } from '@/core/utils/money';
 import { useDashboard } from '@/context/DashboardContext';
 import { useReminderNotifications } from '@/context/ReminderNotificationsProvider';
+import { claimMiuiReminderTip } from '@/infrastructure/notifications/reminderTips';
 import {
   ReminderValidationError,
   SqliteReminderRepository,
@@ -161,6 +162,25 @@ export function ReminderForm() {
     });
   };
 
+  const maybeShowMiuiTip = async () => {
+    if (!(await claimMiuiReminderTip())) return;
+
+    void appAlert({
+      type: 'info',
+      title: t('miuiTipsTitle'),
+      message: t('miuiTipsMessage'),
+      buttons: [
+        { text: t('understood'), style: 'cancel' },
+        {
+          text: t('openSettings'),
+          onPress: () => {
+            void Linking.openSettings();
+          },
+        },
+      ],
+    });
+  };
+
   const showSaveError = (error: unknown) => {
     let message = t('errorSavingReminder');
     if (error instanceof ReminderValidationError) {
@@ -263,7 +283,11 @@ export function ReminderForm() {
         requestPermission: !hasReminder,
       });
       router.back();
-      if (permission !== 'granted') showPermissionAlert();
+      if (permission !== 'granted') {
+        showPermissionAlert();
+      } else if (!isArchived) {
+        void maybeShowMiuiTip();
+      }
     } catch (error) {
       console.error('Error saving reminder:', error);
       showSaveError(error);
