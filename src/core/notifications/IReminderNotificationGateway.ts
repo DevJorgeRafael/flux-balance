@@ -21,7 +21,7 @@ export interface ReminderNotificationTap {
 }
 
 export interface IReminderNotificationGateway {
-  ensureChannel(): Promise<void>;
+  ensureChannel(name: string): Promise<void>;
   getPermissionStatus(): Promise<ReminderNotificationPermission>;
   requestPermission(): Promise<ReminderNotificationPermission>;
   getScheduledReminderIdentifiers(): Promise<string[]>;

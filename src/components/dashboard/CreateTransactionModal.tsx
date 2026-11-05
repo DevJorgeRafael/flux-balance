@@ -60,7 +60,7 @@ export function CreateTransactionModal({
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [appliedPrefill, setAppliedPrefill] = useState(false);
+  const [appliedPrefill, setAppliedPrefill] = useState<TransactionPrefill | null>(null);
   const typeCategories = categories.filter((category) => category.type === txType);
 
   const resetForm = () => {
@@ -70,29 +70,31 @@ export function CreateTransactionModal({
     setSelectedCategoryId('');
   };
 
+  const applyPrefill = (prefill: TransactionPrefill, type: TransactionType) => {
+    setAppliedPrefill(prefill);
+    applyTransactionPrefill(prefill, type, accounts, categories,
+      (value) => format(value, { showCurrency: false }),
+      { amount: setTxAmount, description: setTxDesc, accountId: setSelectedAccountId, categoryId: setSelectedCategoryId }
+    );
+  };
+
   const [prevVisible, setPrevVisible] = useState(visible);
   if (visible !== prevVisible) {
     setPrevVisible(visible);
     if (visible) {
       setTxType(initialType);
       if (initialPrefill) {
-        setAppliedPrefill(true);
-        applyTransactionPrefill(initialPrefill, initialType, accounts, categories,
-          (value) => format(value, { showCurrency: false }),
-          {
-            amount: setTxAmount,
-            description: setTxDesc,
-            accountId: setSelectedAccountId,
-            categoryId: setSelectedCategoryId,
-          }
-        );
+        applyPrefill(initialPrefill, initialType);
       } else if (appliedPrefill) {
-        setAppliedPrefill(false);
+        setAppliedPrefill(null);
         resetForm();
       } else if (accounts.length > 0 && !selectedAccountId) {
         setSelectedAccountId(accounts[0].id);
       }
     }
+  } else if (visible && initialPrefill && initialPrefill !== appliedPrefill) {
+    setTxType(initialType);
+    applyPrefill(initialPrefill, initialType);
   }
 
   const handleCreate = async () => {

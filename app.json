@@ -57,6 +57,15 @@
       "expo-status-bar",
       "expo-web-browser",
       "expo-sharing",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logos-app/glyph-white-2000.png",
+          "color": "#2563EB",
+          "defaultChannel": "reminders",
+          "enableRemoteNotifications": false
+        }
+      ],
       "./plugins/withReleaseSigning"
     ],
     "extra": {
