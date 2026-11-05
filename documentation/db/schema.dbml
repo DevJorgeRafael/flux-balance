@@ -1,8 +1,9 @@
-// Generado desde src/infrastructure/database. Última revisión: 2026-11-04.
-// Versión de esquema: user_version = 2.
+// Generado desde src/infrastructure/database. Última revisión: 2026-11-05.
+// Versión de esquema: user_version = 3.
 
 // Esquema SQLite de Flux Balance. Las tablas base se crean en 001_baseline.ts
-// (migración 1); app_settings se crea en 002_app_settings.ts (migración 2).
+// (migración 1); app_settings se crea en 002_app_settings.ts (migración 2);
+// reminders se crea en 003_reminders.ts (migración 3).
 // categories_backup_v1 lo crea migrateCategories.ts durante la migración 1.
 
 Table accounts {
@@ -101,6 +102,32 @@ Table transaction_splits {
   Note: '''category_id referencia income_categories.id o expense_categories.id según transactions.type. No existe FK declarada porque el destino depende del tipo de transacción; la resolución se hace en SqliteTransactionRepository.'''
 }
 
+Table reminders {
+  id TEXT [pk, not null]
+  title TEXT [not null]
+  type TEXT [not null]
+  description TEXT
+  amount REAL
+  account_id TEXT
+  category_id TEXT
+  recurrence TEXT [not null]
+  time TEXT [not null]
+  start_date TEXT [not null]
+  next_run_at TEXT
+  is_archived INTEGER [not null, default: 0]
+  last_notified_at TEXT
+  created_at TEXT [not null, default: `(datetime('now'))`]
+  updated_at TEXT [not null, default: `(datetime('now'))`]
+
+  indexes {
+    (is_archived, next_run_at) [name: 'idx_reminders_due']
+    account_id [name: 'idx_reminders_account']
+    (category_id, type) [name: 'idx_reminders_category']
+  }
+
+  Note: '''Creada por la migración 3 (003_reminders.ts). CHECK: type IN ('INCOME', 'EXPENSE'); recurrence IN ('ONCE', 'DAILY', 'WEEKLY', 'MONTHLY'); amount NULL o > 0 y <= 1000000000000; time HH:mm y start_date YYYY-MM-DD con formato y rango básico; is_archived IN (0, 1); is_archived = 1 OR next_run_at IS NOT NULL OR recurrence = 'ONCE'. next_run_at guarda UTC ISO con milisegundos y Z. category_id referencia income_categories.id o expense_categories.id según type, sin FK declarada; se valida en SqliteReminderRepository. Los recordatorios no forman parte del respaldo en esta fase.'''
+}
+
 Table app_settings {
   key TEXT [pk, not null]
   value TEXT [not null]
@@ -124,6 +151,7 @@ Table categories_backup_v1 {
 Ref: fixed_term_deposits.account_id > accounts.id [delete: cascade]
 Ref: transaction_splits.transaction_id > transactions.id [delete: cascade]
 Ref: transaction_splits.account_id > accounts.id [delete: restrict]
+Ref: reminders.account_id > accounts.id [delete: set null]
 
 // La tabla legacy categories y la tabla temporal transaction_splits_migrated
 // se eliminan durante migrateCategories.ts; no forman parte del esquema final.
