@@ -1,6 +1,9 @@
 export const reminderTranslations = {
   es: {
     reminders: 'Recordatorios',
+    manageReminders: 'Gestionar recordatorios',
+    activeReminders: 'Activos',
+    archivedReminders: 'Archivados',
     newReminder: 'Nuevo recordatorio',
     editReminder: 'Editar recordatorio',
     noReminders: 'No hay recordatorios',
@@ -52,6 +55,9 @@ export const reminderTranslations = {
   },
   en: {
     reminders: 'Reminders',
+    manageReminders: 'Manage reminders',
+    activeReminders: 'Active',
+    archivedReminders: 'Archived',
     newReminder: 'New reminder',
     editReminder: 'Edit reminder',
     noReminders: 'No reminders',
