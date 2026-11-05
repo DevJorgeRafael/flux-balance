@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -81,6 +81,7 @@ export function ReminderForm() {
   const [notFound, setNotFound] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     if (!id) return;
@@ -222,7 +223,7 @@ export function ReminderForm() {
   };
 
   const handleSave = async () => {
-    if (isSaving || isArchiving) return;
+    if (submittingRef.current || isSaving || isArchiving) return;
 
     let parsedAmount: number | null = null;
     if (values.amount.trim()) {
@@ -274,6 +275,7 @@ export function ReminderForm() {
       time: values.time,
     };
 
+    submittingRef.current = true;
     try {
       setIsSaving(true);
       const saved = hasReminder
@@ -292,13 +294,17 @@ export function ReminderForm() {
       console.error('Error saving reminder:', error);
       showSaveError(error);
     } finally {
+      submittingRef.current = false;
       setIsSaving(false);
     }
   };
 
   const handleArchive = async () => {
-    if (!hasReminder || isSaving || isArchiving) return;
+    if (!hasReminder || submittingRef.current || isSaving || isArchiving) {
+      return;
+    }
 
+    submittingRef.current = true;
     try {
       setIsArchiving(true);
       await reminderRepo.update(id!, { isArchived: !isArchived });
@@ -313,6 +319,7 @@ export function ReminderForm() {
         buttons: [{ text: t('accept') }],
       });
     } finally {
+      submittingRef.current = false;
       setIsArchiving(false);
     }
   };

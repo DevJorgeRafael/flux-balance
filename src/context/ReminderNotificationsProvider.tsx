@@ -159,7 +159,14 @@ export function ReminderNotificationsProvider({
       if (handledTapsRef.current.has(tap.identifier)) return;
       handledTapsRef.current.add(tap.identifier);
 
-      const reminder = await reminderRepo.getById(tap.reminderId);
+      let reminder: Reminder | null = null;
+      try {
+        reminder = await reminderRepo.getById(tap.reminderId);
+      } catch (error) {
+        console.error('Error loading reminder for notification:', error);
+        handledTapsRef.current.delete(tap.identifier);
+        return;
+      }
       gateway.clearInitialTap();
 
       if (!reminder || reminder.isArchived) {
@@ -217,6 +224,15 @@ export function ReminderNotificationsProvider({
       if (tap) await handleTap(tap);
       await scheduleReconcileAndSync();
     })();
+  }, [handleTap, isLoading, scheduleReconcileAndSync]);
+
+  useEffect(() => {
+    if (isLoading || !bootstrappedRef.current) return;
+
+    const tap = pendingTapRef.current;
+    if (!tap) return;
+    pendingTapRef.current = null;
+    void handleTap(tap).then(scheduleReconcileAndSync);
   }, [handleTap, isLoading, scheduleReconcileAndSync]);
 
   useEffect(() => {
