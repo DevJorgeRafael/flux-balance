@@ -4,6 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 
 import { resetFinancialData } from './resetFinancialData.ts';
 import { BASELINE_DDL } from './migrations/001_baseline.ts';
+import { REMINDERS_DDL } from './migrations/003_reminders.ts';
 import { DEFAULT_CATEGORIES } from './schema.sql.ts';
 
 const DEFAULT_INCOME_COUNT = DEFAULT_CATEGORIES.filter(
@@ -17,6 +18,7 @@ function createDatabase() {
   const raw = new DatabaseSync(':memory:');
   raw.exec('PRAGMA foreign_keys = ON;');
   raw.exec(BASELINE_DDL);
+  raw.exec(REMINDERS_DDL);
   raw.exec(
     'CREATE TABLE app_settings (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)'
   );
@@ -100,6 +102,16 @@ function seedFinancialData(raw) {
        VALUES (?, ?, ?, ?)`
     )
     .run('cat_custom_expense', 'Gasto personalizado', 0, 10);
+
+  raw
+    .prepare(
+      `INSERT INTO reminders
+         (id, title, type, account_id, category_id, recurrence, time,
+          start_date, next_run_at)
+       VALUES (?, ?, 'EXPENSE', ?, ?, 'MONTHLY', '09:00', '2026-02-01',
+               '2026-02-01T09:00:00.000Z')`
+    )
+    .run('rem-1', 'Pago de luz', 'acc-1', 'cat_custom_expense');
 }
 
 function count(raw, table) {
@@ -127,6 +139,12 @@ test('borra datos financieros, conserva preferencias y restaura categorías por 
   assert.equal(count(raw, 'accounts'), 0);
   assert.equal(count(raw, 'income_categories'), DEFAULT_INCOME_COUNT);
   assert.equal(count(raw, 'expense_categories'), DEFAULT_EXPENSE_COUNT);
+
+  assert.equal(count(raw, 'reminders'), 1);
+  assert.deepEqual(
+    { ...raw.prepare('SELECT account_id, category_id FROM reminders').get() },
+    { account_id: null, category_id: null }
+  );
 
   const customCategories = raw
     .prepare(
@@ -166,6 +184,10 @@ test('revierte toda la operación si falla la restauración de categorías', asy
   assert.equal(count(raw, 'fixed_term_deposits'), 1);
   assert.equal(count(raw, 'income_categories'), 1);
   assert.equal(count(raw, 'expense_categories'), 1);
+  assert.deepEqual(
+    { ...raw.prepare('SELECT account_id, category_id FROM reminders').get() },
+    { account_id: 'acc-1', category_id: 'cat_custom_expense' }
+  );
   assert.deepEqual(readSettings(raw), {
     currency: 'EUR',
     languagePreference: 'es',
