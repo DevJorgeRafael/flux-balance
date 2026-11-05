@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { X } from 'lucide-react-native';
 import { appAlert } from '@/components/ui/alert/appAlert';
-import { TransactionType } from '@/core/models/transaction';
+import { TransactionPrefill, TransactionType } from '@/core/models/transaction';
 import { Account } from '@/core/models/account';
 import { Category } from '@/core/models/category';
 import { isHexColor, useColors, useThemeMode } from '@/components/ui/theme';
@@ -20,16 +20,15 @@ import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 import { getCurrencyDecimals } from '@/core/constants/currencies';
-import {
-  MAX_AMOUNT,
-  MAX_TRANSACTION_DESCRIPTION_LENGTH,
-} from '@/core/constants/inputLimits';
+import { MAX_AMOUNT, MAX_TRANSACTION_DESCRIPTION_LENGTH } from '@/core/constants/inputLimits';
 import { getAmountInputErrorKey } from '@/core/i18n/validationMessages';
 import { parseAmountInput } from '@/core/utils/money';
+import { applyTransactionPrefill } from './transactionPrefill';
 
 interface CreateTransactionModalProps {
   visible: boolean;
   initialType?: TransactionType;
+  initialPrefill?: TransactionPrefill | null;
   accounts: Account[];
   categories: Category[];
   onClose: () => void;
@@ -42,6 +41,7 @@ const transactionRepo = new SqliteTransactionRepository();
 export function CreateTransactionModal({
   visible,
   initialType = 'EXPENSE',
+  initialPrefill = null,
   accounts,
   categories,
   onClose,
@@ -60,18 +60,8 @@ export function CreateTransactionModal({
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [appliedPrefill, setAppliedPrefill] = useState(false);
   const typeCategories = categories.filter((category) => category.type === txType);
-
-  const [prevVisible, setPrevVisible] = useState(visible);
-  if (visible !== prevVisible) {
-    setPrevVisible(visible);
-    if (visible) {
-      setTxType(initialType);
-      if (accounts.length > 0 && !selectedAccountId) {
-        setSelectedAccountId(accounts[0].id);
-      }
-    }
-  }
 
   const resetForm = () => {
     setTxAmount('');
@@ -79,6 +69,31 @@ export function CreateTransactionModal({
     setSelectedAccountId(accounts[0]?.id || '');
     setSelectedCategoryId('');
   };
+
+  const [prevVisible, setPrevVisible] = useState(visible);
+  if (visible !== prevVisible) {
+    setPrevVisible(visible);
+    if (visible) {
+      setTxType(initialType);
+      if (initialPrefill) {
+        setAppliedPrefill(true);
+        applyTransactionPrefill(initialPrefill, initialType, accounts, categories,
+          (value) => format(value, { showCurrency: false }),
+          {
+            amount: setTxAmount,
+            description: setTxDesc,
+            accountId: setSelectedAccountId,
+            categoryId: setSelectedCategoryId,
+          }
+        );
+      } else if (appliedPrefill) {
+        setAppliedPrefill(false);
+        resetForm();
+      } else if (accounts.length > 0 && !selectedAccountId) {
+        setSelectedAccountId(accounts[0].id);
+      }
+    }
+  }
 
   const handleCreate = async () => {
     if (submittingRef.current) return;

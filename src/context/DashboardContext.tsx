@@ -3,7 +3,11 @@ import { StyleSheet, View } from 'react-native';
 import { BlurTargetView } from 'expo-blur';
 import { Account } from '@/core/models/account';
 import { Category } from '@/core/models/category';
-import { Transaction, TransactionType } from '@/core/models/transaction';
+import {
+  Transaction,
+  TransactionPrefill,
+  TransactionType,
+} from '@/core/models/transaction';
 import { MonthlyTotals } from '@/core/repositories/ITransactionRepository';
 import { useAccountFilters } from '@/hooks/useAccountFilters';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
@@ -27,7 +31,10 @@ interface DashboardContextValue {
   handleSeedDemoData: () => Promise<void>;
   handleResetAllData: () => Promise<void>;
   handleDataImported: () => Promise<void>;
-  openTransactionModal: (type?: TransactionType) => void;
+  openTransactionModal: (
+    type?: TransactionType,
+    prefill?: TransactionPrefill
+  ) => void;
   openAccountModal: () => void;
 }
 
@@ -38,6 +45,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const [isAccountModalVisible, setIsAccountModalVisible] = useState(false);
   const [isTransactionModalVisible, setIsTransactionModalVisible] = useState(false);
   const [transactionType, setTransactionType] = useState<TransactionType>('EXPENSE');
+  const [transactionPrefill, setTransactionPrefill] =
+    useState<TransactionPrefill | null>(null);
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
 
   const {
@@ -88,9 +97,18 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     void reloadTransactions();
   }, [handleRefresh, reloadTransactions]);
 
-  const openTransactionModal = useCallback((type: TransactionType = 'EXPENSE') => {
-    setTransactionType(type);
-    setIsTransactionModalVisible(true);
+  const openTransactionModal = useCallback(
+    (type: TransactionType = 'EXPENSE', prefill?: TransactionPrefill) => {
+      setTransactionType(type);
+      setTransactionPrefill(prefill ?? null);
+      setIsTransactionModalVisible(true);
+    },
+    []
+  );
+
+  const closeTransactionModal = useCallback(() => {
+    setIsTransactionModalVisible(false);
+    setTransactionPrefill(null);
   }, []);
 
   const openAccountModal = useCallback(() => {
@@ -154,10 +172,11 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         <CreateTransactionModal
           visible={isTransactionModalVisible}
           initialType={transactionType}
+          initialPrefill={transactionPrefill}
           accounts={accounts}
           categories={categories}
           blurTarget={blurTarget}
-          onClose={() => setIsTransactionModalVisible(false)}
+          onClose={closeTransactionModal}
           onTransactionCreated={handleDataChanged}
         />
 
