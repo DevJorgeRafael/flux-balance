@@ -33,6 +33,7 @@ export const reminderTranslations = {
     archived: 'Archivado',
     optional: 'opcional',
     reminderAmountOptional: 'Monto (opcional)',
+    reminderAmountPlaceholder: 'Opcional',
     reminderNextRun: 'Próximo aviso',
     reminderNotFound: 'El recordatorio no existe.',
     errorLoadingReminders: 'No se pudieron cargar los recordatorios.',
@@ -55,8 +56,8 @@ export const reminderTranslations = {
     openSettings: 'Abrir ajustes',
     notNow: 'Ahora no',
     understood: 'Entendido',
-    miuiTipsTitle: 'Configura las notificaciones en MIUI',
-    miuiTipsMessage: 'En dispositivos Xiaomi, activa las notificaciones y desactiva la optimización de batería para Flux Balance si los avisos llegan tarde.',
+    reminderBatteryTipMessage:
+      'Si las alertas llegan tarde, revisa que la app no esté restringida por el ahorro de batería de tu teléfono.',
   },
   en: {
     reminders: 'Reminders',
@@ -92,6 +93,7 @@ export const reminderTranslations = {
     archived: 'Archived',
     optional: 'optional',
     reminderAmountOptional: 'Amount (optional)',
+    reminderAmountPlaceholder: 'Optional',
     reminderNextRun: 'Next alert',
     reminderNotFound: 'The reminder does not exist.',
     errorLoadingReminders: 'Reminders could not be loaded.',
@@ -114,7 +116,7 @@ export const reminderTranslations = {
     openSettings: 'Open settings',
     notNow: 'Not now',
     understood: 'Got it',
-    miuiTipsTitle: 'Set up notifications on MIUI',
-    miuiTipsMessage: 'On Xiaomi devices, enable notifications and disable battery optimization for Flux Balance if alerts arrive late.',
+    reminderBatteryTipMessage:
+      "If alerts arrive late, check that the app is not restricted by your phone's battery saver.",
   },
 };

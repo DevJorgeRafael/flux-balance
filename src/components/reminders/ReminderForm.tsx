@@ -27,10 +27,9 @@ import {
   isValidReminderDate,
   isValidReminderTime,
 } from '@/core/services/reminder-schedule';
-import { parseAmountInput } from '@/core/utils/money';
+import { parseReminderAmount } from '@/core/services/reminder-amount';
 import { useDashboard } from '@/context/DashboardContext';
 import { useReminderNotifications } from '@/context/ReminderNotificationsProvider';
-import { claimMiuiReminderTip } from '@/infrastructure/notifications/reminderTips';
 import {
   ReminderValidationError,
   SqliteReminderRepository,
@@ -163,25 +162,6 @@ export function ReminderForm() {
     });
   };
 
-  const maybeShowMiuiTip = async () => {
-    if (!(await claimMiuiReminderTip())) return;
-
-    void appAlert({
-      type: 'info',
-      title: t('miuiTipsTitle'),
-      message: t('miuiTipsMessage'),
-      buttons: [
-        { text: t('understood'), style: 'cancel' },
-        {
-          text: t('openSettings'),
-          onPress: () => {
-            void Linking.openSettings();
-          },
-        },
-      ],
-    });
-  };
-
   const showSaveError = (error: unknown) => {
     let message = t('errorSavingReminder');
     if (error instanceof ReminderValidationError) {
@@ -225,24 +205,21 @@ export function ReminderForm() {
   const handleSave = async () => {
     if (submittingRef.current || isSaving || isArchiving) return;
 
-    let parsedAmount: number | null = null;
-    if (values.amount.trim()) {
-      const decimals = getCurrencyDecimals(currency);
-      const result = parseAmountInput(values.amount, locale, decimals);
-      if (!result.ok) {
-        void appAlert({
-          type: 'error',
-          title: t('error'),
-          message: t(getAmountInputErrorKey(result.error), {
-            decimals,
-            max: format(MAX_AMOUNT, { showCurrency: false }),
-          }),
-          buttons: [{ text: t('accept') }],
-        });
-        return;
-      }
-      parsedAmount = result.value;
+    const decimals = getCurrencyDecimals(currency);
+    const amountResult = parseReminderAmount(values.amount, locale, decimals);
+    if (!amountResult.ok) {
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t(getAmountInputErrorKey(amountResult.error), {
+          decimals,
+          max: format(MAX_AMOUNT, { showCurrency: false }),
+        }),
+        buttons: [{ text: t('accept') }],
+      });
+      return;
     }
+    const parsedAmount = amountResult.value;
 
     if (!isValidReminderDate(values.startDate)) {
       void appAlert({
@@ -287,8 +264,6 @@ export function ReminderForm() {
       router.back();
       if (permission !== 'granted') {
         showPermissionAlert();
-      } else if (!isArchived) {
-        void maybeShowMiuiTip();
       }
     } catch (error) {
       console.error('Error saving reminder:', error);

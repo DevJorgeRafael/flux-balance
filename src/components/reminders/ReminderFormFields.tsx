@@ -172,7 +172,7 @@ export function ReminderFormFields({
       <TextInput
         value={values.amount}
         onChangeText={(value) => onChange('amount', value)}
-        placeholder="0"
+        placeholder={t('reminderAmountPlaceholder')}
         placeholderTextColor={colors.textLight}
         keyboardType="decimal-pad"
         style={[
