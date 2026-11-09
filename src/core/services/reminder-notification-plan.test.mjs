@@ -182,3 +182,42 @@ test('la sincronización cancela antes de programar y devuelve el plan', async (
   assert.deepEqual(plan.toCancel, [stale]);
   assert.equal(plan.toSchedule.length, 10);
 });
+
+test('la sincronización cancela todas las notificaciones de un recordatorio eliminado', async () => {
+  const deletedId = 'rem-borrado';
+  const first = reminderNotificationId(
+    deletedId,
+    localDate(0, 1).toISOString()
+  );
+  const second = reminderNotificationId(
+    deletedId,
+    localDate(0, 2).toISOString()
+  );
+  const calls = [];
+
+  const gateway = {
+    async getScheduledReminderIdentifiers() {
+      calls.push('get');
+      return [first, second];
+    },
+    async cancel(identifier) {
+      calls.push(`cancel:${identifier}`);
+    },
+    async schedule(request) {
+      calls.push(`schedule:${request.identifier}`);
+    },
+  };
+
+  const plan = await syncReminderNotifications({
+    gateway,
+    reminders: [],
+    now: NOW,
+    contentFor,
+    forceReminderIds: [deletedId],
+  });
+
+  assert.deepEqual(plan.toCancel, [first, second]);
+  assert.deepEqual(plan.toSchedule, []);
+  assert.deepEqual(calls, ['get', `cancel:${first}`, `cancel:${second}`]);
+  assert.equal(calls.some((call) => call.startsWith('schedule:')), false);
+});

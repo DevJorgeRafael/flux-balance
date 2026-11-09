@@ -25,6 +25,11 @@ export const reminderTranslations = {
     createReminder: 'Crear recordatorio',
     archiveReminder: 'Archivar recordatorio',
     unarchiveReminder: 'Reactivar recordatorio',
+    deleteReminder: 'Eliminar recordatorio',
+    deleteReminderTitle: '¿Eliminar recordatorio?',
+    deleteReminderMessage:
+      'Se eliminará "{{title}}". Esta acción no se puede deshacer.',
+    errorDeletingReminder: 'No se pudo eliminar el recordatorio.',
     archived: 'Archivado',
     optional: 'opcional',
     reminderAmountOptional: 'Monto (opcional)',
@@ -79,6 +84,11 @@ export const reminderTranslations = {
     createReminder: 'Create reminder',
     archiveReminder: 'Archive reminder',
     unarchiveReminder: 'Restore reminder',
+    deleteReminder: 'Delete reminder',
+    deleteReminderTitle: 'Delete reminder?',
+    deleteReminderMessage:
+      'This will delete "{{title}}". This action cannot be undone.',
+    errorDeletingReminder: 'The reminder could not be deleted.',
     archived: 'Archived',
     optional: 'optional',
     reminderAmountOptional: 'Amount (optional)',

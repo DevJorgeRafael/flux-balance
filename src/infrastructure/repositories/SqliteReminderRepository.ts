@@ -48,7 +48,8 @@ export type ReminderValidationErrorCode =
   | 'ACCOUNT_NOT_FOUND'
   | 'CATEGORY_NOT_FOUND'
   | 'SENT_AT_INVALID'
-  | 'SCHEDULE_INVALID';
+  | 'SCHEDULE_INVALID'
+  | 'NOT_ARCHIVED';
 
 export class ReminderValidationError extends Error {
   readonly code: ReminderValidationErrorCode;
@@ -314,6 +315,16 @@ export class SqliteReminderRepository implements IReminderRepository {
 
   async delete(id: string): Promise<void> {
     const db = await this.getDb();
+    const existing = await this.getByIdWithDb(db, id);
+    if (!existing) return;
+
+    if (!existing.isArchived) {
+      throw new ReminderValidationError(
+        'NOT_ARCHIVED',
+        'Solo se pueden eliminar recordatorios archivados.'
+      );
+    }
+
     await db.runAsync('DELETE FROM reminders WHERE id = ?', [id]);
   }
 

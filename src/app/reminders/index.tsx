@@ -9,14 +9,15 @@ import {
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { Bell, Plus } from 'lucide-react-native';
-import { appAlert } from '@/components/ui/alert/appAlert';
+import { appAlert, appConfirm } from '@/components/ui/alert/appAlert';
 import { Card } from '@/components/ui/Card';
-import { useColors, useInsets } from '@/components/ui/theme';
+import { spacing, useColors, useInsets } from '@/components/ui/theme';
 import { SectionLabel } from '@/components/settings/SectionLabel';
 import { ReminderListRow } from '@/components/reminders/ReminderListRow';
 import { ReminderScreenHeader } from '@/components/reminders/ReminderScreenHeader';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import type { Reminder } from '@/core/models/reminder';
+import { useReminderNotifications } from '@/context/ReminderNotificationsProvider';
 import { SqliteReminderRepository } from '@/infrastructure/repositories';
 
 const reminderRepo = new SqliteReminderRepository();
@@ -25,7 +26,9 @@ export default function RemindersScreen() {
   const colors = useColors();
   const insets = useInsets();
   const { t } = useTranslation();
+  const { refreshReminderNotifications } = useReminderNotifications();
   const [reminders, setReminders] = useState<Reminder[] | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadReminders = useCallback(async () => {
     try {
@@ -46,6 +49,39 @@ export default function RemindersScreen() {
     useCallback(() => {
       void loadReminders();
     }, [loadReminders])
+  );
+
+  const handleDelete = useCallback(
+    async (reminder: Reminder) => {
+      if (deletingId) return;
+
+      const confirmed = await appConfirm({
+        title: t('deleteReminderTitle'),
+        message: t('deleteReminderMessage', { title: reminder.title }),
+        confirmText: t('delete'),
+        cancelText: t('cancel'),
+        destructive: true,
+      });
+      if (!confirmed) return;
+
+      try {
+        setDeletingId(reminder.id);
+        await reminderRepo.delete(reminder.id);
+        await refreshReminderNotifications(reminder.id);
+        await loadReminders();
+      } catch (error) {
+        console.error('Error deleting reminder:', error);
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('errorDeletingReminder'),
+          buttons: [{ text: t('accept') }],
+        });
+      } finally {
+        setDeletingId(null);
+      }
+    },
+    [deletingId, loadReminders, refreshReminderNotifications, t]
   );
 
   const active = reminders?.filter((reminder) => !reminder.isArchived) ?? [];
@@ -117,26 +153,33 @@ export default function RemindersScreen() {
               {active.length > 0 ? (
                 <View style={styles.group}>
                   <SectionLabel>{t('activeReminders')}</SectionLabel>
-                  {active.map((reminder) => (
-                    <ReminderListRow
-                      key={reminder.id}
-                      reminder={reminder}
-                      onPress={() => openForm(reminder.id)}
-                    />
-                  ))}
+                  <View style={styles.rows}>
+                    {active.map((reminder) => (
+                      <ReminderListRow
+                        key={reminder.id}
+                        reminder={reminder}
+                        onPress={() => openForm(reminder.id)}
+                      />
+                    ))}
+                  </View>
                 </View>
               ) : null}
 
               {archived.length > 0 ? (
                 <View style={styles.group}>
                   <SectionLabel>{t('archivedReminders')}</SectionLabel>
-                  {archived.map((reminder) => (
-                    <ReminderListRow
-                      key={reminder.id}
-                      reminder={reminder}
-                      onPress={() => openForm(reminder.id)}
-                    />
-                  ))}
+                  <View style={styles.rows}>
+                    {archived.map((reminder) => (
+                      <ReminderListRow
+                        key={reminder.id}
+                        reminder={reminder}
+                        onPress={() => openForm(reminder.id)}
+                        onDelete={() => {
+                          void handleDelete(reminder);
+                        }}
+                      />
+                    ))}
+                  </View>
                 </View>
               ) : null}
             </>
@@ -157,11 +200,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
-    paddingHorizontal: 24,
-    paddingTop: 8,
+    paddingHorizontal: spacing.xxl,
+    paddingTop: spacing.sm,
   },
   group: {
-    marginBottom: 20,
+    marginBottom: spacing.lg,
+  },
+  rows: {
+    gap: spacing.lg,
   },
   addButton: {
     width: 40,

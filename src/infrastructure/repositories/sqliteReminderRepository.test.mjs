@@ -392,6 +392,77 @@ test('delete elimina el recordatorio y la cuenta queda en null', async () => {
 
   assert.equal((await repository.getById(reminder.id)).accountId, null);
 
+  await repository.update(reminder.id, { isArchived: true });
   await repository.delete(reminder.id);
   assert.equal(await repository.getById(reminder.id), null);
+});
+
+test('delete elimina un recordatorio archivado', async () => {
+  const database = createDatabase();
+  const repository = createRepository(database);
+  const reminder = await repository.create(reminderData());
+
+  await repository.update(reminder.id, { isArchived: true });
+  await repository.delete(reminder.id);
+
+  assert.equal(await repository.getById(reminder.id), null);
+});
+
+test('delete rechaza un recordatorio activo', async () => {
+  const database = createDatabase();
+  const repository = createRepository(database);
+  const reminder = await repository.create(reminderData());
+
+  await assert.rejects(
+    () => repository.delete(reminder.id),
+    (error) =>
+      error instanceof ReminderValidationError &&
+      error.code === 'NOT_ARCHIVED'
+  );
+  assert.notEqual(await repository.getById(reminder.id), null);
+});
+
+test('delete de un archivado conserva cuenta, categoría, movimiento y split', async () => {
+  const database = createDatabase();
+  const repository = createRepository(database);
+  const reminder = await repository.create(
+    reminderData({ accountId: 'acc-1', categoryId: 'cat-expense' })
+  );
+  await repository.update(reminder.id, { isArchived: true });
+
+  database.raw
+    .prepare(
+      `INSERT INTO transactions (id, type, total_amount, description, date)
+       VALUES ('tx-1', 'EXPENSE', 125.5, 'Factura', '2026-01-31')`
+    )
+    .run();
+  database.raw
+    .prepare(
+      `INSERT INTO transaction_splits
+         (id, transaction_id, account_id, category_id, amount)
+       VALUES ('split-1', 'tx-1', 'acc-1', 'cat-expense', 125.5)`
+    )
+    .run();
+
+  await repository.delete(reminder.id);
+
+  assert.equal(await repository.getById(reminder.id), null);
+  assert.ok(
+    database.raw.prepare('SELECT id FROM accounts WHERE id = ?').get('acc-1')
+  );
+  assert.ok(
+    database.raw
+      .prepare('SELECT id FROM expense_categories WHERE id = ?')
+      .get('cat-expense')
+  );
+  assert.ok(
+    database.raw
+      .prepare('SELECT id FROM transactions WHERE id = ?')
+      .get('tx-1')
+  );
+  assert.ok(
+    database.raw
+      .prepare('SELECT id FROM transaction_splits WHERE id = ?')
+      .get('split-1')
+  );
 });
