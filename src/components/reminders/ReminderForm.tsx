@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  findNodeHandle,
   KeyboardAvoidingView,
   Linking,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -80,7 +82,24 @@ export function ReminderForm() {
   const [notFound, setNotFound] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [footerHeight, setFooterHeight] = useState(0);
   const submittingRef = useRef(false);
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+
+  const handleFieldFocus = (
+    input: React.ComponentRef<typeof TextInput> | null
+  ) => {
+    if (!input) return;
+    const node = findNodeHandle(input);
+    if (node == null) return;
+    scrollRef.current
+      ?.getScrollResponder()
+      .scrollResponderScrollNativeHandleToKeyboard(
+        node,
+        footerHeight + 16,
+        true
+      );
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -324,13 +343,12 @@ export function ReminderForm() {
       ) : (
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
           <ScrollView
-            contentContainerStyle={[
-              styles.content,
-              { paddingBottom: insets.bottom + 32 },
-            ]}
+            ref={scrollRef}
+            style={styles.flex}
+            contentContainerStyle={styles.content}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
@@ -341,18 +359,11 @@ export function ReminderForm() {
               onTypeChange={handleTypeChange}
               accounts={accounts}
               categories={categories}
+              onFieldFocus={handleFieldFocus}
             />
 
-            <View style={styles.actions}>
-              <Button
-                title={t('saveReminder')}
-                onPress={handleSave}
-                loading={isSaving}
-                disabled={isArchiving}
-                style={styles.actionButton}
-              />
-
-              {hasReminder ? (
+            {hasReminder ? (
+              <View style={styles.archiveAction}>
                 <Button
                   title={t(isArchived ? 'unarchiveReminder' : 'archiveReminder')}
                   onPress={handleArchive}
@@ -361,9 +372,28 @@ export function ReminderForm() {
                   variant="outline"
                   style={styles.actionButton}
                 />
-              ) : null}
-            </View>
+              </View>
+            ) : null}
           </ScrollView>
+
+          <View
+            onLayout={(event) => setFooterHeight(event.nativeEvent.layout.height)}
+            style={[
+              styles.footer,
+              {
+                backgroundColor: colors.background,
+                paddingBottom: insets.bottom + 12,
+              },
+            ]}
+          >
+            <Button
+              title={t('saveReminder')}
+              onPress={handleSave}
+              loading={isSaving}
+              disabled={isArchiving}
+              style={styles.actionButton}
+            />
+          </View>
         </KeyboardAvoidingView>
       )}
     </View>
@@ -391,10 +421,14 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 24,
     paddingTop: 8,
+    paddingBottom: 32,
   },
-  actions: {
-    gap: 12,
+  archiveAction: {
     marginTop: 28,
+  },
+  footer: {
+    paddingHorizontal: 24,
+    paddingTop: 8,
   },
   actionButton: {
     width: '100%',

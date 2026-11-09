@@ -17,7 +17,7 @@ import { BackdropBlur } from '@/components/ui/BackdropBlur';
 interface BottomSheetModalProps {
   visible: boolean;
   onClose: () => void;
-  blurTarget: React.RefObject<React.ComponentRef<typeof View> | null>;
+  blurTarget?: React.RefObject<React.ComponentRef<typeof View> | null>;
   children: React.ReactNode;
   maxHeight?: DimensionValue;
   bottomPaddingExtra?: number;
