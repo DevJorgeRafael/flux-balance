@@ -28,9 +28,12 @@ test('muestra la privacidad solo cuando hay una URL configurada', () => {
   assert.equal(isPrivacyVisible('   '), false);
 });
 
-test('oculta privacidad y apoyo con la configuración de release', () => {
-  assert.equal(PRIVACY_URL, '');
+test('muestra privacidad y oculta apoyo con la configuración de release', () => {
+  assert.equal(
+    PRIVACY_URL,
+    'https://devjorgerafael.github.io/flux-balance/privacy/'
+  );
   assert.equal(SHOW_DONATION, false);
-  assert.equal(isPrivacyVisible(PRIVACY_URL), false);
+  assert.equal(isPrivacyVisible(PRIVACY_URL), true);
   assert.equal(isSupportVisible(SHOW_DONATION, SUPPORT_URL), false);
 });
