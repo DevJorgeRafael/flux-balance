@@ -60,8 +60,8 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/logos-app/glyph-white-2000.png",
-          "color": "#2563EB",
+          "icon": "./assets/images/notifications/notification-icon-96-bold.png",
+          "color": "#1642AF",
           "defaultChannel": "reminders",
           "enableRemoteNotifications": false
         }
