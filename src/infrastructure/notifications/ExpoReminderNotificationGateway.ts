@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { isRunningInExpoGo } from 'expo';
 import * as Notifications from 'expo-notifications';
 import type {
   IReminderNotificationGateway,
@@ -61,17 +62,21 @@ export class ExpoReminderNotificationGateway
   async ensureChannel(name: string): Promise<void> {
     if (Platform.OS !== 'android') return;
 
-    await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-      name,
-      importance: ANDROID_IMPORTANCE_HIGH,
-      sound: 'default',
-      enableVibrate: false,
-      vibrationPattern: null,
-      showBadge: false,
-      bypassDnd: false,
-      enableLights: false,
-      lockscreenVisibility: ANDROID_VISIBILITY_PUBLIC,
-    });
+    try {
+      await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
+        name,
+        importance: ANDROID_IMPORTANCE_HIGH,
+        sound: 'default',
+        enableVibrate: false,
+        showBadge: false,
+        bypassDnd: false,
+        enableLights: false,
+        lockscreenVisibility: ANDROID_VISIBILITY_PUBLIC,
+      });
+    } catch (error) {
+      // Expo Go falla al serializar el canal, aunque la API nativa ya lo creó.
+      if (!isRunningInExpoGo()) throw error;
+    }
   }
 
   async getPermissionStatus(): Promise<ReminderNotificationPermission> {
