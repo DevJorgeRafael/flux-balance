@@ -2,6 +2,27 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.0.0] - 2026-11-09
+
+Versión mayor por la nueva función de recordatorios. Tus datos existentes no cambian.
+
+### Añadido
+
+- Nuevos recordatorios de gastos e ingresos.
+- Notificaciones locales para avisar de cada recordatorio.
+- Toca una notificación para registrar el movimiento.
+- El monto de los recordatorios ahora es opcional.
+- Los recordatorios archivados se pueden eliminar con confirmación.
+- Nueva nota sobre el ahorro de batería del teléfono.
+- Nuevo ícono para las notificaciones de recordatorios.
+
+### Corregido
+
+- Las notificaciones de recordatorios ya no se duplican.
+- Al conceder notificaciones ya no aparece un aviso adicional.
+- El encabezado de recordatorios ya no muestra un bloque vacío.
+- Los respaldos aceptan cuentas con saldo negativo.
+
 ## [1.6.7] - 2026-11-04
 
 ### Corregido

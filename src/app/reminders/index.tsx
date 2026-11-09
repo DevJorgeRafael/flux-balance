@@ -10,6 +10,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { Bell, Plus } from 'lucide-react-native';
 import { appAlert, appConfirm } from '@/components/ui/alert/appAlert';
+import { Button } from '@/components/ui/atoms/Button';
 import { Card } from '@/components/ui/Card';
 import { spacing, useColors, useInsets } from '@/components/ui/theme';
 import { SectionLabel } from '@/components/settings/SectionLabel';
@@ -17,7 +18,12 @@ import { ReminderListRow } from '@/components/reminders/ReminderListRow';
 import { ReminderScreenHeader } from '@/components/reminders/ReminderScreenHeader';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import type { Reminder } from '@/core/models/reminder';
+import {
+  REMINDER_BATTERY_TIP_DISMISSED_KEY,
+  isReminderBatteryTipVisible,
+} from '@/core/services/reminder-battery-tip';
 import { useReminderNotifications } from '@/context/ReminderNotificationsProvider';
+import { getAppSetting, setAppSetting } from '@/infrastructure/database/appSettings';
 import { SqliteReminderRepository } from '@/infrastructure/repositories';
 
 const reminderRepo = new SqliteReminderRepository();
@@ -28,6 +34,9 @@ export default function RemindersScreen() {
   const { t } = useTranslation();
   const { refreshReminderNotifications } = useReminderNotifications();
   const [reminders, setReminders] = useState<Reminder[] | null>(null);
+  const [batteryTipDismissed, setBatteryTipDismissed] = useState<boolean | null>(
+    null
+  );
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadReminders = useCallback(async () => {
@@ -45,11 +54,32 @@ export default function RemindersScreen() {
     }
   }, [t]);
 
+  const loadBatteryTipPreference = useCallback(async () => {
+    try {
+      setBatteryTipDismissed(
+        (await getAppSetting(REMINDER_BATTERY_TIP_DISMISSED_KEY)) === '1'
+      );
+    } catch (error) {
+      console.error('Error loading reminder battery tip:', error);
+      setBatteryTipDismissed(false);
+    }
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       void loadReminders();
-    }, [loadReminders])
+      void loadBatteryTipPreference();
+    }, [loadBatteryTipPreference, loadReminders])
   );
+
+  const handleDismissBatteryTip = useCallback(async () => {
+    setBatteryTipDismissed(true);
+    try {
+      await setAppSetting(REMINDER_BATTERY_TIP_DISMISSED_KEY, '1');
+    } catch (error) {
+      console.error('Error saving reminder battery tip:', error);
+    }
+  }, []);
 
   const handleDelete = useCallback(
     async (reminder: Reminder) => {
@@ -86,6 +116,9 @@ export default function RemindersScreen() {
 
   const active = reminders?.filter((reminder) => !reminder.isArchived) ?? [];
   const archived = reminders?.filter((reminder) => reminder.isArchived) ?? [];
+  const showBatteryTip =
+    batteryTipDismissed !== null &&
+    isReminderBatteryTipVisible(active.length, batteryTipDismissed);
 
   const openForm = (id?: string) => {
     if (id) {
@@ -182,6 +215,21 @@ export default function RemindersScreen() {
                   </View>
                 </View>
               ) : null}
+
+              {showBatteryTip ? (
+                <Card style={styles.batteryTip}>
+                  <Text style={[styles.batteryTipText, { color: colors.textLight }]}>
+                    {t('reminderBatteryTipMessage')}
+                  </Text>
+                  <Button
+                    title={t('understood')}
+                    onPress={handleDismissBatteryTip}
+                    variant="ghost"
+                    size="sm"
+                    style={styles.batteryTipButton}
+                  />
+                </Card>
+              ) : null}
             </>
           )}
         </ScrollView>
@@ -208,6 +256,20 @@ const styles = StyleSheet.create({
   },
   rows: {
     gap: spacing.lg,
+  },
+  batteryTip: {
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+  },
+  batteryTipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 19,
+  },
+  batteryTipButton: {
+    alignSelf: 'flex-start',
   },
   addButton: {
     width: 40,
