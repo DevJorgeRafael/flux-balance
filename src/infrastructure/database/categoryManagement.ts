@@ -72,6 +72,11 @@ export async function deleteCategoryAndUncategorize(
       [categoryId, type]
     );
 
+    await txn.runAsync(
+      'UPDATE reminders SET category_id = NULL WHERE category_id = ? AND type = ?',
+      [categoryId, type]
+    );
+
     await txn.runAsync(`DELETE FROM ${table} WHERE id = ? AND is_default = 0`, [
       categoryId,
     ]);

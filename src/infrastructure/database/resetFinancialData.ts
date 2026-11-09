@@ -7,6 +7,7 @@ type ResetDatabase = Pick<
 >;
 
 const CLEAR_FINANCIAL_DATA_SQL = `
+  UPDATE reminders SET account_id = NULL, category_id = NULL;
   DELETE FROM transaction_splits;
   DELETE FROM transactions;
   DELETE FROM fixed_term_deposits;

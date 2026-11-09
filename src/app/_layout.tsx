@@ -18,6 +18,7 @@ import {
 import { initDatabase } from '@/infrastructure/database/db';
 import { cleanupExportCache } from '@/infrastructure/backup/exportCache';
 import { DashboardProvider } from '@/context/DashboardContext';
+import { ReminderNotificationsProvider } from '@/context/ReminderNotificationsProvider';
 import { TranslationProvider } from '@/core/i18n/useTranslation';
 import { CurrencyProvider, loadStoredCurrency } from '@/core/currency/useCurrency';
 import { runStartup } from '@/core/services/startup';
@@ -93,16 +94,18 @@ function RootWithTheme() {
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <ThemeProvider value={navigationTheme}>
         <DashboardProvider>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              animation: 'slide_from_right',
-              gestureEnabled: true,
-              contentStyle: { backgroundColor: colors.background },
-            }}
-          >
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
+          <ReminderNotificationsProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                animation: 'slide_from_right',
+                gestureEnabled: true,
+                contentStyle: { backgroundColor: colors.background },
+              }}
+            >
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            </Stack>
+          </ReminderNotificationsProvider>
         </DashboardProvider>
       </ThemeProvider>
     </>

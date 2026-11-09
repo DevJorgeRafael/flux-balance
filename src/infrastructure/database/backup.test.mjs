@@ -10,6 +10,7 @@ import { createBackupFile, serializeBackup } from '../../core/services/backup-fo
 import { parseBackupText } from '../../core/services/backup-validation.ts';
 import { buildBackupFromDatabase, importBackupIntoDatabase } from './backup.ts';
 import { BASELINE_DDL } from './migrations/001_baseline.ts';
+import { REMINDERS_DDL } from './migrations/003_reminders.ts';
 
 const TIMESTAMP = '2026-01-02T10:00:00.000Z';
 
@@ -110,6 +111,7 @@ function createDatabase({ failOn, foreignKeys = true } = {}) {
   const raw = new DatabaseSync(':memory:');
   raw.exec(`PRAGMA foreign_keys = ${foreignKeys ? 'ON' : 'OFF'};`);
   raw.exec(BASELINE_DDL);
+  raw.exec(REMINDERS_DDL);
   raw.exec(
     'CREATE TABLE app_settings (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)'
   );
@@ -290,6 +292,42 @@ test('exporta y valida una cuenta con balance negativo', async () => {
       (account) => account.id === 'acc_1793832510495_a7sj7'
     )?.balance,
     -5
+  );
+});
+
+test('la importación conserva recordatorios y limpia sus referencias', async () => {
+  const { raw, db } = createDatabase();
+  raw
+    .prepare(
+      `INSERT INTO accounts (id, name, type, balance, currency)
+       VALUES ('acc-old', 'Cuenta vieja', 'CHECKING', 0, 'USD')`
+    )
+    .run();
+  raw
+    .prepare(
+      `INSERT INTO expense_categories (id, name)
+       VALUES ('cat-old', 'Categoría vieja')`
+    )
+    .run();
+  raw
+    .prepare(
+      `INSERT INTO reminders
+         (id, title, type, account_id, category_id, recurrence, time,
+          start_date, next_run_at)
+       VALUES ('rem-1', 'Internet', 'EXPENSE', 'acc-old', 'cat-old',
+               'MONTHLY', '09:00', '2026-02-01',
+               '2026-02-01T09:00:00.000Z')`
+    )
+    .run();
+
+  const parsed = parseBackupText(JSON.stringify(createBackupFixture()));
+  assert.equal(parsed.ok, true);
+
+  await importBackupIntoDatabase(db, parsed.backup);
+
+  assert.deepEqual(
+    { ...raw.prepare('SELECT account_id, category_id FROM reminders').get() },
+    { account_id: null, category_id: null }
   );
 });
 
