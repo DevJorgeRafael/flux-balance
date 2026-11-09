@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -18,6 +18,7 @@ import type {
   ReminderRecurrence,
   ReminderType,
 } from '@/core/models/reminder';
+import { ReminderSelectField } from './ReminderSelectField';
 import { REMINDER_RECURRENCE_LABELS } from './reminderLabels';
 
 export interface ReminderFormValues {
@@ -41,6 +42,9 @@ interface ReminderFormFieldsProps {
   onTypeChange: (type: ReminderType) => void;
   accounts: Account[];
   categories: Category[];
+  onFieldFocus?: (
+    input: React.ComponentRef<typeof TextInput> | null
+  ) => void;
 }
 
 const RECURRENCES: readonly ReminderRecurrence[] = [
@@ -50,18 +54,39 @@ const RECURRENCES: readonly ReminderRecurrence[] = [
   'MONTHLY',
 ];
 
+const MAX_ACCOUNT_CHIPS = 4;
+
 export function ReminderFormFields({
   values,
   onChange,
   onTypeChange,
   accounts,
   categories,
+  onFieldFocus,
 }: ReminderFormFieldsProps) {
   const colors = useColors();
   const { t } = useTranslation();
+  const titleRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const descriptionRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const amountRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const startDateRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const timeRef = useRef<React.ComponentRef<typeof TextInput>>(null);
   const typeCategories = categories.filter(
     (category) => category.type === values.type
   );
+  const selectedAccount = accounts.find(
+    (account) => account.id === values.accountId
+  );
+  const selectedCategory = typeCategories.find(
+    (category) => category.id === values.categoryId
+  );
+  const useAccountChips = accounts.length <= MAX_ACCOUNT_CHIPS;
+
+  const handleFocus = (
+    input: React.RefObject<React.ComponentRef<typeof TextInput> | null>
+  ) => {
+    onFieldFocus?.(input.current);
+  };
 
   const renderChip = (
     key: string,
@@ -140,11 +165,16 @@ export function ReminderFormFields({
         {t('reminderTitle')}
       </Text>
       <TextInput
+        ref={titleRef}
         value={values.title}
         onChangeText={(value) => onChange('title', value)}
+        onFocus={() => handleFocus(titleRef)}
+        onSubmitEditing={() => descriptionRef.current?.focus()}
         placeholder={t('reminderTitlePlaceholder')}
         placeholderTextColor={colors.textLight}
         maxLength={MAX_REMINDER_TITLE_LENGTH}
+        returnKeyType="next"
+        submitBehavior="submit"
         style={[
           styles.input,
           { color: colors.text, backgroundColor: colors.inputBackground },
@@ -155,11 +185,16 @@ export function ReminderFormFields({
         {t('description')}
       </Text>
       <TextInput
+        ref={descriptionRef}
         value={values.description}
         onChangeText={(value) => onChange('description', value)}
+        onFocus={() => handleFocus(descriptionRef)}
+        onSubmitEditing={() => amountRef.current?.focus()}
         placeholder={t('reminderDescriptionPlaceholder')}
         placeholderTextColor={colors.textLight}
         maxLength={MAX_TRANSACTION_DESCRIPTION_LENGTH}
+        returnKeyType="next"
+        submitBehavior="submit"
         style={[
           styles.input,
           { color: colors.text, backgroundColor: colors.inputBackground },
@@ -170,11 +205,16 @@ export function ReminderFormFields({
         {t('reminderAmountOptional')}
       </Text>
       <TextInput
+        ref={amountRef}
         value={values.amount}
         onChangeText={(value) => onChange('amount', value)}
+        onFocus={() => handleFocus(amountRef)}
+        onSubmitEditing={() => startDateRef.current?.focus()}
         placeholder={t('reminderAmountPlaceholder')}
         placeholderTextColor={colors.textLight}
         keyboardType="decimal-pad"
+        returnKeyType="next"
+        submitBehavior="submit"
         style={[
           styles.input,
           { color: colors.text, backgroundColor: colors.inputBackground },
@@ -201,12 +241,17 @@ export function ReminderFormFields({
             {t('startDate')}
           </Text>
           <TextInput
+            ref={startDateRef}
             value={values.startDate}
             onChangeText={(value) => onChange('startDate', value)}
+            onFocus={() => handleFocus(startDateRef)}
+            onSubmitEditing={() => timeRef.current?.focus()}
             placeholder={t('datePlaceholder')}
             placeholderTextColor={colors.textLight}
             autoCapitalize="none"
             autoCorrect={false}
+            returnKeyType="next"
+            submitBehavior="submit"
             style={[
               styles.input,
               { color: colors.text, backgroundColor: colors.inputBackground },
@@ -218,12 +263,17 @@ export function ReminderFormFields({
             {t('startTime')}
           </Text>
           <TextInput
+            ref={timeRef}
             value={values.time}
             onChangeText={(value) => onChange('time', value)}
+            onFocus={() => handleFocus(timeRef)}
+            onSubmitEditing={() => timeRef.current?.blur()}
             placeholder={t('timePlaceholder')}
             placeholderTextColor={colors.textLight}
             autoCapitalize="none"
             autoCorrect={false}
+            returnKeyType="done"
+            submitBehavior="blurAndSubmit"
             style={[
               styles.input,
               { color: colors.text, backgroundColor: colors.inputBackground },
@@ -233,48 +283,69 @@ export function ReminderFormFields({
       </View>
 
       {accounts.length > 0 ? (
-        <>
-          <Text style={[styles.label, styles.fieldLabel, { color: colors.textLight }]}>
-            {`${t('account')} (${t('optional')})`}
-          </Text>
-          <View style={styles.chips}>
-            {accounts.map((account) =>
-              renderChip(
-                account.id,
-                account.name,
-                values.accountId === account.id,
-                () =>
-                  onChange(
-                    'accountId',
-                    values.accountId === account.id ? '' : account.id
-                  )
-              )
-            )}
-          </View>
-        </>
+        useAccountChips ? (
+          <>
+            <Text
+              style={[
+                styles.label,
+                styles.fieldLabel,
+                { color: colors.textLight },
+              ]}
+            >
+              {t('reminderAccountOptional')}
+            </Text>
+            <View style={styles.chips}>
+              {accounts.map((account) =>
+                renderChip(
+                  account.id,
+                  account.name,
+                  values.accountId === account.id,
+                  () =>
+                    onChange(
+                      'accountId',
+                      values.accountId === account.id ? '' : account.id
+                    )
+                )
+              )}
+            </View>
+          </>
+        ) : (
+          <ReminderSelectField
+            label={t('reminderAccountOptional')}
+            title={t('reminderAccountSheetTitle')}
+            emptyLabel={t('reminderNoAccount')}
+            accessibilityLabel={`${t('account')}: ${
+              selectedAccount?.name ?? t('reminderNoAccount')
+            }`}
+            options={accounts.map((account) => ({
+              id: account.id,
+              name: account.name,
+            }))}
+            selectedId={values.accountId}
+            onSelect={(id) => onChange('accountId', id)}
+          />
+        )
       ) : null}
 
-      {typeCategories.length > 0 ? (
-        <>
-          <Text style={[styles.label, styles.fieldLabel, { color: colors.textLight }]}>
-            {`${t('category')} (${t('optional')})`}
-          </Text>
-          <View style={styles.chips}>
-            {typeCategories.map((category) =>
-              renderChip(
-                category.id,
-                category.name,
-                values.categoryId === category.id,
-                () =>
-                  onChange(
-                    'categoryId',
-                    values.categoryId === category.id ? '' : category.id
-                  )
-              )
-            )}
-          </View>
-        </>
-      ) : null}
+      <ReminderSelectField
+        label={t('reminderCategoryOptional')}
+        title={t('reminderCategorySheetTitle')}
+        emptyLabel={t('reminderNoCategory')}
+        accessibilityLabel={`${t('category')}: ${
+          selectedCategory?.name ?? t('reminderNoCategory')
+        }`}
+        options={typeCategories.map((category) => ({
+          id: category.id,
+          name: category.name,
+          color: category.color,
+        }))}
+        selectedId={values.categoryId}
+        onSelect={(id) => onChange('categoryId', id)}
+        showColor
+        searchable
+        searchPlaceholder={t('reminderSearch')}
+        noResultsLabel={t('reminderNoCategoriesFound')}
+      />
     </>
   );
 }

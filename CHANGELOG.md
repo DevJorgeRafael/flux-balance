@@ -2,6 +2,20 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.0.1] - 2026-11-09
+
+### Corregido
+
+- El teclado ya no tapa los campos del formulario de recordatorios.
+- El botón Guardar recordatorio permanece visible con el teclado abierto.
+
+### Mejorado
+
+- "Siguiente" recorre los campos y "Listo" cierra el teclado.
+- El selector de categorías usa una fila con hoja inferior y búsqueda.
+- La búsqueda de categorías ignora mayúsculas y acentos.
+- El selector de cuentas usa chips o fila según la cantidad.
+
 ## [2.0.0] - 2026-11-09
 
 Versión mayor por la nueva función de recordatorios. Tus datos existentes no cambian.
