@@ -34,11 +34,16 @@ export function ReminderScreenHeader({
         <ArrowLeft size={20} color={colors.text} strokeWidth={2.5} />
       </Pressable>
 
-      <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
-        {title}
-      </Text>
+      {right ? <View style={styles.headerAction}>{right}</View> : null}
 
-      <View style={styles.headerAction}>{right}</View>
+      <View style={styles.titleLayer} pointerEvents="none">
+        <Text
+          style={[styles.headerTitle, { color: colors.text }]}
+          numberOfLines={1}
+        >
+          {title}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -59,13 +64,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  titleLayer: {
+    position: 'absolute',
+    top: 12,
+    right: 24,
+    bottom: 14,
+    left: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+  },
   headerTitle: {
-    flex: 1,
     textAlign: 'center',
     fontSize: 17,
     fontWeight: '800',
     letterSpacing: -0.3,
-    marginHorizontal: 12,
   },
   headerAction: {
     width: 40,
