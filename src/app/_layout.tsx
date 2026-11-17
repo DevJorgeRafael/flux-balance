@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { LogBox } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,13 +19,18 @@ import {
   UIProvider,
   useColors,
   useThemeMode,
+  type EdgeInsets,
+  type Labels,
   type ThemeMode,
 } from '@/components/ui/theme';
 import { initDatabase } from '@/infrastructure/database/db';
 import { cleanupExportCache } from '@/infrastructure/backup/exportCache';
 import { DashboardProvider } from '@/context/DashboardContext';
 import { ReminderNotificationsProvider } from '@/context/ReminderNotificationsProvider';
-import { TranslationProvider } from '@/core/i18n/useTranslation';
+import {
+  TranslationProvider,
+  useTranslation,
+} from '@/core/i18n/useTranslation';
 import { CurrencyProvider, loadStoredCurrency } from '@/core/currency/useCurrency';
 import { runStartup } from '@/core/services/startup';
 import {
@@ -42,6 +53,57 @@ LogBox.ignoreLogs([
 
 type StartupPreferences = StoredPreferences & { currency: string };
 
+function LocalizedUIProvider({
+  children,
+  insets,
+  mode,
+  onModeChange,
+}: {
+  children: React.ReactNode;
+  insets: EdgeInsets;
+  mode: ThemeMode;
+  onModeChange: (mode: ThemeMode) => void;
+}) {
+  const { language, t } = useTranslation();
+
+  const labels = useMemo<Partial<Labels>>(() => {
+    const locale = language === 'es' ? 'es' : 'en';
+    const monthFormatter = new Intl.DateTimeFormat(locale, { month: 'long' });
+    const weekdayFormatter = new Intl.DateTimeFormat(locale, { weekday: 'narrow' });
+
+    return {
+      close: t('close'),
+      cancel: t('cancel'),
+      confirm: t('done'),
+      previousMonth: t('previousMonth'),
+      nextMonth: t('nextMonth'),
+      months: Array.from({ length: 12 }, (_, month) =>
+        monthFormatter.format(new Date(2026, month, 1))
+      ),
+      weekdaysShort: Array.from({ length: 7 }, (_, day) =>
+        weekdayFormatter.format(new Date(2026, 0, 4 + day))
+      ),
+      selectDate: t('selectDate'),
+      timeHour: t('timeHour'),
+      timeMinute: t('timeMinute'),
+      am: t('am'),
+      pm: t('pm'),
+      timeUnselected: t('timeUnselected'),
+    };
+  }, [language, t]);
+
+  return (
+    <UIProvider
+      insets={insets}
+      mode={mode}
+      onModeChange={onModeChange}
+      labels={labels}
+    >
+      {children}
+    </UIProvider>
+  );
+}
+
 function RootNavigator({ initialPreferences }: { initialPreferences: StartupPreferences }) {
   const insets = useSafeAreaInsets();
   const [themePreference, setThemePreference] = useState<ThemePreference>(
@@ -58,9 +120,13 @@ function RootNavigator({ initialPreferences }: { initialPreferences: StartupPref
   return (
     <TranslationProvider initialPreference={initialPreferences.languagePreference}>
       <CurrencyProvider initialCurrency={initialPreferences.currency}>
-        <UIProvider insets={insets} mode={themePreference} onModeChange={handleModeChange}>
+        <LocalizedUIProvider
+          insets={insets}
+          mode={themePreference}
+          onModeChange={handleModeChange}
+        >
           <RootWithTheme />
-        </UIProvider>
+        </LocalizedUIProvider>
       </CurrencyProvider>
     </TranslationProvider>
   );
