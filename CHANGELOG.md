@@ -15,6 +15,13 @@ Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
 - Se reemplazaron los TouchableOpacity restantes por Pressable.
 
+### Corregido
+
+- Los botones y segmentos de ingreso y gasto tienen mejor contraste en modo claro.
+- El punto de color de la categoría se distingue sobre el chip seleccionado.
+- Guardar el tema ya no puede fallar por una base de datos bloqueada.
+- Ya no aparece el aviso de splash al usar Expo Go.
+
 ## [2.0.2] - 2026-11-17
 
 ### Añadido

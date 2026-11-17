@@ -11,10 +11,10 @@ export async function getAppSetting(key: string): Promise<string | null> {
 
 export async function setAppSetting(key: string, value: string): Promise<void> {
   const db = await getDatabase();
-  await db.withExclusiveTransactionAsync(async (txn) => {
-    await txn.runAsync('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)', [
-      key,
-      value,
-    ]);
-  });
+  // Un solo INSERT OR REPLACE ya es atómico; la transacción exclusiva abría
+  // una segunda conexión y podía chocar con otras escrituras en curso.
+  await db.runAsync('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)', [
+    key,
+    value,
+  ]);
 }

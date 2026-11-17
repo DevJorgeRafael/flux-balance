@@ -295,10 +295,17 @@ export function CreateTransactionModal({
                   >
                     <View
                       style={[
-                        styles.categoryColorDot,
-                        { backgroundColor: isHexColor(cat.color) ? cat.color : colors.chartOther },
+                        styles.categoryColorBadge,
+                        selected && { backgroundColor: colors.white },
                       ]}
-                    />
+                    >
+                      <View
+                        style={[
+                          styles.categoryColorDot,
+                          { backgroundColor: isHexColor(cat.color) ? cat.color : colors.chartOther },
+                        ]}
+                      />
+                    </View>
                     <Text
                       style={[
                         styles.selectionChipText,
@@ -425,6 +432,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     marginRight: 8,
+  },
+  categoryColorBadge: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   categoryColorDot: {
     width: 8,

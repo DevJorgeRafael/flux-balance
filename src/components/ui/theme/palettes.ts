@@ -109,13 +109,13 @@ export const lightPalette: ThemeColors = {
   secondarySoft: '#ecfeff',
   secondaryText: '#0e7490',
 
-  success: '#10b981',
-  onSuccess: '#022c22',
+  success: '#047857',
+  onSuccess: '#ffffff',
   successSoft: '#ecfdf5',
   successText: '#047857',
 
-  error: '#f43f5e',
-  onError: '#0A0E1A',
+  error: '#be123c',
+  onError: '#ffffff',
   errorSoft: '#fff1f2',
   errorText: '#be123c',
 
