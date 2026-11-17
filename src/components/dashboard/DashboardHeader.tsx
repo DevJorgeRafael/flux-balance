@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, Pressable, Text } from 'react-native';
 import { Sun, Moon, Settings, RotateCcw, Sparkles, Languages } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { useColors } from '@/components/ui/theme';
@@ -41,24 +41,27 @@ export function DashboardHeader({
       <View style={styles.topHeader} pointerEvents="box-none">
         <View style={styles.topHeaderSpacer} />
         <View style={styles.topHeaderActions}>
-          <TouchableOpacity
-            style={[
+          <Pressable
+            style={({ pressed }) => [
               styles.gearMainBtn,
               {
                 backgroundColor: isSettingsOpen ? colors.primarySoft : colors.surface,
                 borderColor: isSettingsOpen ? colors.primary : colors.border,
               },
+              pressed && styles.pressed,
             ]}
             onPress={toggleSettings}
-            activeOpacity={0.7}
+            accessibilityRole="button"
             accessibilityLabel={t('settings')}
+            accessibilityState={{ expanded: isSettingsOpen }}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
             <Settings
               size={20}
               color={isSettingsOpen ? colors.primaryText : colors.text}
               strokeWidth={2}
             />
-          </TouchableOpacity>
+          </Pressable>
 
           <MotiView
             from={{ opacity: 0, scale: 0.82, translateY: -8 }}
@@ -70,6 +73,8 @@ export function DashboardHeader({
             transition={{ type: 'spring', damping: 18, stiffness: 260, mass: 0.7 } as any}
             style={[styles.settingsPopoverMotion]}
             pointerEvents={isSettingsOpen ? 'auto' : 'none'}
+            accessibilityElementsHidden={!isSettingsOpen}
+            importantForAccessibility={isSettingsOpen ? 'auto' : 'no-hide-descendants'}
           >
             <Card variant="raised" style={styles.settingsPopover}>
               <Text style={[styles.menuTitle, { color: colors.text }]}>{t('settings')}</Text>
@@ -83,16 +88,22 @@ export function DashboardHeader({
                   )}
                   <Text style={[styles.menuLabel, { color: colors.text }]}>{t('theme')}</Text>
                 </View>
-                <TouchableOpacity
+                <Pressable
                   ref={themeButtonRef}
-                  style={[styles.toggleButton, { backgroundColor: colors.primarySoft }]}
+                  style={({ pressed }) => [
+                    styles.toggleButton,
+                    { backgroundColor: colors.primarySoft },
+                    pressed && styles.pressed,
+                  ]}
                   onPress={toggleTheme}
-                  activeOpacity={0.75}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t('theme')}: ${isDark ? t('dark') : t('light')}`}
+                  hitSlop={2}
                 >
                   <Text style={[styles.toggleText, { color: colors.primaryText }]}>
                     {isDark ? t('dark') : t('light')}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
 
               <View style={[styles.menuRow, { borderTopColor: colors.border }]}>
@@ -100,43 +111,59 @@ export function DashboardHeader({
                   <Languages size={17} color={colors.primaryText} />
                   <Text style={[styles.menuLabel, { color: colors.text }]}>{t('language')}</Text>
                 </View>
-                <TouchableOpacity
-                  style={[styles.toggleButton, { backgroundColor: colors.primarySoft }]}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.toggleButton,
+                    { backgroundColor: colors.primarySoft },
+                    pressed && styles.pressed,
+                  ]}
                   onPress={toggleLanguage}
-                  activeOpacity={0.75}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t('language')}: ${language.toUpperCase()}`}
+                  hitSlop={2}
                 >
                   <Text style={[styles.toggleText, { color: colors.primaryText }]}>
                     {language.toUpperCase()}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
 
               {isDevMode && (
-                <TouchableOpacity
-                  style={[styles.actionRow, { borderTopColor: colors.border }]}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.actionRow,
+                    { borderTopColor: colors.border },
+                    pressed && styles.pressed,
+                  ]}
                   onPress={() => {
                     closeSettings();
                     handleSeedDemoData();
                   }}
-                  activeOpacity={0.75}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('demoMode')}
                 >
                   <Sparkles size={17} color={colors.primaryText} />
                   <Text style={[styles.menuLabel, { color: colors.text }]}>{t('demoMode')}</Text>
-                </TouchableOpacity>
+                </Pressable>
               )}
 
               {isDevMode && (
-                <TouchableOpacity
-                  style={[styles.actionRow, { borderTopColor: colors.border }]}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.actionRow,
+                    { borderTopColor: colors.border },
+                    pressed && styles.pressed,
+                  ]}
                   onPress={() => {
                     closeSettings();
                     handleResetAllData();
                   }}
-                  activeOpacity={0.75}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('resetData')}
                 >
                   <RotateCcw size={17} color={colors.errorText} />
                   <Text style={[styles.menuLabel, { color: colors.errorText }]}>{t('resetData')}</Text>
-                </TouchableOpacity>
+                </Pressable>
               )}
             </Card>
           </MotiView>
@@ -209,6 +236,8 @@ const styles = StyleSheet.create({
   },
   toggleButton: {
     minWidth: 58,
+    minHeight: 40,
+    justifyContent: 'center',
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 10,
@@ -225,5 +254,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });

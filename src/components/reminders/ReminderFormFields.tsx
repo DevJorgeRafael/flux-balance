@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import { useColors } from '@/components/ui/theme';
+import { SegmentedTypeControl } from '@/components/ui/SegmentedTypeControl';
 import {
   MAX_REMINDER_TITLE_LENGTH,
   MAX_TRANSACTION_DESCRIPTION_LENGTH,
@@ -98,13 +99,16 @@ export function ReminderFormFields({
       key={key}
       onPress={onPress}
       accessibilityRole="button"
+      accessibilityLabel={label}
       accessibilityState={{ selected }}
-      style={[
+      hitSlop={2}
+      style={({ pressed }) => [
         styles.chip,
         {
           backgroundColor: selected ? colors.primary : colors.inputBackground,
           borderColor: colors.border,
         },
+        pressed && styles.pressed,
       ]}
     >
       <Text
@@ -123,43 +127,24 @@ export function ReminderFormFields({
       <Text style={[styles.label, { color: colors.textLight }]}>
         {t('reminderType')}
       </Text>
-      <View
-        style={[styles.segmented, { backgroundColor: colors.controlTrack }]}
-      >
-        {(['EXPENSE', 'INCOME'] as const).map((option) => {
-          const selected = values.type === option;
-          const isIncome = option === 'INCOME';
-          return (
-            <Pressable
-              key={option}
-              onPress={() => onTypeChange(option)}
-              accessibilityRole="button"
-              accessibilityState={{ selected }}
-              style={[
-                styles.segment,
-                selected && {
-                  backgroundColor: isIncome ? colors.success : colors.error,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.segmentText,
-                  {
-                    color: selected
-                      ? isIncome
-                        ? colors.onSuccess
-                        : colors.onError
-                      : colors.textLight,
-                  },
-                ]}
-              >
-                {t(isIncome ? 'addIncome' : 'addExpense')}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <SegmentedTypeControl
+        value={values.type}
+        options={[
+          {
+            value: 'EXPENSE',
+            label: t('addExpense'),
+            color: colors.error,
+            textColor: colors.onError,
+          },
+          {
+            value: 'INCOME',
+            label: t('addIncome'),
+            color: colors.success,
+            textColor: colors.onSuccess,
+          },
+        ]}
+        onChange={onTypeChange}
+      />
 
       <Text style={[styles.label, styles.fieldLabel, { color: colors.textLight }]}>
         {t('reminderTitle')}
@@ -364,22 +349,6 @@ const styles = StyleSheet.create({
   fieldLabel: {
     marginTop: 18,
   },
-  segmented: {
-    flexDirection: 'row',
-    borderRadius: 14,
-    padding: 4,
-  },
-  segment: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-    paddingVertical: 10,
-  },
-  segmentText: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
   input: {
     minHeight: 52,
     borderRadius: 16,
@@ -394,6 +363,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
+    minHeight: 44,
+    justifyContent: 'center',
     borderRadius: 18,
     borderWidth: 1,
     paddingHorizontal: 14,
@@ -406,5 +377,8 @@ const styles = StyleSheet.create({
   dateTimeRow: {
     flexDirection: 'row',
     gap: 12,
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });

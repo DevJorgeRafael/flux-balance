@@ -38,7 +38,7 @@ export function DashboardHero({
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           pointerEvents="auto"
           accessibilityRole="button"
-          accessibilityLabel={isBalanceVisible ? 'Hide balance' : 'Show balance'}
+          accessibilityLabel={t(isBalanceVisible ? 'hideBalance' : 'showBalance')}
         >
           {isBalanceVisible ? (
             <Eye size={18} color={colors.onHero} strokeWidth={2} />

@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
   newAccountChip: {
     flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 44,
     gap: 6,
     paddingHorizontal: 13,
     paddingVertical: 9,

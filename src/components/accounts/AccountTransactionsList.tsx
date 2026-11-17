@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { Receipt, Plus, Minus } from 'lucide-react-native';
 import { Transaction } from '@/core/models/transaction';
@@ -17,13 +17,20 @@ type FilterType = 'ALL' | 'INCOME' | 'EXPENSE';
 export function AccountTransactionsList({ transactions }: AccountTransactionsListProps) {
   const [filterType, setFilterType] = useState<FilterType>('ALL');
   const colors = useColors();
-  const { format } = useCurrency();
+  const { format, locale } = useCurrency();
   const { t } = useTranslation();
 
   const filteredTransactions = transactions.filter((tx) => {
     if (filterType === 'ALL') return true;
     return tx.type === filterType;
   });
+  const incomeCount = transactions.filter((tx) => tx.type === 'INCOME').length;
+  const expenseCount = transactions.filter((tx) => tx.type === 'EXPENSE').length;
+  const filters: { type: FilterType; label: string; count: number }[] = [
+    { type: 'ALL', label: t('allMovements'), count: transactions.length },
+    { type: 'INCOME', label: t('income'), count: incomeCount },
+    { type: 'EXPENSE', label: t('expense'), count: expenseCount },
+  ];
 
   return (
     <>
@@ -31,74 +38,58 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
       <View style={styles.historySectionHeader}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('movementHistory')}</Text>
         <Text style={[styles.historyCountText, { color: colors.textLight }]}>
-          {filteredTransactions.length} {filteredTransactions.length === 1 ? 'movimiento' : 'movimientos'}
+          {t(
+            filteredTransactions.length === 1 ? 'movementCountOne' : 'movementCountMany',
+            { count: filteredTransactions.length }
+          )}
         </Text>
       </View>
 
-      {/* Filtros tipo píldora: Todos / Ingresos / Gastos */}
       <View style={styles.filterPillsRow}>
-        <TouchableOpacity
-          style={[
-            styles.filterPillBtn,
-            {
-              backgroundColor: filterType === 'ALL' ? colors.primary : colors.surface,
-              borderColor: filterType === 'ALL' ? colors.primary : colors.border,
-            },
-          ]}
-          onPress={() => setFilterType('ALL')}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={[
-              styles.filterPillText,
-              { color: filterType === 'ALL' ? colors.onPrimary : colors.textLight },
-            ]}
-          >
-            Todos ({transactions.length})
-          </Text>
-        </TouchableOpacity>
+        {filters.map(({ type, label, count }) => {
+          const selected = filterType === type;
+          const accent =
+            type === 'ALL'
+              ? colors.primary
+              : type === 'INCOME'
+                ? colors.success
+                : colors.error;
+          const activeText =
+            type === 'ALL'
+              ? colors.onPrimary
+              : type === 'INCOME'
+                ? colors.onSuccess
+                : colors.onError;
+          const text = `${label} (${count})`;
 
-        <TouchableOpacity
-          style={[
-            styles.filterPillBtn,
-            {
-              backgroundColor: filterType === 'INCOME' ? colors.success : colors.surface,
-              borderColor: filterType === 'INCOME' ? colors.success : colors.border,
-            },
-          ]}
-          onPress={() => setFilterType('INCOME')}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={[
-              styles.filterPillText,
-              { color: filterType === 'INCOME' ? colors.onSuccess : colors.textLight },
-            ]}
-          >
-            Ingresos ({transactions.filter((t) => t.type === 'INCOME').length})
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.filterPillBtn,
-            {
-              backgroundColor: filterType === 'EXPENSE' ? colors.error : colors.surface,
-              borderColor: filterType === 'EXPENSE' ? colors.error : colors.border,
-            },
-          ]}
-          onPress={() => setFilterType('EXPENSE')}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={[
-              styles.filterPillText,
-              { color: filterType === 'EXPENSE' ? colors.onError : colors.textLight },
-            ]}
-          >
-            Gastos ({transactions.filter((t) => t.type === 'EXPENSE').length})
-          </Text>
-        </TouchableOpacity>
+          return (
+            <Pressable
+              key={type}
+              style={({ pressed }) => [
+                styles.filterPillBtn,
+                {
+                  backgroundColor: selected ? accent : colors.surface,
+                  borderColor: selected ? accent : colors.border,
+                },
+                pressed && styles.pressed,
+              ]}
+              onPress={() => setFilterType(type)}
+              accessibilityRole="button"
+              accessibilityLabel={text}
+              accessibilityState={{ selected }}
+              hitSlop={2}
+            >
+              <Text
+                style={[
+                  styles.filterPillText,
+                  { color: selected ? activeText : colors.textLight },
+                ]}
+              >
+                {text}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       {/* Lista de Movimientos */}
@@ -109,16 +100,14 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
           </View>
           <Text style={[styles.emptyHeading, { color: colors.text }]}>{t('noMovements')}</Text>
           <Text style={[styles.emptySubtext, { color: colors.textLight }]}>
-            {filterType === 'ALL'
-              ? t('noAccountMovements')
-              : 'No se encontraron movimientos con el filtro seleccionado.'}
+            {filterType === 'ALL' ? t('noAccountMovements') : t('noFilteredMovements')}
           </Text>
         </Card>
       ) : (
         <View style={styles.transactionsList}>
           {filteredTransactions.map((tx) => {
             const isIncome = tx.type === 'INCOME';
-            const dateFormatted = new Date(tx.date).toLocaleDateString('es-ES', {
+            const dateFormatted = new Date(tx.date).toLocaleDateString(locale, {
               weekday: 'short',
               day: 'numeric',
               month: 'short',
@@ -151,7 +140,7 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
 
                 <View style={styles.transactionDetails}>
                   <Text style={[styles.transactionTitle, { color: colors.text }]} numberOfLines={1}>
-                    {tx.description || (isIncome ? 'Ingreso' : 'Gasto')}
+                    {tx.description || t(isIncome ? 'addIncome' : 'addExpense')}
                   </Text>
                   <Text style={[styles.transactionMeta, { color: colors.textLight }]}>
                     {dateFormatted}
@@ -193,10 +182,13 @@ const styles = StyleSheet.create({
   },
   filterPillsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     marginBottom: 16,
   },
   filterPillBtn: {
+    minHeight: 44,
+    justifyContent: 'center',
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 20,
@@ -251,5 +243,8 @@ const styles = StyleSheet.create({
   transactionValue: {
     fontSize: 15,
     fontWeight: '800',
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });

@@ -2,6 +2,19 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.0.3] - 2026-11-17
+
+### Mejorado
+
+- Selector de tipo unificado en movimientos y recordatorios.
+- Chips, tarjetas y botones con áreas táctiles de al menos 44 pt y etiquetas accesibles.
+- Fechas, cuentas y movimientos respetan el idioma y la configuración regional.
+- Se unificaron los estados presionados de la interfaz.
+
+### Cambiado
+
+- Se reemplazaron los TouchableOpacity restantes por Pressable.
+
 ## [2.0.1] - 2026-11-09
 
 ### Corregido

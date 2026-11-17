@@ -4,7 +4,7 @@ import {
   Text,
   View,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -93,13 +93,19 @@ export default function TransactionDetailScreen() {
   if (!transaction) {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background, paddingHorizontal: 24 }]}>
-        <Text style={[styles.errorTitle, { color: colors.text }]}>Movimiento no encontrado</Text>
-        <TouchableOpacity
-          style={[styles.backButtonPrompt, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        <Text style={[styles.errorTitle, { color: colors.text }]}>{t('movementNotFound')}</Text>
+        <Pressable
+          style={({ pressed }) => [
+            styles.backButtonPrompt,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+            pressed && styles.pressed,
+          ]}
           onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel={t('goBack')}
         >
-          <Text style={[styles.backButtonPromptText, { color: colors.text }]}>Volver</Text>
-        </TouchableOpacity>
+          <Text style={[styles.backButtonPromptText, { color: colors.text }]}>{t('goBack')}</Text>
+        </Pressable>
       </View>
     );
   }
@@ -108,22 +114,34 @@ export default function TransactionDetailScreen() {
     <View style={[styles.screen, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       {/* Top Header */}
       <View style={styles.topHeader}>
-        <TouchableOpacity
-          style={[styles.roundIconButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        <Pressable
+          style={({ pressed }) => [
+            styles.roundIconButton,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+            pressed && styles.pressed,
+          ]}
           onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel={t('goBack')}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          activeOpacity={0.7}
         >
           <ArrowLeft size={20} color={colors.text} strokeWidth={2.5} />
-        </TouchableOpacity>
+        </Pressable>
 
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Detalle de Movimiento</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('movementDetail')}</Text>
 
-        <TouchableOpacity
-          style={[styles.roundIconButton, { backgroundColor: colors.errorSoft, borderColor: colors.border }]}
+        <Pressable
+          style={({ pressed }) => [
+            styles.roundIconButton,
+            { backgroundColor: colors.errorSoft, borderColor: colors.border },
+            pressed && styles.pressed,
+            isDeleting && styles.disabled,
+          ]}
           onPress={handleDelete}
+          accessibilityRole="button"
+          accessibilityLabel={t('delete')}
+          accessibilityState={{ disabled: isDeleting, busy: isDeleting }}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          activeOpacity={0.7}
           disabled={isDeleting}
         >
           {isDeleting ? (
@@ -131,7 +149,7 @@ export default function TransactionDetailScreen() {
           ) : (
             <Trash size={18} color={colors.errorText} strokeWidth={2} />
           )}
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <ScrollView
@@ -188,6 +206,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   backButtonPrompt: {
+    minHeight: 44,
+    justifyContent: 'center',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 14,
@@ -196,5 +216,11 @@ const styles = StyleSheet.create({
   backButtonPromptText: {
     fontSize: 14,
     fontWeight: '700',
+  },
+  pressed: {
+    opacity: 0.85,
+  },
+  disabled: {
+    opacity: 0.7,
   },
 });

@@ -66,9 +66,9 @@ export function AccountProjectionCard({ account }: AccountProjectionCardProps) {
       </View>
 
       <View style={[styles.rateRow, { borderBottomColor: colors.border }]}>
-        <Text style={[styles.label, { color: colors.textLight }]}>Tasa aplicada</Text>
+        <Text style={[styles.label, { color: colors.textLight }]}>{t('appliedRate')}</Text>
         <Text style={[styles.rate, { color: isFixed ? colors.warningText : colors.successText }]}>
-          {rate.toFixed(2)}% TNA
+          {rate.toFixed(2)}% {t('annualRateShort')}
         </Text>
       </View>
 

@@ -103,22 +103,22 @@ export const lightPalette: ThemeColors = {
   primaryText: '#1d4ed8',
 
   secondary: '#06b6d4',
-  onSecondary: '#ffffff',
+  onSecondary: '#083344',
   secondarySoft: '#ecfeff',
   secondaryText: '#0e7490',
 
   success: '#10b981',
-  onSuccess: '#ffffff',
+  onSuccess: '#022c22',
   successSoft: '#ecfdf5',
   successText: '#047857',
 
   error: '#f43f5e',
-  onError: '#ffffff',
+  onError: '#0A0E1A',
   errorSoft: '#fff1f2',
   errorText: '#be123c',
 
   warning: '#f59e0b',
-  onWarning: '#ffffff',
+  onWarning: '#451a03',
   warningSoft: '#fffbeb',
   warningText: '#b45309',
 
@@ -131,7 +131,7 @@ export const lightPalette: ThemeColors = {
   controlTrack: '#e7e5e4',
   modal: '#ffffff',
   text: '#1c1917',
-  textLight: '#78716c',
+  textLight: '#6b6560',
   border: '#e7e5e4',
   inputBackground: '#f5f5f4',
   overlay: 'rgba(0,0,0,0.5)',
@@ -150,7 +150,7 @@ export const darkPalette: ThemeColors = {
   ...neutral,
 
   primary: '#3b82f6',
-  onPrimary: '#ffffff',
+  onPrimary: '#0A0E1A',
   primarySoft: 'rgba(59, 130, 246, 0.15)',
   primaryText: '#60a5fa',
 
@@ -167,7 +167,7 @@ export const darkPalette: ThemeColors = {
 
   // Rojo coral vibrante
   error: '#f43f5e',
-  onError: '#ffffff',
+  onError: '#0A0E1A',
   errorSoft: 'rgba(244, 63, 94, 0.16)',
   errorText: '#fb7185',
 

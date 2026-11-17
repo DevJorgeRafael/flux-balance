@@ -4,7 +4,7 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import { CreditCard, Plus, Layers } from 'lucide-react-native';
 import { Account } from '@/core/models/account';
@@ -53,15 +53,20 @@ export function AccountCarousel({
           </View>
 
           {showNewAccount && (
-            <TouchableOpacity
-              style={[styles.addAccountHeaderBtn, { backgroundColor: colors.cardRaised, borderColor: colors.border }]}
+            <Pressable
+              style={({ pressed }) => [
+                styles.addAccountHeaderBtn,
+                { backgroundColor: colors.cardRaised, borderColor: colors.border },
+                pressed && styles.pressed,
+              ]}
               onPress={onOpenCreateAccountModal}
-              activeOpacity={0.7}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel={t('newAccount')}
+              hitSlop={2}
             >
               <Plus size={15} color={colors.primaryText} strokeWidth={2.5} />
               <Text style={[styles.addAccountHeaderText, { color: colors.primaryText }]}>{t('newAccount')}</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       )}
@@ -76,16 +81,21 @@ export function AccountCarousel({
             {t('createFirstAccount')}
           </Text>
           {showNewAccount && (
-            <TouchableOpacity
-              style={[styles.createAccountPrimaryBtn, { backgroundColor: colors.primary }]}
+            <Pressable
+              style={({ pressed }) => [
+                styles.createAccountPrimaryBtn,
+                { backgroundColor: colors.primary },
+                pressed && styles.pressed,
+              ]}
               onPress={onOpenCreateAccountModal}
-              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel={t('createFirstAccount')}
             >
               <Plus size={18} color={colors.onPrimary} strokeWidth={2.5} />
               <Text style={[styles.createAccountPrimaryBtnText, { color: colors.onPrimary }]}>
                 {t('createFirstAccount')}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </Card>
       ) : (
@@ -96,16 +106,14 @@ export function AccountCarousel({
           contentContainerStyle={styles.horizontalCardsTrack}
         >
           {showAllFilter && (
-            <TouchableOpacity
-              style={styles.allAccountsPressable}
+            <Card
+              variant={selectedFilterAccountId === null ? 'raised' : 'default'}
+              shadowSize="sm"
+              style={styles.allAccountsCard}
               onPress={() => onSelectAccountFilter?.(null)}
-              activeOpacity={0.8}
+              accessibilityLabel={`${t('allAccounts')}, ${format(totalBalance)}`}
+              accessibilityState={{ selected: selectedFilterAccountId === null }}
             >
-              <Card
-                variant={selectedFilterAccountId === null ? 'raised' : 'default'}
-                shadowSize="sm"
-                style={styles.allAccountsCard}
-              >
                 <View style={styles.accountCardHeader}>
                   <Text
                     style={[styles.accountTypeHeader, { color: colors.textLight }]}
@@ -173,8 +181,7 @@ export function AccountCarousel({
                     {selectedFilterAccountId === null ? t('showingAll') : t('tapToShowAll')}
                   </Text>
                 </View>
-              </Card>
-            </TouchableOpacity>
+            </Card>
           )}
 
           {/* Tarjetas individuales de Cuentas */}
@@ -195,21 +202,20 @@ export function AccountCarousel({
 
           {/* Tarjeta para Añadir Otra Cuenta */}
           {showNewAccount && (
-            <TouchableOpacity
-              style={styles.addAccountPressable}
+            <Card
+              borderStyle="dashed"
+              style={styles.addAccountDashedCard}
               onPress={onOpenCreateAccountModal}
-              activeOpacity={0.8}
+              accessibilityLabel={t('newAccount')}
             >
-              <Card borderStyle="dashed" style={styles.addAccountDashedCard}>
-                <View style={[styles.addAccountIconCircle, { backgroundColor: colors.primarySoft }]}>
-                  <Plus size={20} color={colors.primaryText} strokeWidth={2.5} />
-                </View>
-                <Text style={[styles.addAccountDashedTitle, { color: colors.text }]}>{t('newAccount')}</Text>
-                <Text style={[styles.addAccountDashedSubtext, { color: colors.textLight }]}>
-                  {t('addAnother')}
-                </Text>
-              </Card>
-            </TouchableOpacity>
+              <View style={[styles.addAccountIconCircle, { backgroundColor: colors.primarySoft }]}>
+                <Plus size={20} color={colors.primaryText} strokeWidth={2.5} />
+              </View>
+              <Text style={[styles.addAccountDashedTitle, { color: colors.text }]}>{t('newAccount')}</Text>
+              <Text style={[styles.addAccountDashedSubtext, { color: colors.textLight }]}>
+                {t('addAnother')}
+              </Text>
+            </Card>
           )}
         </ScrollView>
       )}
@@ -246,6 +252,7 @@ const styles = StyleSheet.create({
   addAccountHeaderBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 44,
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -301,9 +308,6 @@ const styles = StyleSheet.create({
     // ScrollView no la recorte y el ritmo entre secciones siga en 16px.
     paddingVertical: spacing.lg,
     gap: 14,
-  },
-  allAccountsPressable: {
-    width: 220,
   },
   allAccountsCard: {
     width: 220,
@@ -361,9 +365,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
-  addAccountPressable: {
-    width: 140,
-  },
   addAccountDashedCard: {
     width: 140,
     minHeight: ACCOUNT_CARD_HEIGHT,
@@ -389,5 +390,8 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });
