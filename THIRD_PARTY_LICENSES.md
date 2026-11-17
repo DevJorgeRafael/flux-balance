@@ -5,11 +5,13 @@ se publican como dependencias npm.
 
 ## orn-ui
 
-- Versión: 0.2.10
+- Versión: 0.3.1
 - Repositorio: https://github.com/DavidTrujillo123/orn-ui
 - Licencia: MIT
-- Uso: componentes copiados con la CLI de orn-ui (`Button`, `Alert`,
-  `AlertProvider` e `imperativeBridge`).
+- Uso: componentes y utilidades copiados con la CLI de orn-ui (`Button`, `Alert`,
+  `AlertProvider`, `imperativeBridge`, `DatePicker`, `TimePicker`, `OptionWheel`,
+  `SegmentedControl`, `IconButton`, `PressableScale`, `Transition` y
+  `useReduceMotion`).
 
 El repositorio y el paquete npm de orn-ui no publican un archivo `LICENSE` ni un
 año de copyright. Se usa el autor declarado en `package.json` y se omite el año

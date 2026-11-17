@@ -131,7 +131,7 @@ test('incluye orn-ui con MIT y su aviso', () => {
   const ornPackage = ornGroup?.packages.find((pkg) => pkg.name === 'orn-ui');
 
   assert.ok(ornGroup);
-  assert.equal(ornPackage?.version, '0.2.10');
+  assert.equal(ornPackage?.version, '0.3.1');
   assert.equal(ornPackage?.noticeKey, 'ornUiAttribution');
   assert.match(ornGroup.text, /MIT License/);
   assert.match(ornGroup.text, /Permission is hereby granted/);

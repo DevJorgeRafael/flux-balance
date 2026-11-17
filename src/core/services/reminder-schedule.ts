@@ -6,6 +6,11 @@ export interface ReminderSchedule {
   startDate: string;
 }
 
+export interface ReminderTimeValue {
+  hour: number;
+  minute: number;
+}
+
 interface DateParts {
   year: number;
   month: number;
@@ -177,4 +182,30 @@ export function nextReminderRunAt(
   after: Date
 ): string | null {
   return nextReminderOccurrence(schedule, after)?.toISOString() ?? null;
+}
+
+export function localDateFromReminderDate(value: string): Date | null {
+  const parts = parseDateParts(value);
+  if (!parts) return null;
+
+  return new Date(parts.year, parts.month - 1, parts.day);
+}
+
+export function reminderDateFromLocalDate(value: Date): string {
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${value.getFullYear()}-${month}-${day}`;
+}
+
+export function timeValueFromReminderTime(value: string): ReminderTimeValue | null {
+  const parts = parseTimeParts(value);
+  if (!parts) return null;
+
+  return { hour: parts.hours, minute: parts.minutes };
+}
+
+export function reminderTimeFromTimeValue(value: ReminderTimeValue): string {
+  const hour = String(value.hour).padStart(2, '0');
+  const minute = String(value.minute).padStart(2, '0');
+  return `${hour}:${minute}`;
 }

@@ -19,6 +19,7 @@ import type {
   ReminderRecurrence,
   ReminderType,
 } from '@/core/models/reminder';
+import { ReminderScheduleFields } from './ReminderScheduleFields';
 import { ReminderSelectField } from './ReminderSelectField';
 import { REMINDER_RECURRENCE_LABELS } from './reminderLabels';
 
@@ -70,8 +71,6 @@ export function ReminderFormFields({
   const titleRef = useRef<React.ComponentRef<typeof TextInput>>(null);
   const descriptionRef = useRef<React.ComponentRef<typeof TextInput>>(null);
   const amountRef = useRef<React.ComponentRef<typeof TextInput>>(null);
-  const startDateRef = useRef<React.ComponentRef<typeof TextInput>>(null);
-  const timeRef = useRef<React.ComponentRef<typeof TextInput>>(null);
   const typeCategories = categories.filter(
     (category) => category.type === values.type
   );
@@ -194,12 +193,12 @@ export function ReminderFormFields({
         value={values.amount}
         onChangeText={(value) => onChange('amount', value)}
         onFocus={() => handleFocus(amountRef)}
-        onSubmitEditing={() => startDateRef.current?.focus()}
+        onSubmitEditing={() => amountRef.current?.blur()}
         placeholder={t('reminderAmountPlaceholder')}
         placeholderTextColor={colors.textLight}
         keyboardType="decimal-pad"
-        returnKeyType="next"
-        submitBehavior="submit"
+        returnKeyType="done"
+        submitBehavior="blurAndSubmit"
         style={[
           styles.input,
           { color: colors.text, backgroundColor: colors.inputBackground },
@@ -220,52 +219,11 @@ export function ReminderFormFields({
         )}
       </View>
 
-      <View style={styles.dateTimeRow}>
-        <View style={styles.flex}>
-          <Text style={[styles.label, styles.fieldLabel, { color: colors.textLight }]}>
-            {t('startDate')}
-          </Text>
-          <TextInput
-            ref={startDateRef}
-            value={values.startDate}
-            onChangeText={(value) => onChange('startDate', value)}
-            onFocus={() => handleFocus(startDateRef)}
-            onSubmitEditing={() => timeRef.current?.focus()}
-            placeholder={t('datePlaceholder')}
-            placeholderTextColor={colors.textLight}
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="next"
-            submitBehavior="submit"
-            style={[
-              styles.input,
-              { color: colors.text, backgroundColor: colors.inputBackground },
-            ]}
-          />
-        </View>
-        <View style={styles.flex}>
-          <Text style={[styles.label, styles.fieldLabel, { color: colors.textLight }]}>
-            {t('startTime')}
-          </Text>
-          <TextInput
-            ref={timeRef}
-            value={values.time}
-            onChangeText={(value) => onChange('time', value)}
-            onFocus={() => handleFocus(timeRef)}
-            onSubmitEditing={() => timeRef.current?.blur()}
-            placeholder={t('timePlaceholder')}
-            placeholderTextColor={colors.textLight}
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="done"
-            submitBehavior="blurAndSubmit"
-            style={[
-              styles.input,
-              { color: colors.text, backgroundColor: colors.inputBackground },
-            ]}
-          />
-        </View>
-      </View>
+      <ReminderScheduleFields
+        startDate={values.startDate}
+        time={values.time}
+        onChange={(key, value) => onChange(key, value)}
+      />
 
       {accounts.length > 0 ? (
         useAccountChips ? (
@@ -336,9 +294,6 @@ export function ReminderFormFields({
 }
 
 const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-  },
   label: {
     fontSize: 12,
     fontWeight: '700',
@@ -373,10 +328,6 @@ const styles = StyleSheet.create({
   chipText: {
     fontSize: 13,
     fontWeight: '700',
-  },
-  dateTimeRow: {
-    flexDirection: 'row',
-    gap: 12,
   },
   pressed: {
     opacity: 0.85,

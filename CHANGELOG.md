@@ -15,6 +15,23 @@ Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
 - Se reemplazaron los TouchableOpacity restantes por Pressable.
 
+## [2.0.2] - 2026-11-17
+
+### Añadido
+
+- Selector de fecha con calendario en recordatorios.
+- Selector de hora con ruedas de hora y minuto.
+
+### Mejorado
+
+- Fecha y hora se eligen en una hoja inferior.
+- Los selectores respetan el idioma y el tema.
+- El calendario inicia en lunes en español.
+
+### Cambiado
+
+- orn-ui actualizado a 0.3.1.
+
 ## [2.0.1] - 2026-11-09
 
 ### Corregido

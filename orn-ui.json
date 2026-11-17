@@ -4,6 +4,13 @@
     "alert",
     "alert-provider",
     "button",
-    "core"
+    "core",
+    "date-picker",
+    "icon-button",
+    "option-wheel",
+    "pressable-scale",
+    "segmented-control",
+    "time-picker",
+    "transition"
   ]
 }
