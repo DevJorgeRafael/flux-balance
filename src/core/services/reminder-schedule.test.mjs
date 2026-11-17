@@ -4,8 +4,12 @@ import assert from 'node:assert/strict';
 import {
   isValidReminderDate,
   isValidReminderTime,
+  localDateFromReminderDate,
   nextReminderOccurrence,
   nextReminderRunAt,
+  reminderDateFromLocalDate,
+  reminderTimeFromTimeValue,
+  timeValueFromReminderTime,
 } from './reminder-schedule.ts';
 
 const MONTHLY_31 = {
@@ -140,4 +144,41 @@ test('valida fechas y horas reales', () => {
 test('nextReminderRunAt devuelve ISO UTC', () => {
   const runAt = nextReminderRunAt(MONTHLY_31, localDate(2026, 0, 1, 8));
   assert.equal(runAt, localDate(2026, 0, 31, 9).toISOString());
+});
+
+test('convierte fechas de recordatorio sin corrimiento de zona', () => {
+  const parsed = localDateFromReminderDate('2026-02-03');
+  assert.equal(parsed.getFullYear(), 2026);
+  assert.equal(parsed.getMonth(), 1);
+  assert.equal(parsed.getDate(), 3);
+
+  assert.equal(
+    reminderDateFromLocalDate(localDate(2026, 10, 9)),
+    '2026-11-09'
+  );
+  assert.equal(
+    reminderDateFromLocalDate(localDate(2026, 0, 1)),
+    '2026-01-01'
+  );
+});
+
+test('rechaza fechas inválidas al convertirlas a Date', () => {
+  assert.equal(localDateFromReminderDate('2026-02-30'), null);
+  assert.equal(localDateFromReminderDate('03/02/2026'), null);
+});
+
+test('convierte horas de recordatorio y conserva el padding', () => {
+  assert.deepEqual(timeValueFromReminderTime('09:05'), {
+    hour: 9,
+    minute: 5,
+  });
+  assert.equal(timeValueFromReminderTime('24:00'), null);
+  assert.equal(
+    reminderTimeFromTimeValue({ hour: 7, minute: 3 }),
+    '07:03'
+  );
+  assert.equal(
+    reminderTimeFromTimeValue({ hour: 23, minute: 59 }),
+    '23:59'
+  );
 });

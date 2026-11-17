@@ -45,6 +45,8 @@ export interface ThemeColors {
   sheet: string;
   /** Superficie elevada: resumen, chips, botones secundarios y cuenta activa. */
   cardRaised: string;
+  /** Alias de `cardRaised` para componentes que esperan la API estándar de orn-ui. */
+  surfaceRaised: string;
   /**
    * Controles internos (chips, cajas de íconos, opciones sin seleccionar).
    * En claro conserva el gris de fondo; en oscuro sube a cardRaised para no
@@ -127,6 +129,7 @@ export const lightPalette: ThemeColors = {
   surface: '#ffffff',
   sheet: '#E6E9EF',
   cardRaised: '#ffffff',
+  surfaceRaised: '#ffffff',
   surfaceMuted: '#fafaf9',
   controlTrack: '#e7e5e4',
   modal: '#ffffff',
@@ -181,6 +184,7 @@ export const darkPalette: ThemeColors = {
   surface: '#18203A',
   sheet: '#101626',
   cardRaised: '#212B4A',
+  surfaceRaised: '#212B4A',
   surfaceMuted: '#212B4A',
   controlTrack: '#18203A',
   modal: '#101626',
