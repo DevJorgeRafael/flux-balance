@@ -3,7 +3,7 @@ import {
   StyleSheet,
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import { router } from 'expo-router';
 import { ChevronRight, Plus, Minus } from 'lucide-react-native';
@@ -30,7 +30,7 @@ export function RecentTransactionsList({
 }: RecentTransactionsListProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
-  const { format } = useCurrency();
+  const { format, locale } = useCurrency();
   const { t } = useTranslation();
 
   const handleSeeMore = () => {
@@ -58,36 +58,39 @@ export function RecentTransactionsList({
           <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('latestMovements')}</Text>
           {selectedAccountName && (
             <Text style={[styles.sectionSubfilter, { color: colors.primaryText }]}>
-              Filtrado por: {selectedAccountName}
+              {t('filteredBy', { name: selectedAccountName })}
             </Text>
           )}
         </View>
 
         {/* Botón Ver más */}
-        <TouchableOpacity
-          style={[styles.seeMoreBtn, { backgroundColor: colors.cardRaised, borderColor: colors.border }]}
+        <Pressable
+          style={({ pressed }) => [
+            styles.seeMoreBtn,
+            { backgroundColor: colors.cardRaised, borderColor: colors.border },
+            pressed && styles.pressed,
+          ]}
           onPress={handleSeeMore}
-          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t('seeMore')}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <Text style={[styles.seeMoreText, { color: colors.text }]}>{t('seeMore')}</Text>
           <ChevronRight size={14} color={colors.textLight} strokeWidth={2.5} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {transactions.length === 0 ? (
         <Card style={styles.emptyContainer}>
           <Text style={[styles.emptySubtext, { color: colors.textLight }]}>
-            {selectedFilterAccountId
-              ? 'Esta cuenta no tiene movimientos registrados.'
-              : t('noMovementsPeriod')}
+            {selectedFilterAccountId ? t('noAccountMovements') : t('noMovementsPeriod')}
           </Text>
         </Card>
       ) : (
         <Card>
           {transactions.map((tx, idx) => {
             const isIncome = tx.type === 'INCOME';
-            const dateFormatted = new Date(tx.date).toLocaleDateString('es-ES', {
+            const dateFormatted = new Date(tx.date).toLocaleDateString(locale, {
               day: 'numeric',
               month: 'short',
             });
@@ -99,15 +102,19 @@ export function RecentTransactionsList({
                 animate={{ opacity: 1, translateY: 0 }}
                 transition={{ type: 'timing', duration: 350, delay: idx * 50 } as any}
               >
-                <TouchableOpacity
-                  style={[styles.transactionItemRow, isDark && styles.transactionItemRowDark]}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.transactionItemRow,
+                    isDark && styles.transactionItemRowDark,
+                    pressed && styles.pressed,
+                  ]}
                   onPress={() => {
                     router.push({
                       pathname: '/transaction/[id]',
                       params: { id: tx.id },
                     });
                   }}
-                  activeOpacity={0.7}
+                  accessibilityRole="button"
                 >
                   <View
                     style={[
@@ -124,7 +131,7 @@ export function RecentTransactionsList({
 
                   <View style={styles.transactionDetails}>
                     <Text style={[styles.transactionTitle, { color: colors.text }]} numberOfLines={1}>
-                      {tx.description || (isIncome ? t('income') : t('expense'))}
+                      {tx.description || t(isIncome ? 'addIncome' : 'addExpense')}
                     </Text>
                     <Text style={[styles.transactionMeta, { color: colors.textLight }]}>
                       {tx.splits?.[0]?.accountName ?? t('account')} • {dateFormatted}
@@ -142,7 +149,7 @@ export function RecentTransactionsList({
                       showCurrency: false,
                     })}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               </MotiView>
             );
           })}
@@ -172,6 +179,7 @@ const styles = StyleSheet.create({
   seeMoreBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 44,
     gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -193,7 +201,8 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginBottom: 16,
   },
-  transactionItemRow: {    flexDirection: 'row',
+  transactionItemRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 18,
@@ -227,5 +236,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: -0.3,
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });

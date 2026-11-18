@@ -4,15 +4,15 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   TextInput,
-  ActivityIndicator,
 } from 'react-native';
 import { X, CreditCard, TrendingUp, Calendar } from 'lucide-react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { appAlert } from '@/components/ui/alert/appAlert';
 import { AccountType } from '@/core/models/account';
 import { useColors, useThemeMode } from '@/components/ui/theme';
+import { Button } from '@/components/ui/atoms/Button';
 import { Card } from '@/components/ui/Card';
 import { SqliteAccountRepository } from '@/infrastructure/repositories';
 import {
@@ -186,9 +186,15 @@ export function CreateAccountModal({
     >
       <View style={styles.modalTopBar}>
         <Text style={[styles.modalHeading, { color: colors.text }]}>{t('newAccountTitle')}</Text>
-        <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+        <Pressable
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={t('close')}
+          hitSlop={14}
+          style={({ pressed }) => pressed && styles.pressed}
+        >
           <X size={22} color={colors.textLight} strokeWidth={2} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <ScrollView
@@ -207,6 +213,8 @@ export function CreateAccountModal({
                 borderWidth={1.5}
                 style={styles.accountTypeCardOption}
                 onPress={() => setAccType('CHECKING')}
+                accessibilityLabel={`${t('checking')}, ${t('operations')}`}
+                accessibilityState={{ selected: accType === 'CHECKING' }}
               >
                 <CreditCard size={18} color={accType === 'CHECKING' ? colors.primaryText : colors.textLight} />
                 <Text style={[styles.accountTypeOptionTitle, { color: accType === 'CHECKING' ? colors.primaryText : colors.text }]}>
@@ -223,10 +231,12 @@ export function CreateAccountModal({
                 borderWidth={1.5}
                 style={styles.accountTypeCardOption}
                 onPress={() => setAccType('FLEXIBLE_SAVINGS')}
+                accessibilityLabel={`${t('flexible')}, ${t('returnLabel')}`}
+                accessibilityState={{ selected: accType === 'FLEXIBLE_SAVINGS' }}
               >
                 <TrendingUp size={18} color={accType === 'FLEXIBLE_SAVINGS' ? colors.primaryText : colors.textLight} />
                 <Text style={[styles.accountTypeOptionTitle, { color: accType === 'FLEXIBLE_SAVINGS' ? colors.primaryText : colors.text }]}>
-                  Flexible
+                  {t('flexible')}
                 </Text>
                 <Text style={[styles.accountTypeOptionDesc, { color: colors.textLight }]}>{t('returnLabel')}</Text>
               </Card>
@@ -239,6 +249,8 @@ export function CreateAccountModal({
                 borderWidth={1.5}
                 style={styles.accountTypeCardOption}
                 onPress={() => setAccType('FIXED_TERM')}
+                accessibilityLabel={`${t('fixedTerm')}, ${t('atTerm')}`}
+                accessibilityState={{ selected: accType === 'FIXED_TERM' }}
               >
                 <Calendar size={18} color={accType === 'FIXED_TERM' ? colors.warningText : colors.textLight} />
                 <Text style={[styles.accountTypeOptionTitle, { color: accType === 'FIXED_TERM' ? colors.warningText : colors.text }]}>
@@ -309,33 +321,42 @@ export function CreateAccountModal({
               <Animated.View entering={FadeIn.duration(150)}>
                 <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14 }]}>{t('maturityTerm')}</Text>
                 <View style={styles.termMonthsRow}>
-                  {['1', '3', '6', '12'].map((m) => (
-                    <TouchableOpacity
-                      key={m}
-                      style={[
-                        styles.termMonthPill,
-                        {
-                          backgroundColor:
-                            accTermMonths === m
+                  {['1', '3', '6', '12'].map((m) => {
+                    const selected = accTermMonths === m;
+                    const label = `${m} ${m === '1' ? t('month') : t('months')}`;
+
+                    return (
+                      <Pressable
+                        key={m}
+                        style={({ pressed }) => [
+                          styles.termMonthPill,
+                          {
+                            backgroundColor: selected
                               ? colors.primary
                               : isDark
                                 ? colors.surfaceMuted
                                 : colors.inputBackground,
-                          borderColor: accTermMonths === m ? colors.primary : colors.border,
-                        },
-                      ]}
-                      onPress={() => setAccTermMonths(m)}
-                    >
-                      <Text
-                        style={[
-                          styles.termMonthPillText,
-                          { color: accTermMonths === m ? colors.onPrimary : colors.text },
+                            borderColor: selected ? colors.primary : colors.border,
+                          },
+                          pressed && styles.pressed,
                         ]}
+                        onPress={() => setAccTermMonths(m)}
+                        accessibilityRole="button"
+                        accessibilityLabel={label}
+                        accessibilityState={{ selected }}
+                        hitSlop={2}
                       >
-                        {m} {m === '1' ? t('month') : t('months')}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        <Text
+                          style={[
+                            styles.termMonthPillText,
+                            { color: selected ? colors.onPrimary : colors.text },
+                          ]}
+                        >
+                          {label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
                 </View>
               </Animated.View>
             )}
@@ -348,23 +369,12 @@ export function CreateAccountModal({
               />
             )}
 
-            {/* Botón Crear Cuenta */}
-            <TouchableOpacity
-              style={[
-                styles.submitTransactionButton,
-                { backgroundColor: colors.primary, marginTop: 24, opacity: isCreatingAccount ? 0.7 : 1 },
-              ]}
+            <Button
+              title={t('createAccount')}
               onPress={handleCreate}
-              disabled={isCreatingAccount}
-            >
-              {isCreatingAccount ? (
-                <ActivityIndicator color={colors.onPrimary} />
-              ) : (
-                <Text style={[styles.submitTransactionButtonText, { color: colors.onPrimary }]}>
-                  {t('createAccount')}
-                </Text>
-              )}
-            </TouchableOpacity>
+              loading={isCreatingAccount}
+              style={styles.submitTransactionButton}
+            />
       </ScrollView>
     </BottomSheetModal>
   );
@@ -426,6 +436,8 @@ const styles = StyleSheet.create({
   },
   termMonthPill: {
     flex: 1,
+    minHeight: 44,
+    justifyContent: 'center',
     paddingVertical: 10,
     borderRadius: 12,
     borderWidth: 1,
@@ -436,13 +448,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   submitTransactionButton: {
-    borderRadius: 18,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 24,
   },
-  submitTransactionButtonText: {
-    fontSize: 16,
-    fontWeight: '800',
+  pressed: {
+    opacity: 0.85,
   },
 });

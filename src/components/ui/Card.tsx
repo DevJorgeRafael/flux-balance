@@ -4,6 +4,7 @@ import {
   Pressable,
   StyleSheet,
   View,
+  type AccessibilityState,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
@@ -27,6 +28,8 @@ export interface CardProps {
    */
   shadowSize?: CardShadowSize;
   onPress?: () => void;
+  accessibilityLabel?: string;
+  accessibilityState?: AccessibilityState;
   style?: StyleProp<ViewStyle>;
   backgroundColor?: string;
   borderColor?: string;
@@ -47,6 +50,8 @@ export function Card({
   variant = 'default',
   shadowSize = 'md',
   onPress,
+  accessibilityLabel,
+  accessibilityState,
   style,
   backgroundColor,
   borderColor,
@@ -98,6 +103,8 @@ export function Card({
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityState={accessibilityState}
         style={({ pressed }) => [cardStyles, pressed && styles.pressed]}
       >
         {children}

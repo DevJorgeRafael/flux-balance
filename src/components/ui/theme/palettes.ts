@@ -102,27 +102,27 @@ export const lightPalette: ThemeColors = {
   primary: '#2563eb',
   onPrimary: '#ffffff',
   primarySoft: '#eff6ff',
-  primaryText: '#1d4ed8',
+  primaryText: '#1e40af',
 
   secondary: '#06b6d4',
-  onSecondary: '#ffffff',
+  onSecondary: '#083344',
   secondarySoft: '#ecfeff',
-  secondaryText: '#0e7490',
+  secondaryText: '#155e75',
 
-  success: '#10b981',
+  success: '#047857',
   onSuccess: '#ffffff',
   successSoft: '#ecfdf5',
-  successText: '#047857',
+  successText: '#065f46',
 
-  error: '#f43f5e',
+  error: '#be123c',
   onError: '#ffffff',
   errorSoft: '#fff1f2',
-  errorText: '#be123c',
+  errorText: '#9f1239',
 
   warning: '#f59e0b',
-  onWarning: '#ffffff',
+  onWarning: '#451a03',
   warningSoft: '#fffbeb',
-  warningText: '#b45309',
+  warningText: '#92400e',
 
   // Gris cálido stone-50
   background: '#fafaf9',
@@ -134,7 +134,7 @@ export const lightPalette: ThemeColors = {
   controlTrack: '#e7e5e4',
   modal: '#ffffff',
   text: '#1c1917',
-  textLight: '#78716c',
+  textLight: '#57534e',
   border: '#e7e5e4',
   inputBackground: '#f5f5f4',
   overlay: 'rgba(0,0,0,0.5)',
@@ -153,7 +153,7 @@ export const darkPalette: ThemeColors = {
   ...neutral,
 
   primary: '#3b82f6',
-  onPrimary: '#ffffff',
+  onPrimary: '#0A0E1A',
   primarySoft: 'rgba(59, 130, 246, 0.15)',
   primaryText: '#60a5fa',
 
@@ -170,7 +170,7 @@ export const darkPalette: ThemeColors = {
 
   // Rojo coral vibrante
   error: '#f43f5e',
-  onError: '#ffffff',
+  onError: '#0A0E1A',
   errorSoft: 'rgba(244, 63, 94, 0.16)',
   errorText: '#fb7185',
 

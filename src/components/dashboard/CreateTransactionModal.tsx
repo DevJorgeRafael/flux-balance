@@ -4,17 +4,20 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   TextInput,
-  ActivityIndicator,
 } from 'react-native';
 import { X } from 'lucide-react-native';
 import { appAlert } from '@/components/ui/alert/appAlert';
 import { TransactionPrefill, TransactionType } from '@/core/models/transaction';
 import { Account } from '@/core/models/account';
 import { Category } from '@/core/models/category';
-import { isHexColor, useColors, useThemeMode } from '@/components/ui/theme';
-import { Card } from '@/components/ui/Card';
+import { useColors } from '@/components/ui/theme';
+import { Button } from '@/components/ui/atoms/Button';
+import { OptionChips } from '@/components/ui/OptionChips';
+import { SelectField } from '@/components/ui/SelectField';
+import { SegmentedTypeControl } from '@/components/ui/SegmentedTypeControl';
+import { MAX_ACCOUNT_CHIPS } from '@/core/constants/formOptions';
 import { SqliteTransactionRepository } from '@/infrastructure/repositories';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
@@ -49,7 +52,6 @@ export function CreateTransactionModal({
   blurTarget,
 }: CreateTransactionModalProps) {
   const colors = useColors();
-  const { isDark } = useThemeMode();
   const { currency, format, locale } = useCurrency();
   const { t } = useTranslation();
   const submittingRef = useRef(false);
@@ -62,11 +64,29 @@ export function CreateTransactionModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [appliedPrefill, setAppliedPrefill] = useState<TransactionPrefill | null>(null);
   const typeCategories = categories.filter((category) => category.type === txType);
+  const activeCategoryId = typeCategories.some(
+    (category) => category.id === selectedCategoryId
+  )
+    ? selectedCategoryId
+    : typeCategories[0]?.id ?? '';
+  const selectedCategory = typeCategories.find(
+    (category) => category.id === activeCategoryId
+  );
+  const effectiveAccountId = selectedAccountId || accounts[0]?.id || '';
+  const selectedAccount = accounts.find(
+    (account) => account.id === effectiveAccountId
+  );
+  const useAccountChips = accounts.length <= MAX_ACCOUNT_CHIPS;
 
   const resetForm = () => {
     setTxAmount('');
     setTxDesc('');
     setSelectedAccountId(accounts[0]?.id || '');
+    setSelectedCategoryId('');
+  };
+
+  const handleTypeChange = (type: TransactionType) => {
+    setTxType(type);
     setSelectedCategoryId('');
   };
 
@@ -116,7 +136,7 @@ export function CreateTransactionModal({
     }
     const amountVal = amountResult.value;
 
-    const accountId = selectedAccountId || accounts[0]?.id;
+    const accountId = effectiveAccountId;
     if (!accountId) {
       void appAlert({
         type: 'warning',
@@ -127,10 +147,7 @@ export function CreateTransactionModal({
       return;
     }
 
-    const catId =
-      typeCategories.find((category) => category.id === selectedCategoryId)?.id ??
-      typeCategories[0]?.id ??
-      '';
+    const catId = activeCategoryId;
 
     submittingRef.current = true;
     try {
@@ -177,9 +194,15 @@ export function CreateTransactionModal({
         <Text style={[styles.modalHeading, { color: colors.text }]}>
           {txType === 'INCOME' ? t('registerIncome') : t('registerExpense')}
         </Text>
-        <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+        <Pressable
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={t('close')}
+          hitSlop={14}
+          style={({ pressed }) => pressed && styles.pressed}
+        >
           <X size={22} color={colors.textLight} strokeWidth={2} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <ScrollView
@@ -188,199 +211,134 @@ export function CreateTransactionModal({
         style={{ flexGrow: 0 }}
         contentContainerStyle={{ paddingBottom: 32 }}
       >
-        {/* Segmented Control de Tipo */}
-          <Card
-            backgroundColor={colors.surfaceMuted}
-            style={styles.typeSegmentedControl}
-          >
-            <TouchableOpacity
-              style={[
-                styles.typeSegmentOption,
-                txType === 'INCOME' && { backgroundColor: colors.success, borderRadius: 10 },
-              ]}
-              onPress={() => {
-                setTxType('INCOME');
-                setSelectedCategoryId('');
-              }}
-            >
+        <SegmentedTypeControl
+          value={txType}
+          options={[
+            {
+              value: 'INCOME',
+              label: t('income'),
+              color: colors.successSoft,
+              textColor: colors.successText,
+            },
+            {
+              value: 'EXPENSE',
+              label: t('expense'),
+              color: colors.errorSoft,
+              textColor: colors.errorText,
+            },
+          ]}
+          onChange={handleTypeChange}
+          style={styles.typeSegmentedControl}
+        />
+
+        <Text style={[styles.formLabel, { color: colors.textLight }]}>
+          {t('amount', { currency })}
+        </Text>
+        <TextInput
+          style={[
+            styles.largeAmountInput,
+            {
+              color: colors.text,
+              backgroundColor: colors.inputBackground,
+              borderColor: colors.border,
+            },
+          ]}
+          placeholder={format(0, { showCurrency: false })}
+          placeholderTextColor={colors.textLight}
+          keyboardType="decimal-pad"
+          value={txAmount}
+          onChangeText={setTxAmount}
+          autoFocus
+        />
+
+        <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14 }]}>
+          {t('description')}
+        </Text>
+        <TextInput
+          style={[
+            styles.standardInput,
+            {
+              color: colors.text,
+              backgroundColor: colors.inputBackground,
+              borderColor: colors.border,
+            },
+          ]}
+          placeholder={t('descriptionPlaceholder')}
+          placeholderTextColor={colors.textLight}
+          value={txDesc}
+          onChangeText={setTxDesc}
+          maxLength={MAX_TRANSACTION_DESCRIPTION_LENGTH}
+        />
+
+        {accounts.length > 0 &&
+          (useAccountChips ? (
+            <View>
               <Text
                 style={[
-                  styles.typeSegmentText,
-                  { color: txType === 'INCOME' ? colors.onSuccess : colors.textLight },
+                  styles.formLabel,
+                  styles.fieldLabel,
+                  { color: colors.textLight },
                 ]}
               >
-                {t('income')}
+                {t('destinationAccount')}
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.typeSegmentOption,
-                txType === 'EXPENSE' && { backgroundColor: colors.error, borderRadius: 10 },
-              ]}
-              onPress={() => {
-                setTxType('EXPENSE');
-                setSelectedCategoryId('');
-              }}
-            >
-              <Text
-                style={[
-                  styles.typeSegmentText,
-                  { color: txType === 'EXPENSE' ? colors.onError : colors.textLight },
-                ]}
-              >
-                {t('expense')}
-              </Text>
-            </TouchableOpacity>
-          </Card>
-
-          {/* Input de Monto */}
-          <Text style={[styles.formLabel, { color: colors.textLight }]}>
-            {t('amount', { currency })}
-          </Text>
-          <TextInput
-            style={[
-              styles.largeAmountInput,
-              {
-                color: colors.text,
-                backgroundColor: colors.inputBackground,
-                borderColor: colors.border,
-              },
-            ]}
-            placeholder={format(0, { showCurrency: false })}
-            placeholderTextColor={colors.textLight}
-            keyboardType="decimal-pad"
-            value={txAmount}
-            onChangeText={setTxAmount}
-            autoFocus
-          />
-
-          {/* Input de Descripción */}
-          <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14 }]}>{t('description')}</Text>
-          <TextInput
-            style={[
-              styles.standardInput,
-              {
-                color: colors.text,
-                backgroundColor: colors.inputBackground,
-                borderColor: colors.border,
-              },
-            ]}
-            placeholder={t('descriptionPlaceholder')}
-            placeholderTextColor={colors.textLight}
-            value={txDesc}
-            onChangeText={setTxDesc}
-            maxLength={MAX_TRANSACTION_DESCRIPTION_LENGTH}
-          />
-
-          {/* Selector de Categoría */}
-          {typeCategories.length > 0 && (
-            <>
-              <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14 }]}>{t('category')}</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
-                {typeCategories.map((cat) => (
-                  <TouchableOpacity
-                    key={cat.id}
-                    style={[
-                      styles.selectionChip,
-                      {
-                        backgroundColor:
-                          selectedCategoryId === cat.id
-                            ? colors.primary
-                            : isDark
-                              ? colors.surfaceMuted
-                              : colors.inputBackground,
-                        borderColor: colors.border,
-                      },
-                    ]}
-                    onPress={() => setSelectedCategoryId(cat.id)}
-                  >
-                    <View
-                      style={[
-                        styles.categoryColorDot,
-                        { backgroundColor: isHexColor(cat.color) ? cat.color : colors.chartOther },
-                      ]}
-                    />
-                    <Text
-                      style={[
-                        styles.selectionChipText,
-                        {
-                          color: selectedCategoryId === cat.id ? colors.onPrimary : colors.text,
-                        },
-                      ]}
-                    >
-                      {cat.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </>
-          )}
-
-          {/* Selector de Cuenta */}
-          {accounts.length > 0 && (
-            <>
-              <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 10 }]}>{t('destinationAccount')}</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
-                {accounts.map((acc) => (
-                  <TouchableOpacity
-                    key={acc.id}
-                    style={[
-                      styles.selectionChip,
-                      {
-                        backgroundColor:
-                          selectedAccountId === acc.id
-                            ? colors.primary
-                            : isDark
-                              ? colors.surfaceMuted
-                              : colors.inputBackground,
-                        borderColor: colors.border,
-                      },
-                    ]}
-                    onPress={() => setSelectedAccountId(acc.id)}
-                  >
-                    <Text
-                      style={[
-                        styles.selectionChipText,
-                        {
-                          color: selectedAccountId === acc.id ? colors.onPrimary : colors.text,
-                        },
-                      ]}
-                    >
-                      {acc.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </>
-          )}
-
-          {/* Botón Guardar */}
-          <TouchableOpacity
-            style={[
-              styles.submitTransactionButton,
-              {
-                backgroundColor: txType === 'INCOME' ? colors.success : colors.primary,
-                opacity: isSubmitting ? 0.7 : 1,
-              },
-            ]}
-            onPress={handleCreate}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator
-                color={txType === 'INCOME' ? colors.onSuccess : colors.onPrimary}
+              <OptionChips
+                options={accounts.map((account) => ({
+                  id: account.id,
+                  label: account.name,
+                }))}
+                selectedId={effectiveAccountId}
+                onSelect={setSelectedAccountId}
               />
-            ) : (
-              <Text
-                style={[
-                  styles.submitTransactionButtonText,
-                  { color: txType === 'INCOME' ? colors.onSuccess : colors.onPrimary },
-                ]}
-              >
-                {t('saveMovement')}
-              </Text>
-            )}
-          </TouchableOpacity>
+            </View>
+          ) : (
+            <SelectField
+              label={t('destinationAccount')}
+              title={t('account')}
+              emptyLabel={t('reminderNoAccount')}
+              accessibilityLabel={`${t('account')}: ${
+                selectedAccount?.name ?? t('reminderNoAccount')
+              }`}
+              options={accounts.map((account) => ({
+                id: account.id,
+                name: account.name,
+              }))}
+              selectedId={effectiveAccountId}
+              onSelect={setSelectedAccountId}
+              allowEmpty={false}
+            />
+          ))}
+
+        {typeCategories.length > 0 && (
+          <SelectField
+            label={t('category')}
+            title={t('category')}
+            emptyLabel={t('reminderNoCategory')}
+            accessibilityLabel={`${t('category')}: ${
+              selectedCategory?.name ?? t('reminderNoCategory')
+            }`}
+            options={typeCategories.map((category) => ({
+              id: category.id,
+              name: category.name,
+              color: category.color,
+            }))}
+            selectedId={activeCategoryId}
+            onSelect={setSelectedCategoryId}
+            allowEmpty={false}
+            showColor
+            searchable
+            searchPlaceholder={t('reminderSearch')}
+            noResultsLabel={t('reminderNoCategoriesFound')}
+          />
+        )}
+
+        <Button
+          title={t('saveMovement')}
+          variant="primary"
+          onPress={handleCreate}
+          loading={isSubmitting}
+          style={styles.submitTransactionButton}
+        />
       </ScrollView>
     </BottomSheetModal>
   );
@@ -398,19 +356,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   typeSegmentedControl: {
-    flexDirection: 'row',
-    padding: 4,
     marginBottom: 18,
-  },
-  typeSegmentOption: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 10,
-  },
-  typeSegmentText: {
-    fontSize: 14,
-    fontWeight: '700',
   },
   formLabel: {
     fontSize: 12,
@@ -418,6 +364,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     textTransform: 'uppercase',
     marginBottom: 8,
+  },
+  fieldLabel: {
+    marginTop: 18,
   },
   largeAmountInput: {
     borderWidth: 1,
@@ -436,34 +385,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
   },
-  selectionChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginRight: 8,
-  },
-  categoryColorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  selectionChipText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
   submitTransactionButton: {
-    borderRadius: 18,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginTop: 20,
   },
-  submitTransactionButtonText: {
-    fontSize: 16,
-    fontWeight: '800',
+  pressed: {
+    opacity: 0.85,
   },
 });

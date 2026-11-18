@@ -28,6 +28,7 @@ export function StatsMonthSelector({
         onPress={onPrevious}
         accessibilityRole="button"
         accessibilityLabel={previousLabel}
+        hitSlop={2}
         style={({ pressed }) => [
           styles.arrow,
           { backgroundColor: colors.surface },
@@ -51,6 +52,7 @@ export function StatsMonthSelector({
         accessibilityRole="button"
         accessibilityLabel={nextLabel}
         accessibilityState={{ disabled: nextDisabled }}
+        hitSlop={2}
         style={({ pressed }) => [
           styles.arrow,
           { backgroundColor: colors.surface },

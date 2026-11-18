@@ -2,6 +2,26 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.0.3] - 2026-11-17
+
+### Mejorado
+
+- Selector de tipo unificado en movimientos y recordatorios.
+- Chips, tarjetas y botones con áreas táctiles de al menos 44 pt y etiquetas accesibles.
+- Fechas, cuentas y movimientos respetan el idioma y la configuración regional.
+- Se unificaron los estados presionados de la interfaz.
+
+### Cambiado
+
+- Se reemplazaron los TouchableOpacity restantes por Pressable.
+
+### Corregido
+
+- Los botones y segmentos de ingreso y gasto tienen mejor contraste en modo claro.
+- El punto de color de la categoría se distingue sobre el chip seleccionado.
+- Guardar el tema ya no puede fallar por una base de datos bloqueada.
+- Ya no aparece el aviso de splash al usar Expo Go.
+
 ## [2.0.2] - 2026-11-17
 
 ### Añadido

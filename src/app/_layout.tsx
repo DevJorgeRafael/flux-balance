@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { isRunningInExpoGo } from 'expo';
 import { LogBox } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as SystemUI from 'expo-system-ui';
@@ -43,7 +44,9 @@ import type { ThemePreference } from '@/core/preferences/preferences';
 const STARTUP_TIMEOUT_MS = 8000;
 const SPLASH_FADE_DURATION_MS = 300;
 
-SplashScreen.setOptions({ duration: SPLASH_FADE_DURATION_MS, fade: true });
+if (!isRunningInExpoGo()) {
+  SplashScreen.setOptions({ duration: SPLASH_FADE_DURATION_MS, fade: true });
+}
 SplashScreen.preventAutoHideAsync();
 
 LogBox.ignoreLogs([

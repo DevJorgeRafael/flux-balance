@@ -31,7 +31,9 @@ export function AccountProjectionPreview({
       <Text style={[styles.title, { color: colors.text }]}>{t('previewYield')}</Text>
       <View style={styles.row}>
         <Text style={[styles.label, { color: colors.textLight }]}>{t('appliedRate')}</Text>
-        <Text style={[styles.value, { color: colors.text }]}>{rate.toFixed(2)}% TNA</Text>
+        <Text style={[styles.value, { color: colors.text }]}>
+          {rate.toFixed(2)}% {t('annualRateShort')}
+        </Text>
       </View>
       <View style={styles.row}>
         <Text style={[styles.label, { color: colors.textLight }]}>{t('estimatedFinalAmount')}</Text>

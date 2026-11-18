@@ -33,6 +33,8 @@ export function QuickActionsGrid({ onOpenTransactionModal }: QuickActionsGridPro
           duration: 100,
         } as any}
         onPress={() => onOpenTransactionModal('INCOME')}
+        accessibilityRole="button"
+        accessibilityLabel={t('addIncome')}
       >
         <View style={[styles.actionIconCircle, { backgroundColor: colors.onAccentMuted }]}>
           <Plus size={20} color={colors.onSuccess} strokeWidth={2.5} />
@@ -58,6 +60,8 @@ export function QuickActionsGrid({ onOpenTransactionModal }: QuickActionsGridPro
           duration: 100,
         } as any}
         onPress={() => onOpenTransactionModal('EXPENSE')}
+        accessibilityRole="button"
+        accessibilityLabel={t('addExpense')}
       >
         <View style={[styles.actionIconCircle, { backgroundColor: colors.onAccentMuted }]}>
           <Minus size={20} color={colors.onError} strokeWidth={2.5} />

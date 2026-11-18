@@ -4,13 +4,14 @@ import {
   Text,
   View,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
 import { useColors, useInsets } from '@/components/ui/theme';
+import { useTranslation } from '@/core/i18n/useTranslation';
 import {
   SqliteAccountRepository,
   SqliteTransactionRepository,
@@ -29,6 +30,7 @@ export default function AccountDetailScreen() {
   const id = Array.isArray(rawParams.id) ? rawParams.id[0] : rawParams.id;
   const colors = useColors();
   const insets = useInsets();
+  const { t } = useTranslation();
 
   const [account, setAccount] = useState<Account | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -107,13 +109,19 @@ export default function AccountDetailScreen() {
   if (!account) {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background, paddingHorizontal: 24 }]}>
-        <Text style={[styles.errorTitle, { color: colors.text }]}>Cuenta no encontrada</Text>
-        <TouchableOpacity
-          style={[styles.backButtonPrompt, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        <Text style={[styles.errorTitle, { color: colors.text }]}>{t('accountNotFound')}</Text>
+        <Pressable
+          style={({ pressed }) => [
+            styles.backButtonPrompt,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+            pressed && styles.pressed,
+          ]}
           onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel={t('backToDashboard')}
         >
-          <Text style={[styles.backButtonPromptText, { color: colors.text }]}>Volver al Dashboard</Text>
-        </TouchableOpacity>
+          <Text style={[styles.backButtonPromptText, { color: colors.text }]}>{t('backToDashboard')}</Text>
+        </Pressable>
       </View>
     );
   }
@@ -122,14 +130,19 @@ export default function AccountDetailScreen() {
     <View style={[styles.screen, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       {/* Top Header */}
       <View style={styles.topHeader}>
-        <TouchableOpacity
-          style={[styles.roundIconButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        <Pressable
+          style={({ pressed }) => [
+            styles.roundIconButton,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+            pressed && styles.pressed,
+          ]}
           onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel={t('goBack')}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          activeOpacity={0.7}
         >
           <ArrowLeft size={20} color={colors.text} strokeWidth={2.5} />
-        </TouchableOpacity>
+        </Pressable>
 
         <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
           {account.name}
@@ -142,7 +155,12 @@ export default function AccountDetailScreen() {
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 36 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
         }
       >
         {/* Hero & Métricas */}
@@ -198,6 +216,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   backButtonPrompt: {
+    minHeight: 44,
+    justifyContent: 'center',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 14,
@@ -206,5 +226,8 @@ const styles = StyleSheet.create({
   backButtonPromptText: {
     fontSize: 14,
     fontWeight: '700',
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });
