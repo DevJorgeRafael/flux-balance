@@ -102,27 +102,27 @@ export const lightPalette: ThemeColors = {
   primary: '#2563eb',
   onPrimary: '#ffffff',
   primarySoft: '#eff6ff',
-  primaryText: '#1d4ed8',
+  primaryText: '#1e40af',
 
   secondary: '#06b6d4',
   onSecondary: '#083344',
   secondarySoft: '#ecfeff',
-  secondaryText: '#0e7490',
+  secondaryText: '#155e75',
 
   success: '#047857',
   onSuccess: '#ffffff',
   successSoft: '#ecfdf5',
-  successText: '#047857',
+  successText: '#065f46',
 
   error: '#be123c',
   onError: '#ffffff',
   errorSoft: '#fff1f2',
-  errorText: '#be123c',
+  errorText: '#9f1239',
 
   warning: '#f59e0b',
   onWarning: '#451a03',
   warningSoft: '#fffbeb',
-  warningText: '#b45309',
+  warningText: '#92400e',
 
   // Gris cálido stone-50
   background: '#fafaf9',
@@ -134,7 +134,7 @@ export const lightPalette: ThemeColors = {
   controlTrack: '#e7e5e4',
   modal: '#ffffff',
   text: '#1c1917',
-  textLight: '#6b6560',
+  textLight: '#57534e',
   border: '#e7e5e4',
   inputBackground: '#f5f5f4',
   overlay: 'rgba(0,0,0,0.5)',

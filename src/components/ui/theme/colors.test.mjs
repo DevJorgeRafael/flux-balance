@@ -63,6 +63,26 @@ const FILLED_ACCENT_PAIRS = [
   ['warning', 'onWarning'],
 ];
 
+const SURFACE_ROLES = [
+  'background',
+  'surface',
+  'surfaceMuted',
+  'surfaceRaised',
+  'inputBackground',
+  'controlTrack',
+  'cardRaised',
+  'modal',
+  'sheet',
+];
+
+const ACCENT_TEXT_ROLES = [
+  ['primaryText', 'primarySoft'],
+  ['secondaryText', 'secondarySoft'],
+  ['successText', 'successSoft'],
+  ['errorText', 'errorSoft'],
+  ['warningText', 'warningSoft'],
+];
+
 for (const [theme, palette] of Object.entries({
   claro: lightPalette,
   oscuro: darkPalette,
@@ -78,13 +98,7 @@ for (const [theme, palette] of Object.entries({
   });
 
   test(`el texto secundario es AA sobre las superficies en ${theme}`, () => {
-    for (const surface of [
-      'background',
-      'surface',
-      'surfaceMuted',
-      'inputBackground',
-      'controlTrack',
-    ]) {
+    for (const surface of SURFACE_ROLES) {
       const ratio = contrast(palette[surface], palette.textLight);
       assert.ok(
         ratio >= AA_CONTRAST,
@@ -92,7 +106,29 @@ for (const [theme, palette] of Object.entries({
       );
     }
   });
+
+  test(`los textos de acento son AA sobre las superficies en ${theme}`, () => {
+    for (const [textRole] of ACCENT_TEXT_ROLES) {
+      for (const surface of SURFACE_ROLES) {
+        const ratio = contrast(palette[surface], palette[textRole]);
+        assert.ok(
+          ratio >= AA_CONTRAST,
+          `${surface}/${textRole}: ${palette[surface]}/${palette[textRole]} (${ratio})`
+        );
+      }
+    }
+  });
 }
+
+test('los textos de acento son AA sobre sus fondos tenues en claro', () => {
+  for (const [textRole, softRole] of ACCENT_TEXT_ROLES) {
+    const ratio = contrast(lightPalette[softRole], lightPalette[textRole]);
+    assert.ok(
+      ratio >= AA_CONTRAST,
+      `${softRole}/${textRole}: ${lightPalette[softRole]}/${lightPalette[textRole]} (${ratio})`
+    );
+  }
+});
 
 const CARD_BACKGROUNDS = [
   ['claro', lightPalette.surface, false],

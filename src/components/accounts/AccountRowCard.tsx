@@ -285,8 +285,8 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
   },
   estimatedText: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '800',
   },
   fixedHeaderRow: {
     flexDirection: 'row',

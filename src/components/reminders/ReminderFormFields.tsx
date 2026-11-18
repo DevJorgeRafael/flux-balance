@@ -1,13 +1,10 @@
 import React, { useRef } from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, TextInput } from 'react-native';
+import { OptionChips } from '@/components/ui/OptionChips';
+import { SelectField } from '@/components/ui/SelectField';
 import { useColors } from '@/components/ui/theme';
 import { SegmentedTypeControl } from '@/components/ui/SegmentedTypeControl';
+import { MAX_ACCOUNT_CHIPS } from '@/core/constants/formOptions';
 import {
   MAX_REMINDER_TITLE_LENGTH,
   MAX_TRANSACTION_DESCRIPTION_LENGTH,
@@ -20,7 +17,6 @@ import type {
   ReminderType,
 } from '@/core/models/reminder';
 import { ReminderScheduleFields } from './ReminderScheduleFields';
-import { ReminderSelectField } from './ReminderSelectField';
 import { REMINDER_RECURRENCE_LABELS } from './reminderLabels';
 
 export interface ReminderFormValues {
@@ -56,8 +52,6 @@ const RECURRENCES: readonly ReminderRecurrence[] = [
   'MONTHLY',
 ];
 
-const MAX_ACCOUNT_CHIPS = 4;
-
 export function ReminderFormFields({
   values,
   onChange,
@@ -88,39 +82,6 @@ export function ReminderFormFields({
     onFieldFocus?.(input.current);
   };
 
-  const renderChip = (
-    key: string,
-    label: string,
-    selected: boolean,
-    onPress: () => void
-  ) => (
-    <Pressable
-      key={key}
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ selected }}
-      hitSlop={2}
-      style={({ pressed }) => [
-        styles.chip,
-        {
-          backgroundColor: selected ? colors.primary : colors.inputBackground,
-          borderColor: colors.border,
-        },
-        pressed && styles.pressed,
-      ]}
-    >
-      <Text
-        style={[
-          styles.chipText,
-          { color: selected ? colors.onPrimary : colors.text },
-        ]}
-      >
-        {label}
-      </Text>
-    </Pressable>
-  );
-
   return (
     <>
       <Text style={[styles.label, { color: colors.textLight }]}>
@@ -132,14 +93,14 @@ export function ReminderFormFields({
           {
             value: 'EXPENSE',
             label: t('addExpense'),
-            color: colors.error,
-            textColor: colors.onError,
+            color: colors.errorSoft,
+            textColor: colors.errorText,
           },
           {
             value: 'INCOME',
             label: t('addIncome'),
-            color: colors.success,
-            textColor: colors.onSuccess,
+            color: colors.successSoft,
+            textColor: colors.successText,
           },
         ]}
         onChange={onTypeChange}
@@ -208,16 +169,14 @@ export function ReminderFormFields({
       <Text style={[styles.label, styles.fieldLabel, { color: colors.textLight }]}>
         {t('recurrence')}
       </Text>
-      <View style={styles.chips}>
-        {RECURRENCES.map((option) =>
-          renderChip(
-            option,
-            t(REMINDER_RECURRENCE_LABELS[option]),
-            values.recurrence === option,
-            () => onChange('recurrence', option)
-          )
-        )}
-      </View>
+      <OptionChips
+        options={RECURRENCES.map((option) => ({
+          id: option,
+          label: t(REMINDER_RECURRENCE_LABELS[option]),
+        }))}
+        selectedId={values.recurrence}
+        onSelect={(id) => onChange('recurrence', id as ReminderRecurrence)}
+      />
 
       <ReminderScheduleFields
         startDate={values.startDate}
@@ -237,23 +196,18 @@ export function ReminderFormFields({
             >
               {t('reminderAccountOptional')}
             </Text>
-            <View style={styles.chips}>
-              {accounts.map((account) =>
-                renderChip(
-                  account.id,
-                  account.name,
-                  values.accountId === account.id,
-                  () =>
-                    onChange(
-                      'accountId',
-                      values.accountId === account.id ? '' : account.id
-                    )
-                )
-              )}
-            </View>
+            <OptionChips
+              options={accounts.map((account) => ({
+                id: account.id,
+                label: account.name,
+              }))}
+              selectedId={values.accountId}
+              onSelect={(id) => onChange('accountId', id)}
+              allowDeselect
+            />
           </>
         ) : (
-          <ReminderSelectField
+          <SelectField
             label={t('reminderAccountOptional')}
             title={t('reminderAccountSheetTitle')}
             emptyLabel={t('reminderNoAccount')}
@@ -270,7 +224,7 @@ export function ReminderFormFields({
         )
       ) : null}
 
-      <ReminderSelectField
+      <SelectField
         label={t('reminderCategoryOptional')}
         title={t('reminderCategorySheetTitle')}
         emptyLabel={t('reminderNoCategory')}
@@ -311,25 +265,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     fontWeight: '600',
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    minHeight: 44,
-    justifyContent: 'center',
-    borderRadius: 18,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  pressed: {
-    opacity: 0.85,
   },
 });

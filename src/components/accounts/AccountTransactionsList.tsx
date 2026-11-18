@@ -50,16 +50,16 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
           const selected = filterType === type;
           const accent =
             type === 'ALL'
-              ? colors.primary
+              ? colors.primaryText
               : type === 'INCOME'
-                ? colors.success
-                : colors.error;
-          const activeText =
+                ? colors.successText
+                : colors.errorText;
+          const softAccent =
             type === 'ALL'
-              ? colors.onPrimary
+              ? colors.primarySoft
               : type === 'INCOME'
-                ? colors.onSuccess
-                : colors.onError;
+                ? colors.successSoft
+                : colors.errorSoft;
           const text = `${label} (${count})`;
 
           return (
@@ -68,7 +68,7 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
               style={({ pressed }) => [
                 styles.filterPillBtn,
                 {
-                  backgroundColor: selected ? accent : colors.surface,
+                  backgroundColor: selected ? softAccent : colors.surface,
                   borderColor: selected ? accent : colors.border,
                 },
                 pressed && styles.pressed,
@@ -82,7 +82,7 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
               <Text
                 style={[
                   styles.filterPillText,
-                  { color: selected ? activeText : colors.textLight },
+                  { color: selected ? accent : colors.textLight },
                 ]}
               >
                 {text}

@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { CreditCard, Plus, Layers } from 'lucide-react-native';
 import { Account } from '@/core/models/account';
-import { spacing, useColors } from '@/components/ui/theme';
+import { spacing, useColors, useThemeMode } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { AccountCard, ACCOUNT_CARD_HEIGHT } from './AccountCard';
@@ -38,6 +38,7 @@ export function AccountCarousel({
   onPressAccount,
 }: AccountCarouselProps) {
   const colors = useColors();
+  const { isDark } = useThemeMode();
   const { format } = useCurrency();
   const { t } = useTranslation();
 
@@ -56,7 +57,10 @@ export function AccountCarousel({
             <Pressable
               style={({ pressed }) => [
                 styles.addAccountHeaderBtn,
-                { backgroundColor: colors.cardRaised, borderColor: colors.border },
+                {
+                  backgroundColor: isDark ? colors.cardRaised : colors.primarySoft,
+                  borderColor: isDark ? colors.border : colors.primarySoft,
+                },
                 pressed && styles.pressed,
               ]}
               onPress={onOpenCreateAccountModal}

@@ -14,20 +14,21 @@ import { isHexColor, useColors } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { filterOptionsByName } from '@/core/services/option-filter';
 
-export interface ReminderSelectOption {
+export interface SelectOption {
   id: string;
   name: string;
   color?: string | null;
 }
 
-interface ReminderSelectFieldProps {
+interface SelectFieldProps {
   label: string;
   title: string;
   emptyLabel: string;
   accessibilityLabel: string;
-  options: ReminderSelectOption[];
+  options: SelectOption[];
   selectedId: string;
   onSelect: (id: string) => void;
+  allowEmpty?: boolean;
   showColor?: boolean;
   searchable?: boolean;
   searchPlaceholder?: string;
@@ -36,7 +37,7 @@ interface ReminderSelectFieldProps {
 
 const SEARCH_THRESHOLD = 8;
 
-export function ReminderSelectField({
+export function SelectField({
   label,
   title,
   emptyLabel,
@@ -44,11 +45,12 @@ export function ReminderSelectField({
   options,
   selectedId,
   onSelect,
+  allowEmpty = true,
   showColor = false,
   searchable = false,
   searchPlaceholder,
   noResultsLabel,
-}: ReminderSelectFieldProps) {
+}: SelectFieldProps) {
   const colors = useColors();
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -136,24 +138,23 @@ export function ReminderSelectField({
           </Pressable>
         </View>
 
-        <Pressable
-          onPress={() => selectOption('')}
-          accessibilityRole="button"
-          accessibilityLabel={emptyLabel}
-          accessibilityState={{ selected: !hasSelection }}
-          style={({ pressed }) => [
-            styles.optionRow,
-            pressed && styles.pressed,
-          ]}
-        >
-          {showColor ? renderDot(null, true) : null}
-          <Text style={[styles.optionText, { color: colors.text }]}>
-            {emptyLabel}
-          </Text>
-          {!hasSelection ? (
-            <Check size={18} color={colors.primary} strokeWidth={2.6} />
-          ) : null}
-        </Pressable>
+        {allowEmpty ? (
+          <Pressable
+            onPress={() => selectOption('')}
+            accessibilityRole="button"
+            accessibilityLabel={emptyLabel}
+            accessibilityState={{ selected: !hasSelection }}
+            style={({ pressed }) => [styles.optionRow, pressed && styles.pressed]}
+          >
+            {showColor ? renderDot(null, true) : null}
+            <Text style={[styles.optionText, { color: colors.text }]}>
+              {emptyLabel}
+            </Text>
+            {!hasSelection ? (
+              <Check size={18} color={colors.primary} strokeWidth={2.6} />
+            ) : null}
+          </Pressable>
+        ) : null}
 
         {options.length > 0 ? (
           <>

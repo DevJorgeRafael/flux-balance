@@ -12,9 +12,12 @@ import { appAlert } from '@/components/ui/alert/appAlert';
 import { TransactionPrefill, TransactionType } from '@/core/models/transaction';
 import { Account } from '@/core/models/account';
 import { Category } from '@/core/models/category';
-import { isHexColor, useColors, useThemeMode } from '@/components/ui/theme';
+import { useColors } from '@/components/ui/theme';
 import { Button } from '@/components/ui/atoms/Button';
+import { OptionChips } from '@/components/ui/OptionChips';
+import { SelectField } from '@/components/ui/SelectField';
 import { SegmentedTypeControl } from '@/components/ui/SegmentedTypeControl';
+import { MAX_ACCOUNT_CHIPS } from '@/core/constants/formOptions';
 import { SqliteTransactionRepository } from '@/infrastructure/repositories';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
@@ -49,7 +52,6 @@ export function CreateTransactionModal({
   blurTarget,
 }: CreateTransactionModalProps) {
   const colors = useColors();
-  const { isDark } = useThemeMode();
   const { currency, format, locale } = useCurrency();
   const { t } = useTranslation();
   const submittingRef = useRef(false);
@@ -67,6 +69,14 @@ export function CreateTransactionModal({
   )
     ? selectedCategoryId
     : typeCategories[0]?.id ?? '';
+  const selectedCategory = typeCategories.find(
+    (category) => category.id === activeCategoryId
+  );
+  const effectiveAccountId = selectedAccountId || accounts[0]?.id || '';
+  const selectedAccount = accounts.find(
+    (account) => account.id === effectiveAccountId
+  );
+  const useAccountChips = accounts.length <= MAX_ACCOUNT_CHIPS;
 
   const resetForm = () => {
     setTxAmount('');
@@ -126,7 +136,7 @@ export function CreateTransactionModal({
     }
     const amountVal = amountResult.value;
 
-    const accountId = selectedAccountId || accounts[0]?.id;
+    const accountId = effectiveAccountId;
     if (!accountId) {
       void appAlert({
         type: 'warning',
@@ -207,14 +217,14 @@ export function CreateTransactionModal({
             {
               value: 'INCOME',
               label: t('income'),
-              color: colors.success,
-              textColor: colors.onSuccess,
+              color: colors.successSoft,
+              textColor: colors.successText,
             },
             {
               value: 'EXPENSE',
               label: t('expense'),
-              color: colors.error,
-              textColor: colors.onError,
+              color: colors.errorSoft,
+              textColor: colors.errorText,
             },
           ]}
           onChange={handleTypeChange}
@@ -260,118 +270,71 @@ export function CreateTransactionModal({
           maxLength={MAX_TRANSACTION_DESCRIPTION_LENGTH}
         />
 
+        {accounts.length > 0 &&
+          (useAccountChips ? (
+            <View>
+              <Text
+                style={[
+                  styles.formLabel,
+                  styles.fieldLabel,
+                  { color: colors.textLight },
+                ]}
+              >
+                {t('destinationAccount')}
+              </Text>
+              <OptionChips
+                options={accounts.map((account) => ({
+                  id: account.id,
+                  label: account.name,
+                }))}
+                selectedId={effectiveAccountId}
+                onSelect={setSelectedAccountId}
+              />
+            </View>
+          ) : (
+            <SelectField
+              label={t('destinationAccount')}
+              title={t('account')}
+              emptyLabel={t('reminderNoAccount')}
+              accessibilityLabel={`${t('account')}: ${
+                selectedAccount?.name ?? t('reminderNoAccount')
+              }`}
+              options={accounts.map((account) => ({
+                id: account.id,
+                name: account.name,
+              }))}
+              selectedId={effectiveAccountId}
+              onSelect={setSelectedAccountId}
+              allowEmpty={false}
+            />
+          ))}
+
         {typeCategories.length > 0 && (
-          <>
-            <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14 }]}>
-              {t('category')}
-            </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.chipRow}
-            >
-              {typeCategories.map((cat) => {
-                const selected = activeCategoryId === cat.id;
-
-                return (
-                  <Pressable
-                    key={cat.id}
-                    onPress={() => setSelectedCategoryId(cat.id)}
-                    accessibilityRole="button"
-                    accessibilityLabel={cat.name}
-                    accessibilityState={{ selected }}
-                    style={({ pressed }) => [
-                      styles.selectionChip,
-                      {
-                        backgroundColor: selected
-                          ? colors.primary
-                          : isDark
-                            ? colors.surfaceMuted
-                            : colors.inputBackground,
-                        borderColor: colors.border,
-                      },
-                      pressed && styles.pressed,
-                    ]}
-                  >
-                    <View
-                      style={[
-                        styles.categoryColorBadge,
-                        selected && { backgroundColor: colors.white },
-                      ]}
-                    >
-                      <View
-                        style={[
-                          styles.categoryColorDot,
-                          { backgroundColor: isHexColor(cat.color) ? cat.color : colors.chartOther },
-                        ]}
-                      />
-                    </View>
-                    <Text
-                      style={[
-                        styles.selectionChipText,
-                        { color: selected ? colors.onPrimary : colors.text },
-                      ]}
-                    >
-                      {cat.name}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </>
-        )}
-
-        {accounts.length > 0 && (
-          <>
-            <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 10 }]}>
-              {t('destinationAccount')}
-            </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.chipRow}
-            >
-              {accounts.map((acc) => {
-                const selected = selectedAccountId === acc.id;
-
-                return (
-                  <Pressable
-                    key={acc.id}
-                    onPress={() => setSelectedAccountId(acc.id)}
-                    accessibilityRole="button"
-                    accessibilityLabel={acc.name}
-                    accessibilityState={{ selected }}
-                    style={({ pressed }) => [
-                      styles.selectionChip,
-                      {
-                        backgroundColor: selected
-                          ? colors.primary
-                          : isDark
-                            ? colors.surfaceMuted
-                            : colors.inputBackground,
-                        borderColor: colors.border,
-                      },
-                      pressed && styles.pressed,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.selectionChipText,
-                        { color: selected ? colors.onPrimary : colors.text },
-                      ]}
-                    >
-                      {acc.name}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </>
+          <SelectField
+            label={t('category')}
+            title={t('category')}
+            emptyLabel={t('reminderNoCategory')}
+            accessibilityLabel={`${t('category')}: ${
+              selectedCategory?.name ?? t('reminderNoCategory')
+            }`}
+            options={typeCategories.map((category) => ({
+              id: category.id,
+              name: category.name,
+              color: category.color,
+            }))}
+            selectedId={activeCategoryId}
+            onSelect={setSelectedCategoryId}
+            allowEmpty={false}
+            showColor
+            searchable
+            searchPlaceholder={t('reminderSearch')}
+            noResultsLabel={t('reminderNoCategoriesFound')}
+          />
         )}
 
         <Button
           title={t('saveMovement')}
-          variant={txType === 'INCOME' ? 'success' : 'primary'}
+          variant="primary"
           onPress={handleCreate}
           loading={isSubmitting}
           style={styles.submitTransactionButton}
@@ -402,6 +365,9 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 8,
   },
+  fieldLabel: {
+    marginTop: 18,
+  },
   largeAmountInput: {
     borderWidth: 1,
     borderRadius: 16,
@@ -418,36 +384,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 15,
     fontWeight: '500',
-  },
-  chipRow: {
-    marginVertical: 8,
-  },
-  selectionChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 48,
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginRight: 8,
-  },
-  categoryColorBadge: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  categoryColorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  selectionChipText: {
-    fontSize: 14,
-    fontWeight: '600',
   },
   submitTransactionButton: {
     marginTop: 20,
