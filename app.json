@@ -24,6 +24,7 @@
       ],
       "adaptiveIcon": {
         "backgroundColor": "#1642AF",
+        "backgroundImage": "./assets/images/logos-app/logo-background-1024.png",
         "foregroundImage": "./assets/images/logos-app/logo-foreground-1024.png",
         "monochromeImage": "./assets/images/logos-app/logo-monochrome-1024.png"
       },
