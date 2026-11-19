@@ -16,6 +16,7 @@ Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 ### Corregido
 
 - El selector de categorías ya no requiere desplazamiento horizontal.
+- La app admite rotación y ya no declara la pantalla vertical como requisito obligatorio, ampliando la disponibilidad en Google Play.
 
 ## [2.0.3] - 2026-11-17
 
