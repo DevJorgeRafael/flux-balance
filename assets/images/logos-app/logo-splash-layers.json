@@ -1,0 +1,22 @@
+{
+  "source": {
+    "width": 1024,
+    "height": 941
+  },
+  "body": {
+    "left": 82,
+    "top": 326,
+    "width": 861,
+    "height": 534
+  },
+  "coin": {
+    "left": 352,
+    "top": 82,
+    "width": 256,
+    "height": 256
+  },
+  "slot": {
+    "x": 455.5,
+    "y": 409
+  }
+}
