@@ -3,11 +3,13 @@ import React, { createContext, useContext, useMemo } from 'react';
 export interface SplashTransitionState {
   isRevealing: boolean;
   isSplashHidden: boolean;
+  revealDelay: number;
 }
 
 const SplashTransitionContext = createContext<SplashTransitionState>({
   isRevealing: true,
   isSplashHidden: true,
+  revealDelay: 0,
 });
 
 interface SplashTransitionProviderProps extends SplashTransitionState {
@@ -17,11 +19,12 @@ interface SplashTransitionProviderProps extends SplashTransitionState {
 export function SplashTransitionProvider({
   isRevealing,
   isSplashHidden,
+  revealDelay,
   children,
 }: SplashTransitionProviderProps) {
   const value = useMemo(
-    () => ({ isRevealing, isSplashHidden }),
-    [isRevealing, isSplashHidden]
+    () => ({ isRevealing, isSplashHidden, revealDelay }),
+    [isRevealing, isSplashHidden, revealDelay]
   );
 
   return (

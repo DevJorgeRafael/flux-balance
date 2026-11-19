@@ -23,6 +23,7 @@ import { cleanupExportCache } from '@/infrastructure/backup/exportCache';
 import { DashboardProvider } from '@/context/DashboardContext';
 import { ReminderNotificationsProvider } from '@/context/ReminderNotificationsProvider';
 import { SplashTransition } from '@/components/splash/SplashTransition';
+import { SPLASH_NATIVE_FADE_MS } from '@/components/splash/splashTiming';
 import {
   TranslationProvider,
   useTranslation,
@@ -37,10 +38,9 @@ import {
 import type { ThemePreference } from '@/core/preferences/preferences';
 
 const STARTUP_TIMEOUT_MS = 8000;
-const SPLASH_FADE_DURATION_MS = 300;
 
 if (!isRunningInExpoGo()) {
-  SplashScreen.setOptions({ duration: SPLASH_FADE_DURATION_MS, fade: true });
+  SplashScreen.setOptions({ duration: SPLASH_NATIVE_FADE_MS, fade: true });
 }
 SplashScreen.preventAutoHideAsync();
 

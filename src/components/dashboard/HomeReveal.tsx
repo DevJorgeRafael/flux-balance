@@ -23,7 +23,7 @@ export function HomeReveal({
   distance = 12,
   style,
 }: HomeRevealProps) {
-  const { isRevealing } = useSplashTransition();
+  const { isRevealing, revealDelay } = useSplashTransition();
   const reduceMotion = useReduceMotion();
   const hidden = useMemo(
     () => ({ opacity: 0, translateY: reduceMotion ? 0 : distance }),
@@ -34,10 +34,10 @@ export function HomeReveal({
       ({
         type: 'timing',
         duration: reduceMotion ? REDUCED_DURATION : ENTER_DURATION,
-        delay: reduceMotion ? 0 : delay,
+        delay: reduceMotion ? 0 : delay + revealDelay,
         easing: ENTER_EASING,
       }) as any,
-    [delay, reduceMotion]
+    [delay, reduceMotion, revealDelay]
   );
 
   return (
