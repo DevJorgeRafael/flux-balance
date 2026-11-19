@@ -8,7 +8,7 @@ import React, {
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { isRunningInExpoGo } from 'expo';
 import { LogBox } from 'react-native';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as SystemUI from 'expo-system-ui';
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -164,16 +164,21 @@ function RootWithTheme() {
       <ThemeProvider value={navigationTheme}>
         <DashboardProvider>
           <ReminderNotificationsProvider>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                animation: 'slide_from_right',
-                gestureEnabled: true,
-                contentStyle: { backgroundColor: colors.background },
-              }}
+            <SafeAreaView
+              edges={['left', 'right']}
+              style={{ flex: 1, backgroundColor: colors.background }}
             >
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            </Stack>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  animation: 'slide_from_right',
+                  gestureEnabled: true,
+                  contentStyle: { backgroundColor: colors.background },
+                }}
+              >
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              </Stack>
+            </SafeAreaView>
           </ReminderNotificationsProvider>
         </DashboardProvider>
       </ThemeProvider>

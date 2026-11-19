@@ -2,6 +2,22 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.0.4] - 2026-11-18
+
+### Mejorado
+
+- Selectores de cuenta y categoría unificados en movimientos y recordatorios, con búsqueda y hoja inferior.
+- Los formularios usan chips de cuenta cuando hay pocas y una fila con hoja inferior cuando hay muchas.
+- Los segmentos de ingreso/gasto y los filtros de movimientos usan fondos suaves con texto de alto contraste en modo claro.
+- El botón Guardar movimiento usa el color principal del tema.
+- Mejor contraste y jerarquía en el resumen de cuenta, el indicador de rendimiento y las tarjetas del inicio.
+- La navegación entre pestañas usa un fundido breve y respeta la reducción de movimiento.
+
+### Corregido
+
+- El selector de categorías ya no requiere desplazamiento horizontal.
+- La app admite rotación y ya no declara la pantalla vertical como requisito obligatorio, ampliando la disponibilidad en Google Play.
+
 ## [2.0.3] - 2026-11-17
 
 ### Mejorado
