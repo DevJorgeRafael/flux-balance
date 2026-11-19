@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { isRunningInExpoGo } from 'expo';
 import { LogBox } from 'react-native';
@@ -28,7 +22,7 @@ import { initDatabase } from '@/infrastructure/database/db';
 import { cleanupExportCache } from '@/infrastructure/backup/exportCache';
 import { DashboardProvider } from '@/context/DashboardContext';
 import { ReminderNotificationsProvider } from '@/context/ReminderNotificationsProvider';
-import { SplashReadyProvider } from '@/context/SplashReadyContext';
+import { SplashTransition } from '@/components/splash/SplashTransition';
 import {
   TranslationProvider,
   useTranslation,
@@ -164,23 +158,25 @@ function RootWithTheme() {
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <ThemeProvider value={navigationTheme}>
         <DashboardProvider>
-          <ReminderNotificationsProvider>
-            <SafeAreaView
-              edges={['left', 'right']}
-              style={{ flex: 1, backgroundColor: colors.background }}
-            >
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  animation: 'slide_from_right',
-                  gestureEnabled: true,
-                  contentStyle: { backgroundColor: colors.background },
-                }}
+          <SplashTransition>
+            <ReminderNotificationsProvider>
+              <SafeAreaView
+                edges={['left', 'right']}
+                style={{ flex: 1, backgroundColor: colors.background }}
               >
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              </Stack>
-            </SafeAreaView>
-          </ReminderNotificationsProvider>
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    animation: 'slide_from_right',
+                    gestureEnabled: true,
+                    contentStyle: { backgroundColor: colors.background },
+                  }}
+                >
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                </Stack>
+              </SafeAreaView>
+            </ReminderNotificationsProvider>
+          </SplashTransition>
         </DashboardProvider>
       </ThemeProvider>
     </>
@@ -192,8 +188,6 @@ function RootLayoutContent() {
   const [startupError, setStartupError] = useState<Error | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [retrying, setRetrying] = useState(false);
-  const [splashReady, setSplashReady] = useState(false);
-  const splashReadyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -240,31 +234,6 @@ function RootLayoutContent() {
     };
   }, [attempt]);
 
-  const splashHidden = useRef(false);
-
-  const hideSplash = useCallback(() => {
-    if (splashHidden.current) return;
-    splashHidden.current = true;
-    SplashScreen.hide();
-    splashReadyTimeout.current = setTimeout(() => {
-      setSplashReady(true);
-    }, SPLASH_FADE_DURATION_MS);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (splashReadyTimeout.current) {
-        clearTimeout(splashReadyTimeout.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (preferences || startupError) {
-      hideSplash();
-    }
-  }, [preferences, startupError, hideSplash]);
-
   const handleRetry = useCallback(() => {
     if (retrying) return;
     setRetrying(true);
@@ -290,9 +259,7 @@ function RootLayoutContent() {
 
   return (
     <SafeAreaProvider>
-      <SplashReadyProvider ready={splashReady}>
-        <RootNavigator initialPreferences={preferences} />
-      </SplashReadyProvider>
+      <RootNavigator initialPreferences={preferences} />
     </SafeAreaProvider>
   );
 }

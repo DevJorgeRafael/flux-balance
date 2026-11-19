@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
-import { MotiView } from 'moti';
 import { CountUpText } from '@/components/ui/atoms/CountUpText';
 import { useColors } from '@/components/ui/theme';
-import { useSplashReady } from '@/context/SplashReadyContext';
+import { useSplashTransition } from '@/context/SplashTransitionContext';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
+import { HomeReveal } from './HomeReveal';
 
 let hasPlayedBalanceIntro = false;
 
@@ -24,21 +24,16 @@ export function DashboardHero({
   const colors = useColors();
   const { format } = useCurrency();
   const { t } = useTranslation();
-  const splashReady = useSplashReady();
-  const animateBalance = splashReady && !hasPlayedBalanceIntro;
-  const displayedBalance = splashReady ? totalBalance : 0;
+  const { isSplashHidden } = useSplashTransition();
+  const animateBalance = isSplashHidden && !hasPlayedBalanceIntro;
+  const displayedBalance = isSplashHidden ? totalBalance : 0;
 
   const handleBalanceIntroStart = useCallback(() => {
     hasPlayedBalanceIntro = true;
   }, []);
 
   return (
-    <MotiView
-      from={{ opacity: 0, translateY: 15 }}
-      animate={{ opacity: 1, translateY: 0 }}
-      transition={{ type: 'timing', duration: 500 } as any}
-      style={styles.heroContainer}
-    >
+    <HomeReveal distance={15} style={styles.heroContainer}>
       <View style={styles.heroLabelRow}>
         <Text style={[styles.heroLabel, { color: colors.onHero }]}>
           {t('consolidatedBalance').toUpperCase()}
@@ -70,7 +65,7 @@ export function DashboardHero({
         adjustsFontSizeToFit
         numberOfLines={1}
       />
-    </MotiView>
+    </HomeReveal>
   );
 }
 
