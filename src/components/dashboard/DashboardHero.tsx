@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { MotiView } from 'moti';
+import { CountUpText } from '@/components/ui/atoms/CountUpText';
 import { useColors } from '@/components/ui/theme';
+import { useSplashReady } from '@/context/SplashReadyContext';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
+
+let hasPlayedBalanceIntro = false;
 
 interface DashboardHeroProps {
   totalBalance: number;
@@ -20,6 +24,13 @@ export function DashboardHero({
   const colors = useColors();
   const { format } = useCurrency();
   const { t } = useTranslation();
+  const splashReady = useSplashReady();
+  const animateBalance = splashReady && !hasPlayedBalanceIntro;
+  const displayedBalance = splashReady ? totalBalance : 0;
+
+  const handleBalanceIntroStart = useCallback(() => {
+    hasPlayedBalanceIntro = true;
+  }, []);
 
   return (
     <MotiView
@@ -48,13 +59,17 @@ export function DashboardHero({
         </Pressable>
       </View>
 
-      <Text
+      <CountUpText
+        value={displayedBalance}
+        animate={animateBalance}
+        formatValue={format}
+        hidden={!isBalanceVisible}
+        hiddenText={format(totalBalance, { hidden: true })}
+        onStart={handleBalanceIntroStart}
         style={[styles.heroAmount, { color: colors.onHero }]}
         adjustsFontSizeToFit
         numberOfLines={1}
-      >
-        {format(totalBalance, { hidden: !isBalanceVisible })}
-      </Text>
+      />
     </MotiView>
   );
 }

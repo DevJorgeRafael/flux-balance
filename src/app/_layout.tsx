@@ -28,6 +28,7 @@ import { initDatabase } from '@/infrastructure/database/db';
 import { cleanupExportCache } from '@/infrastructure/backup/exportCache';
 import { DashboardProvider } from '@/context/DashboardContext';
 import { ReminderNotificationsProvider } from '@/context/ReminderNotificationsProvider';
+import { SplashReadyProvider } from '@/context/SplashReadyContext';
 import {
   TranslationProvider,
   useTranslation,
@@ -191,6 +192,8 @@ function RootLayoutContent() {
   const [startupError, setStartupError] = useState<Error | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [retrying, setRetrying] = useState(false);
+  const [splashReady, setSplashReady] = useState(false);
+  const splashReadyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -243,6 +246,17 @@ function RootLayoutContent() {
     if (splashHidden.current) return;
     splashHidden.current = true;
     SplashScreen.hide();
+    splashReadyTimeout.current = setTimeout(() => {
+      setSplashReady(true);
+    }, SPLASH_FADE_DURATION_MS);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (splashReadyTimeout.current) {
+        clearTimeout(splashReadyTimeout.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -276,7 +290,9 @@ function RootLayoutContent() {
 
   return (
     <SafeAreaProvider>
-      <RootNavigator initialPreferences={preferences} />
+      <SplashReadyProvider ready={splashReady}>
+        <RootNavigator initialPreferences={preferences} />
+      </SplashReadyProvider>
     </SafeAreaProvider>
   );
 }
