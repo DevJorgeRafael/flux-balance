@@ -1,6 +1,6 @@
-export const SPLASH_NATIVE_FADE_MS = 120;
+export const SPLASH_NATIVE_FADE_MS = 60;
 export const NATIVE_HANDOFF_MS = 0;
-export const SPLASH_INTRO_MS = 320;
+export const SPLASH_INTRO_MS = 160;
 export const SPLASH_STORY_DURATION_MS = 760;
 export const SPLASH_FADE_DURATION_MS = 300;
 export const SPLASH_REDUCED_EXIT_MS = 200;

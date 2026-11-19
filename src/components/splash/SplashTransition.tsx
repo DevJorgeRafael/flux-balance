@@ -22,7 +22,7 @@ import {
   SPLASH_TIMELINE,
 } from './splashTiming';
 
-const LOGO_READY_TIMEOUT_MS = 150;
+const LOGO_READY_TIMEOUT_MS = 75;
 const MAX_HOLD_MS = 2500;
 
 const SPLASH_BACKGROUND = {
