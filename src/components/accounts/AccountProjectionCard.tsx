@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Calculator, TrendingUp } from 'lucide-react-native';
+import Calculator from 'lucide-react-native/icons/calculator';
+import TrendingUp from 'lucide-react-native/icons/trending-up';
 import { Account } from '@/core/models/account';
 import {
   calculateDailyProjection,

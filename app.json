@@ -2,7 +2,7 @@
   "expo": {
     "name": "Flux Balance",
     "slug": "flux-balance",
-    "version": "2.0.5",
+    "version": "2.1.0",
     "orientation": "default",
     "icon": "./assets/images/logos-app/icon-1024.png",
     "scheme": "fluxbalance",

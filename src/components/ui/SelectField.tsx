@@ -8,7 +8,10 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Check, ChevronRight, Search, X } from 'lucide-react-native';
+import Check from 'lucide-react-native/icons/check';
+import ChevronRight from 'lucide-react-native/icons/chevron-right';
+import Search from 'lucide-react-native/icons/search';
+import X from 'lucide-react-native/icons/x';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 import { isHexColor, useColors } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';

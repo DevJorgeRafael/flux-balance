@@ -2,19 +2,22 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
-## [2.0.5] - 2026-11-19
+## [2.1.0] - 2026-11-20
 
 ### Añadido
 
-- El balance del inicio se anima con un conteo ascendente después del splash.
+- El splash anima al cerdo y la moneda.
+- El balance del inicio hace un conteo ascendente.
 
 ### Mejorado
 
-- La animación solo se reproduce una vez por sesión y respeta la reducción de movimiento.
+- El splash aparece antes y el arranque es más rápido.
+- El conteo se reproduce una vez por sesión y respeta la reducción de movimiento.
+- Las animaciones usan una sola librería y la app pesa menos.
 
 ### Corregido
 
-- El ícono adaptativo de Android ahora coincide con el arte de Play Store.
+- El ícono adaptativo de Android coincide con el arte de Play Store.
 
 ## [2.0.4] - 2026-11-18
 

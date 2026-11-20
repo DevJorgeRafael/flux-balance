@@ -1,4 +1,13 @@
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import React, {
+  createContext,
+  lazy,
+  Suspense,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BlurTargetView } from 'expo-blur';
 import { Account } from '@/core/models/account';
@@ -11,8 +20,18 @@ import {
 import { MonthlyTotals } from '@/core/repositories/ITransactionRepository';
 import { useAccountFilters } from '@/hooks/useAccountFilters';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
-import { CreateAccountModal } from '@/components/dashboard/CreateAccountModal';
-import { CreateTransactionModal } from '@/components/dashboard/CreateTransactionModal';
+
+const CreateAccountModal = lazy(() =>
+  import('@/components/dashboard/CreateAccountModal').then((module) => ({
+    default: module.CreateAccountModal,
+  }))
+);
+
+const CreateTransactionModal = lazy(() =>
+  import('@/components/dashboard/CreateTransactionModal').then((module) => ({
+    default: module.CreateTransactionModal,
+  }))
+);
 
 interface DashboardContextValue {
   accounts: Account[];
@@ -43,7 +62,9 @@ const DashboardContext = createContext<DashboardContextValue | null>(null);
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const blurTarget = useRef<React.ComponentRef<typeof View>>(null);
   const [isAccountModalVisible, setIsAccountModalVisible] = useState(false);
+  const [isAccountModalMounted, setIsAccountModalMounted] = useState(false);
   const [isTransactionModalVisible, setIsTransactionModalVisible] = useState(false);
+  const [isTransactionModalMounted, setIsTransactionModalMounted] = useState(false);
   const [transactionType, setTransactionType] = useState<TransactionType>('EXPENSE');
   const [transactionPrefill, setTransactionPrefill] =
     useState<TransactionPrefill | null>(null);
@@ -101,6 +122,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     (type: TransactionType = 'EXPENSE', prefill?: TransactionPrefill) => {
       setTransactionType(type);
       setTransactionPrefill(prefill ?? null);
+      setIsTransactionModalMounted(true);
       setIsTransactionModalVisible(true);
     },
     []
@@ -112,6 +134,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const openAccountModal = useCallback(() => {
+    setIsAccountModalMounted(true);
     setIsAccountModalVisible(true);
   }, []);
 
@@ -169,23 +192,31 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
           {children}
         </BlurTargetView>
 
-        <CreateTransactionModal
-          visible={isTransactionModalVisible}
-          initialType={transactionType}
-          initialPrefill={transactionPrefill}
-          accounts={accounts}
-          categories={categories}
-          blurTarget={blurTarget}
-          onClose={closeTransactionModal}
-          onTransactionCreated={handleDataChanged}
-        />
+        {isTransactionModalMounted && (
+          <Suspense fallback={null}>
+            <CreateTransactionModal
+              visible={isTransactionModalVisible}
+              initialType={transactionType}
+              initialPrefill={transactionPrefill}
+              accounts={accounts}
+              categories={categories}
+              blurTarget={blurTarget}
+              onClose={closeTransactionModal}
+              onTransactionCreated={handleDataChanged}
+            />
+          </Suspense>
+        )}
 
-        <CreateAccountModal
-          visible={isAccountModalVisible}
-          blurTarget={blurTarget}
-          onClose={() => setIsAccountModalVisible(false)}
-          onAccountCreated={handleDataChanged}
-        />
+        {isAccountModalMounted && (
+          <Suspense fallback={null}>
+            <CreateAccountModal
+              visible={isAccountModalVisible}
+              blurTarget={blurTarget}
+              onClose={() => setIsAccountModalVisible(false)}
+              onAccountCreated={handleDataChanged}
+            />
+          </Suspense>
+        )}
       </View>
     </DashboardContext.Provider>
   );

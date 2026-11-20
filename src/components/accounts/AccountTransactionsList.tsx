@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import { Receipt, Plus, Minus } from 'lucide-react-native';
+import Receipt from 'lucide-react-native/icons/receipt';
+import Plus from 'lucide-react-native/icons/plus';
+import Minus from 'lucide-react-native/icons/minus';
 import { Transaction } from '@/core/models/transaction';
 import { useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';

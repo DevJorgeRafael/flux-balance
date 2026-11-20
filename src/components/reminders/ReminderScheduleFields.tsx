@@ -7,7 +7,9 @@ import {
   Text,
   View,
 } from 'react-native';
-import { CalendarDays, Clock3, X } from 'lucide-react-native';
+import CalendarDays from 'lucide-react-native/icons/calendar-days';
+import Clock3 from 'lucide-react-native/icons/clock-3';
+import X from 'lucide-react-native/icons/x';
 import { Button } from '@/components/ui/atoms/Button';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 import { DatePicker } from '@/components/ui/organisms/DatePicker';

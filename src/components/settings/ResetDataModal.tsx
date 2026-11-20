@@ -11,7 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { TriangleAlert } from 'lucide-react-native';
+import TriangleAlert from 'lucide-react-native/icons/triangle-alert';
 import { Card } from '@/components/ui/Card';
 import {
   fontSize,

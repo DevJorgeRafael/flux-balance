@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ChevronRight, type LucideIcon } from 'lucide-react-native';
+import ChevronRight from 'lucide-react-native/icons/chevron-right';
+import type { LucideIcon } from 'lucide-react-native';
 import { useColors } from '@/components/ui/theme';
 
 export interface SettingsRowProps {

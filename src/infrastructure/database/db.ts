@@ -34,11 +34,7 @@ export async function getDatabase(): Promise<SQLiteDatabase> {
   return initPromise;
 }
 
-export async function initDatabase(): Promise<SQLiteDatabase> {
-  if (dbInstance) {
-    return dbInstance;
-  }
-
+async function openAndInitializeDatabase(): Promise<SQLiteDatabase> {
   try {
     const SQLite = await loadSQLiteModule();
     const db = await SQLite.openDatabaseAsync('flux_balance.db', {
@@ -47,7 +43,7 @@ export async function initDatabase(): Promise<SQLiteDatabase> {
 
     // Pragmas seguros
     try {
-      await db.execAsync('PRAGMA foreign_keys = ON;');
+      await db.execAsync('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
     } catch (pragmaErr) {
       console.warn('Pragma warning:', pragmaErr);
     }
@@ -65,9 +61,23 @@ export async function initDatabase(): Promise<SQLiteDatabase> {
   } catch (error) {
     console.error('Error al inicializar la base de datos SQLite:', error);
     dbInstance = null;
-    initPromise = null;
     throw error;
   }
+}
+
+export function initDatabase(): Promise<SQLiteDatabase> {
+  if (dbInstance) {
+    return Promise.resolve(dbInstance);
+  }
+
+  if (!initPromise) {
+    initPromise = openAndInitializeDatabase().catch((error) => {
+      initPromise = null;
+      throw error;
+    });
+  }
+
+  return initPromise;
 }
 
 export async function resetDatabase(): Promise<void> {

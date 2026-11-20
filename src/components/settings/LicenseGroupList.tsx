@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
-import { ChevronDown, ChevronUp } from 'lucide-react-native';
+import ChevronDown from 'lucide-react-native/icons/chevron-down';
+import ChevronUp from 'lucide-react-native/icons/chevron-up';
 import { Card } from '@/components/ui/Card';
 import { fontSize, radius, spacing, useColors } from '@/components/ui/theme';
 import {

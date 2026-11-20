@@ -1,6 +1,11 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import { Plus, Minus, Zap, TrendingUp, Clock, Calendar } from 'lucide-react-native';
+import Plus from 'lucide-react-native/icons/plus';
+import Minus from 'lucide-react-native/icons/minus';
+import Zap from 'lucide-react-native/icons/zap';
+import TrendingUp from 'lucide-react-native/icons/trending-up';
+import Clock from 'lucide-react-native/icons/clock';
+import Calendar from 'lucide-react-native/icons/calendar';
 import { Account, AccountType } from '@/core/models/account';
 import { useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';

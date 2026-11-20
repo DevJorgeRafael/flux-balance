@@ -7,12 +7,10 @@ import {
   View,
 } from 'react-native';
 import { router } from 'expo-router';
-import {
-  ArrowLeft,
-  ChevronRight,
-  TriangleAlert,
-  type LucideIcon,
-} from 'lucide-react-native';
+import ArrowLeft from 'lucide-react-native/icons/arrow-left';
+import ChevronRight from 'lucide-react-native/icons/chevron-right';
+import TriangleAlert from 'lucide-react-native/icons/triangle-alert';
+import type { LucideIcon } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import {
   fontSize,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { Sparkles } from 'lucide-react-native';
+import Sparkles from 'lucide-react-native/icons/sparkles';
 import { Card } from '@/components/ui/Card';
 import { spacing } from '@/components/ui/theme';
 import { IS_DEVELOPMENT_MODE } from '@/core/constants/environment';

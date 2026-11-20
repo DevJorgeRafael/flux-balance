@@ -8,7 +8,8 @@ import {
   View,
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { Bell, Plus } from 'lucide-react-native';
+import Bell from 'lucide-react-native/icons/bell';
+import Plus from 'lucide-react-native/icons/plus';
 import { appAlert, appConfirm } from '@/components/ui/alert/appAlert';
 import { Button } from '@/components/ui/atoms/Button';
 import { Card } from '@/components/ui/Card';

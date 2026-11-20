@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { ArrowLeft, Check } from 'lucide-react-native';
+import ArrowLeft from 'lucide-react-native/icons/arrow-left';
+import Check from 'lucide-react-native/icons/check';
 import { useColors, useInsets } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { CURRENCIES } from '@/core/constants/currencies';

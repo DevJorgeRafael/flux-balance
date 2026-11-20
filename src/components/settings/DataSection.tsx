@@ -1,7 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { Download, RotateCcw, Upload } from 'lucide-react-native';
+import Download from 'lucide-react-native/icons/download';
+import RotateCcw from 'lucide-react-native/icons/rotate-ccw';
+import Upload from 'lucide-react-native/icons/upload';
 import { Card } from '@/components/ui/Card';
 import { spacing } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';

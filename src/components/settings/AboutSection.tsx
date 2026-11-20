@@ -3,16 +3,14 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
-import {
-  ChevronRight,
-  CodeXml,
-  ExternalLink,
-  FileText,
-  Heart,
-  Info,
-  ShieldCheck,
-  type LucideIcon,
-} from 'lucide-react-native';
+import ChevronRight from 'lucide-react-native/icons/chevron-right';
+import CodeXml from 'lucide-react-native/icons/code-xml';
+import ExternalLink from 'lucide-react-native/icons/external-link';
+import FileText from 'lucide-react-native/icons/file-text';
+import Heart from 'lucide-react-native/icons/heart';
+import Info from 'lucide-react-native/icons/info';
+import ShieldCheck from 'lucide-react-native/icons/shield-check';
+import type { LucideIcon } from 'lucide-react-native';
 import { appAlert } from '@/components/ui/alert/appAlert';
 import { Card } from '@/components/ui/Card';
 import { fontSize, radius, spacing, useColors } from '@/components/ui/theme';

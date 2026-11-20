@@ -1,17 +1,15 @@
 import React from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
-import {
-  Tag,
-  CreditCard,
-  Calendar,
-  Clock,
-  CircleCheck,
-  FileText,
-  Receipt,
-  Plus,
-  Minus,
-  Trash,
-} from 'lucide-react-native';
+import Tag from 'lucide-react-native/icons/tag';
+import CreditCard from 'lucide-react-native/icons/credit-card';
+import Calendar from 'lucide-react-native/icons/calendar';
+import Clock from 'lucide-react-native/icons/clock';
+import CircleCheck from 'lucide-react-native/icons/circle-check';
+import FileText from 'lucide-react-native/icons/file-text';
+import Receipt from 'lucide-react-native/icons/receipt';
+import Plus from 'lucide-react-native/icons/plus';
+import Minus from 'lucide-react-native/icons/minus';
+import Trash from 'lucide-react-native/icons/trash';
 import { Transaction } from '@/core/models/transaction';
 import { useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';

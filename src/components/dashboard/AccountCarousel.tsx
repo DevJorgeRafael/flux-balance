@@ -6,7 +6,9 @@ import {
   ScrollView,
   Pressable,
 } from 'react-native';
-import { CreditCard, Plus, Layers } from 'lucide-react-native';
+import CreditCard from 'lucide-react-native/icons/credit-card';
+import Plus from 'lucide-react-native/icons/plus';
+import Layers from 'lucide-react-native/icons/layers';
 import { Account } from '@/core/models/account';
 import { spacing, useColors, useThemeMode } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';

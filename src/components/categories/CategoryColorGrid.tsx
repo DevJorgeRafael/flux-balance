@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Check } from 'lucide-react-native';
+import Check from 'lucide-react-native/icons/check';
 import { CATEGORY_COLOR_PALETTES } from '@/core/constants/categoryPalettes';
 import type { CategoryType } from '@/core/models/category';
 import {

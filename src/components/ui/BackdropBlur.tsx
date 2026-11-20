@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { MotiView } from 'moti';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { useColors, useThemeMode } from '@/components/ui/theme';
 
 interface BackdropBlurProps {
@@ -13,12 +17,17 @@ interface BackdropBlurProps {
 export function BackdropBlur({ visible, onPress, blurTarget }: BackdropBlurProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
+  const opacity = useSharedValue(visible ? 1 : 0);
+
+  useEffect(() => {
+    opacity.set(withTiming(visible ? 1 : 0, { duration: 250 }));
+  }, [opacity, visible]);
+
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.get() }));
 
   return (
-    <MotiView
-      animate={{ opacity: visible ? 1 : 0 }}
-      transition={{ type: 'timing', duration: 250 } as any}
-      style={[styles.container, { backgroundColor: colors.backdrop }]}
+    <Animated.View
+      style={[styles.container, { backgroundColor: colors.backdrop }, animatedStyle]}
       pointerEvents={visible ? 'auto' : 'none'}
     >
       <BlurView
@@ -33,7 +42,7 @@ export function BackdropBlur({ visible, onPress, blurTarget }: BackdropBlurProps
         style={[StyleSheet.absoluteFill, { backgroundColor: colors.backdropVeil }]}
       />
       <Pressable style={StyleSheet.absoluteFill} onPress={onPress} />
-    </MotiView>
+    </Animated.View>
   );
 }
 

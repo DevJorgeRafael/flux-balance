@@ -1,11 +1,9 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import {
-  ChevronRight,
-  Trash,
-  TrendingDown,
-  TrendingUp,
-} from 'lucide-react-native';
+import ChevronRight from 'lucide-react-native/icons/chevron-right';
+import Trash from 'lucide-react-native/icons/trash';
+import TrendingDown from 'lucide-react-native/icons/trending-down';
+import TrendingUp from 'lucide-react-native/icons/trending-up';
 import { Card } from '@/components/ui/Card';
 import { radius, spacing, useColors } from '@/components/ui/theme';
 import { useCurrency } from '@/core/currency/useCurrency';

@@ -13,7 +13,8 @@ import {
   View,
 } from 'react-native';
 import Constants from 'expo-constants';
-import { Search, X } from 'lucide-react-native';
+import Search from 'lucide-react-native/icons/search';
+import X from 'lucide-react-native/icons/x';
 import { fontSize, radius, spacing, useColors, useInsets } from '@/components/ui/theme';
 import {
   filterLicenseGroups,

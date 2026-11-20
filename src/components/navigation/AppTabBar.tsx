@@ -15,7 +15,8 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { Plus, type LucideIcon } from 'lucide-react-native';
+import Plus from 'lucide-react-native/icons/plus';
+import type { LucideIcon } from 'lucide-react-native';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors, useThemeMode, withAlpha } from '@/components/ui/theme';
