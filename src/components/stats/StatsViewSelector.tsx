@@ -2,10 +2,11 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import ChartLine from 'lucide-react-native/icons/chart-line';
 import ChartPie from 'lucide-react-native/icons/chart-pie';
+import Wallet from 'lucide-react-native/icons/wallet';
 import { radius, spacing, useColors } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
 
-export type StatsView = 'categories' | 'trend';
+export type StatsView = 'categories' | 'trend' | 'balance';
 
 interface StatsViewSelectorProps {
   value: StatsView;
@@ -26,6 +27,11 @@ export function StatsViewSelector({ value, onChange }: StatsViewSelectorProps) {
       value: 'trend' as const,
       label: t('statsViewTrend'),
       Icon: ChartLine,
+    },
+    {
+      value: 'balance' as const,
+      label: t('statsViewBalance'),
+      Icon: Wallet,
     },
   ];
 
@@ -82,12 +88,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingHorizontal: spacing.sm,
+    gap: 4,
+    paddingHorizontal: spacing.xs,
     borderRadius: radius.lg,
   },
   label: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
   },
   pressed: {

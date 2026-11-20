@@ -1,4 +1,5 @@
 import type { Transaction } from '@/core/models/transaction';
+import { parseLedgerDate } from '@/core/utils/ledger-date';
 import type { StatsTransactionType } from './stats-breakdown';
 
 export interface DailyStatPoint {
@@ -46,8 +47,8 @@ export function buildDailyStats({
     const amount = Math.abs(transaction.totalAmount);
     if (!Number.isFinite(amount) || amount <= 0) continue;
 
-    const date = new Date(transaction.date);
-    if (Number.isNaN(date.getTime())) continue;
+    const date = parseLedgerDate(transaction.date);
+    if (!date) continue;
     if (date.getFullYear() !== year || date.getMonth() !== monthIndex) continue;
 
     const day = date.getDate();

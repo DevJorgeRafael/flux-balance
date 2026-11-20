@@ -2,6 +2,10 @@ export const statsTranslations = {
   es: {
     statsViewCategories: 'Categorías',
     statsViewTrend: 'Tendencia',
+    statsViewBalance: 'Saldo',
+    balanceStart: 'Saldo inicial',
+    balanceEnd: 'Saldo final',
+    balanceChange: 'Variación',
     dailyAverage: 'Promedio diario',
     highestDay: 'Día más alto',
     daysWithIncome: 'Días con ingresos',
@@ -11,6 +15,10 @@ export const statsTranslations = {
   en: {
     statsViewCategories: 'Categories',
     statsViewTrend: 'Trend',
+    statsViewBalance: 'Balance',
+    balanceStart: 'Opening balance',
+    balanceEnd: 'Closing balance',
+    balanceChange: 'Change',
     dailyAverage: 'Daily average',
     highestDay: 'Highest day',
     daysWithIncome: 'Days with income',

@@ -100,6 +100,21 @@ test('ignora fechas inválidas y montos no finitos', () => {
   assert.deepEqual(stats.maxPoint, { day: 10, amount: 80 });
 });
 
+test('interpreta una fecha sin hora en el calendario local', () => {
+  const stats = buildDailyStats({
+    transactions: [
+      transaction({ id: 'date-only', date: '2026-10-05', totalAmount: 100 }),
+    ],
+    type: 'EXPENSE',
+    year: 2026,
+    monthIndex: 9,
+    endDay: 10,
+  });
+
+  assert.equal(stats.points[4].amount, 100);
+  assert.deepEqual(stats.maxPoint, { day: 5, amount: 100 });
+});
+
 test('getMonthDayCount respeta febrero y los años bisiestos', () => {
   assert.equal(getMonthDayCount(2026, 1), 28);
   assert.equal(getMonthDayCount(2024, 1), 29);
