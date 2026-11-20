@@ -7,10 +7,14 @@ import { useTranslation } from '@/core/i18n/useTranslation';
 import { useDashboard } from '@/context/DashboardContext';
 import { SqliteTransactionRepository } from '@/infrastructure/repositories';
 import { buildMonthlyStats, type StatsTransactionType } from '@/core/services/stats-breakdown';
+import { buildDailyStats, getMonthDayCount } from '@/core/services/stats-daily';
 import { StatsMonthSelector } from '@/components/stats/StatsMonthSelector';
 import { StatsTypeSelector } from '@/components/stats/StatsTypeSelector';
+import { StatsViewSelector, type StatsView } from '@/components/stats/StatsViewSelector';
 import { CategoryDonut, type CategoryDonutSlice } from '@/components/stats/CategoryDonut';
 import { CategoryBreakdownList } from '@/components/stats/CategoryBreakdownList';
+import { DailyTrendChart } from '@/components/stats/DailyTrendChart';
+import { DailyTrendSummary } from '@/components/stats/DailyTrendSummary';
 import { StatsEmptyState } from '@/components/stats/StatsEmptyState';
 import { BottomFade } from '@/components/ui/BottomFade';
 import { TAB_BAR_CONTENT_GAP, TAB_BAR_CONTENT_OFFSET } from '@/components/navigation/tabBarLayout';
@@ -40,6 +44,8 @@ export default function StatsScreen() {
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth);
   const [selectedType, setSelectedType] = useState<StatsTransactionType>('EXPENSE');
   const [selectedSliceId, setSelectedSliceId] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<StatsView>('categories');
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<Awaited<ReturnType<typeof transactionRepo.getAll>>>([]);
   const [isTransactionsLoading, setIsTransactionsLoading] = useState(true);
   const hasLoadedTransactions = useRef(false);
@@ -59,6 +65,7 @@ export default function StatsScreen() {
       if (requestId.current === currentRequest) {
         setTransactions(allTransactions);
         setSelectedSliceId(null);
+        setSelectedDay(null);
       }
     } catch (error) {
       console.error('Error loading stats transactions:', error);
@@ -130,11 +137,28 @@ export default function StatsScreen() {
     selectedMonth.getFullYear() === currentMonth.getFullYear() &&
     selectedMonth.getMonth() === currentMonth.getMonth();
 
+  const trendEndDay = isCurrentMonth
+    ? new Date().getDate()
+    : getMonthDayCount(selectedMonth.getFullYear(), selectedMonth.getMonth());
+
+  const dailyStats = useMemo(
+    () =>
+      buildDailyStats({
+        transactions,
+        type: selectedType,
+        year: selectedMonth.getFullYear(),
+        monthIndex: selectedMonth.getMonth(),
+        endDay: trendEndDay,
+      }),
+    [selectedMonth, selectedType, transactions, trendEndDay]
+  );
+
   const handlePreviousMonth = () => {
     setSelectedMonth(
       (month) => new Date(month.getFullYear(), month.getMonth() - 1, 1)
     );
     setSelectedSliceId(null);
+    setSelectedDay(null);
   };
 
   const handleNextMonth = () => {
@@ -144,11 +168,19 @@ export default function StatsScreen() {
       (month) => new Date(month.getFullYear(), month.getMonth() + 1, 1)
     );
     setSelectedSliceId(null);
+    setSelectedDay(null);
   };
 
   const handleTypeChange = (type: StatsTransactionType) => {
     setSelectedType(type);
     setSelectedSliceId(null);
+    setSelectedDay(null);
+  };
+
+  const handleViewChange = (view: StatsView) => {
+    setActiveView(view);
+    setSelectedSliceId(null);
+    setSelectedDay(null);
   };
 
   const handleSelectSlice = (id: string) => {
@@ -193,18 +225,40 @@ export default function StatsScreen() {
         ) : (
           <>
             <Card style={styles.chartCard}>
-              <CategoryDonut
-                slices={donutSlices}
-                total={activeBreakdown.total}
-                selectedId={activeSelectedSliceId}
-              />
+              <StatsViewSelector value={activeView} onChange={handleViewChange} />
+
+              {activeView === 'categories' ? (
+                <View style={styles.donutWrap}>
+                  <CategoryDonut
+                    slices={donutSlices}
+                    total={activeBreakdown.total}
+                    selectedId={activeSelectedSliceId}
+                  />
+                </View>
+              ) : (
+                <DailyTrendChart
+                  points={dailyStats.points}
+                  type={selectedType}
+                  month={selectedMonth}
+                  selectedDay={selectedDay}
+                  onSelectDay={setSelectedDay}
+                />
+              )}
             </Card>
 
-            <CategoryBreakdownList
-              items={donutSlices}
-              selectedId={activeSelectedSliceId}
-              onSelect={handleSelectSlice}
-            />
+            {activeView === 'categories' ? (
+              <CategoryBreakdownList
+                items={donutSlices}
+                selectedId={activeSelectedSliceId}
+                onSelect={handleSelectSlice}
+              />
+            ) : (
+              <DailyTrendSummary
+                stats={dailyStats}
+                type={selectedType}
+                month={selectedMonth}
+              />
+            )}
           </>
         )}
       </ScrollView>
@@ -228,9 +282,11 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   chartCard: {
-    alignItems: 'center',
     paddingVertical: 18,
     paddingHorizontal: 18,
     marginBottom: 20,
+  },
+  donutWrap: {
+    alignItems: 'center',
   },
 });

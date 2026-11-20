@@ -4,6 +4,7 @@ import { dataTransferTranslations } from './data-transfer-translations';
 import { movementTranslations } from './movement-translations';
 import { reminderTranslations } from './reminder-translations';
 import { startupTranslations } from './startup-translations';
+import { statsTranslations } from './stats-translations';
 import { transactionTranslations } from './transaction-translations';
 import { validationTranslations } from './validation-translations';
 
@@ -15,12 +16,11 @@ export const translations = {
     ...dataTransferTranslations.es,
     ...backupExcelTranslations.es,
     ...validationTranslations.es,
-    ...startupTranslations.es,
+    ...startupTranslations.es, ...statsTranslations.es,
     ...reminderTranslations.es,
     home: 'Inicio',
     accountsTab: 'Cuentas',
     stats: 'Stats',
-    comingSoon: 'Próximamente',
     total: 'Total',
     uncategorized: 'Sin categoría',
     otherCategories: 'Otros',
@@ -234,12 +234,11 @@ export const translations = {
     ...dataTransferTranslations.en,
     ...backupExcelTranslations.en,
     ...validationTranslations.en,
-    ...startupTranslations.en,
+    ...startupTranslations.en, ...statsTranslations.en,
     ...reminderTranslations.en,
     home: 'Home',
     accountsTab: 'Accounts',
     stats: 'Stats',
-    comingSoon: 'Coming soon',
     total: 'Total',
     uncategorized: 'Uncategorized',
     otherCategories: 'Other',

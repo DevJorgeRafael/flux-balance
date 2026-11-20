@@ -57,6 +57,17 @@ test('omits the currency code when it is not requested', () => {
   assert.equal(formatMoney(1234.5, 'EUR', EN, { showCurrency: false }), '1,234.50');
 });
 
+test('accepts an explicit number of decimals', () => {
+  assert.equal(formatMoney(1234.5, 'USD', EN, { decimals: 0 }), 'USD 1,235');
+  assert.equal(formatMoney(1234.5, 'USD', ES, { decimals: 3 }), 'USD 1.234,500');
+  assert.equal(formatMoney(1234.5, 'JPY', EN, { decimals: 2 }), 'JPY 1,234.50');
+});
+
+test('falls back to the currency decimals when the override is invalid', () => {
+  assert.equal(formatMoney(1234.5, 'USD', EN, { decimals: -1 }), 'USD 1,234.50');
+  assert.equal(formatMoney(1234.5, 'JPY', EN, { decimals: 1.5 }), 'JPY 1,235');
+});
+
 test('keeps the sign when the currency code is omitted', () => {
   assert.equal(formatMoney(-84500, 'USD', ES, { showCurrency: false }), '-84.500,00');
   assert.equal(
