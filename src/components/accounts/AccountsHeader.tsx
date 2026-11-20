@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Plus } from 'lucide-react-native';
+import Plus from 'lucide-react-native/icons/plus';
 import { useColors, useThemeMode } from '@/components/ui/theme';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';

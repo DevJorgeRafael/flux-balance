@@ -7,7 +7,10 @@ import {
   Pressable,
   TextInput,
 } from 'react-native';
-import { X, CreditCard, TrendingUp, Calendar } from 'lucide-react-native';
+import X from 'lucide-react-native/icons/x';
+import CreditCard from 'lucide-react-native/icons/credit-card';
+import TrendingUp from 'lucide-react-native/icons/trending-up';
+import Calendar from 'lucide-react-native/icons/calendar';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { appAlert } from '@/components/ui/alert/appAlert';
 import { AccountType } from '@/core/models/account';

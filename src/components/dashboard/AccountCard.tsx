@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import { Zap, Calendar } from 'lucide-react-native';
+import Zap from 'lucide-react-native/icons/zap';
+import Calendar from 'lucide-react-native/icons/calendar';
 import { Account, AccountType } from '@/core/models/account';
 import { spacing, useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';

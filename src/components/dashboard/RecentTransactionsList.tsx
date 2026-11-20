@@ -6,8 +6,10 @@ import {
   Pressable,
 } from 'react-native';
 import { router } from 'expo-router';
-import { ChevronRight, Plus, Minus } from 'lucide-react-native';
-import { MotiView } from 'moti';
+import ChevronRight from 'lucide-react-native/icons/chevron-right';
+import Plus from 'lucide-react-native/icons/plus';
+import Minus from 'lucide-react-native/icons/minus';
+import Animated, { Keyframe } from 'react-native-reanimated';
 import { appAlert } from '@/components/ui/alert/appAlert';
 import { Transaction } from '@/core/models/transaction';
 import { spacing, useColors, useThemeMode } from '@/components/ui/theme';
@@ -96,11 +98,14 @@ export function RecentTransactionsList({
             });
 
             return (
-              <MotiView
+              <Animated.View
                 key={tx.id}
-                from={{ opacity: 0, translateY: 10 }}
-                animate={{ opacity: 1, translateY: 0 }}
-                transition={{ type: 'timing', duration: 350, delay: idx * 50 } as any}
+                entering={new Keyframe({
+                  from: { opacity: 0, transform: [{ translateY: 10 }] },
+                  to: { opacity: 1, transform: [{ translateY: 0 }] },
+                })
+                  .duration(350)
+                  .delay(idx * 50)}
               >
                 <Pressable
                   style={({ pressed }) => [
@@ -150,7 +155,7 @@ export function RecentTransactionsList({
                     })}
                   </Text>
                 </Pressable>
-              </MotiView>
+              </Animated.View>
             );
           })}
         </Card>

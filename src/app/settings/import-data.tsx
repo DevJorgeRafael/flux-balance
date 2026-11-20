@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { router } from 'expo-router';
-import { FileSpreadsheet, FileText } from 'lucide-react-native';
+import FileSpreadsheet from 'lucide-react-native/icons/file-spreadsheet';
+import FileText from 'lucide-react-native/icons/file-text';
 import { appAlert } from '@/components/ui/alert/appAlert';
 import { BackupProgressModal } from '@/components/settings/BackupProgressModal';
 import {

@@ -1,7 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View, Pressable, Text } from 'react-native';
-import { Sun, Moon, Settings, RotateCcw, Sparkles, Languages } from 'lucide-react-native';
-import { MotiView } from 'moti';
+import Sun from 'lucide-react-native/icons/sun';
+import Moon from 'lucide-react-native/icons/moon';
+import Settings from 'lucide-react-native/icons/settings';
+import RotateCcw from 'lucide-react-native/icons/rotate-ccw';
+import Sparkles from 'lucide-react-native/icons/sparkles';
+import Languages from 'lucide-react-native/icons/languages';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import { useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
@@ -35,6 +44,25 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const colors = useColors();
   const { t } = useTranslation();
+  const popover = useSharedValue(isSettingsOpen ? 1 : 0);
+
+  useEffect(() => {
+    popover.set(
+      withSpring(isSettingsOpen ? 1 : 0, {
+        damping: 18,
+        stiffness: 260,
+        mass: 0.7,
+      })
+    );
+  }, [isSettingsOpen, popover]);
+
+  const popoverStyle = useAnimatedStyle(() => {
+    const value = popover.get();
+    return {
+      opacity: value,
+      transform: [{ scale: 0.82 + 0.18 * value }, { translateY: -8 * (1 - value) }],
+    };
+  });
 
   return (
     <>
@@ -63,15 +91,8 @@ export function DashboardHeader({
             />
           </Pressable>
 
-          <MotiView
-            from={{ opacity: 0, scale: 0.82, translateY: -8 }}
-            animate={{
-              opacity: isSettingsOpen ? 1 : 0,
-              scale: isSettingsOpen ? 1 : 0.82,
-              translateY: isSettingsOpen ? 0 : -8,
-            }}
-            transition={{ type: 'spring', damping: 18, stiffness: 260, mass: 0.7 } as any}
-            style={[styles.settingsPopoverMotion]}
+          <Animated.View
+            style={[styles.settingsPopoverMotion, popoverStyle]}
             pointerEvents={isSettingsOpen ? 'auto' : 'none'}
             accessibilityElementsHidden={!isSettingsOpen}
             importantForAccessibility={isSettingsOpen ? 'auto' : 'no-hide-descendants'}
@@ -166,7 +187,7 @@ export function DashboardHeader({
                 </Pressable>
               )}
             </Card>
-          </MotiView>
+          </Animated.View>
         </View>
       </View>
     </>

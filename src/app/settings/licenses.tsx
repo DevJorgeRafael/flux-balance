@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { ArrowLeft } from 'lucide-react-native';
+import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import { LicenseCatalog } from '@/components/settings/LicenseCatalog';
 import {
   radius,

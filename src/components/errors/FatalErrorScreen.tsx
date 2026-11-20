@@ -9,7 +9,9 @@ import {
 } from 'react-native';
 import { getLocales } from 'expo-localization';
 import * as SplashScreen from 'expo-splash-screen';
-import { AlertTriangle, RefreshCw, Share2 } from 'lucide-react-native';
+import AlertTriangle from 'lucide-react-native/icons/triangle-alert';
+import RefreshCw from 'lucide-react-native/icons/refresh-cw';
+import Share2 from 'lucide-react-native/icons/share-2';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { appAlert } from '@/components/ui/alert/appAlert';
@@ -25,16 +27,21 @@ import {
 import type { Language } from '@/core/i18n/translations';
 import { translations } from '@/core/i18n/translations';
 import { resolveLanguage } from '@/core/preferences/preferences';
-import {
-  ErrorReportError,
-  shareErrorReport,
-} from '@/infrastructure/diagnostics/errorReport';
 
 interface FatalErrorScreenProps {
   kind: 'startup' | 'unexpected';
   error: unknown;
   onRetry: () => void;
   retrying?: boolean;
+}
+
+function isUnavailableShareError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'unavailable'
+  );
 }
 
 function resolveDeviceLanguage(): Language {
@@ -67,12 +74,12 @@ export function FatalErrorScreen({
 
     setSharing(true);
     try {
+      const { shareErrorReport } = await import('@/infrastructure/diagnostics/errorReport');
       await shareErrorReport(error, language, copy.startupErrorReportDialogTitle);
     } catch (shareError) {
-      const message =
-        shareError instanceof ErrorReportError && shareError.code === 'unavailable'
-          ? copy.startupErrorReportUnavailable
-          : copy.startupErrorReportFailed;
+      const message = isUnavailableShareError(shareError)
+        ? copy.startupErrorReportUnavailable
+        : copy.startupErrorReportFailed;
       void appAlert({
         type: 'error',
         title: copy.error,

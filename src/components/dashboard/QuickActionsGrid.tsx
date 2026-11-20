@@ -1,9 +1,16 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import { Plus, Minus } from 'lucide-react-native';
-import { MotiPressable } from 'moti/interactions';
+import { Pressable, StyleSheet, View, Text } from 'react-native';
+import Plus from 'lucide-react-native/icons/plus';
+import Minus from 'lucide-react-native/icons/minus';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { useColors } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 interface QuickActionsGridProps {
   onOpenTransactionModal: (type: 'INCOME' | 'EXPENSE') => void;
@@ -12,26 +19,23 @@ interface QuickActionsGridProps {
 export function QuickActionsGrid({ onOpenTransactionModal }: QuickActionsGridProps) {
   const colors = useColors();
   const { t } = useTranslation();
+  const incomeScale = useSharedValue(1);
+  const expenseScale = useSharedValue(1);
+
+  const incomeStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: incomeScale.get() }],
+  }));
+  const expenseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: expenseScale.get() }],
+  }));
 
   return (
     <View style={styles.actionGrid}>
       {/* Botón Ingreso */}
-      <MotiPressable
-        containerStyle={{ flex: 1 }}
-        style={[
-          styles.primaryActionBtn,
-          { backgroundColor: colors.success },
-        ]}
-        animate={({ pressed }) => {
-          'worklet';
-          return {
-            scale: pressed ? 0.96 : 1,
-          };
-        }}
-        transition={{
-          type: 'timing',
-          duration: 100,
-        } as any}
+      <AnimatedPressable
+        style={[styles.primaryActionBtn, { backgroundColor: colors.success }, incomeStyle]}
+        onPressIn={() => incomeScale.set(withTiming(0.96, { duration: 100 }))}
+        onPressOut={() => incomeScale.set(withTiming(1, { duration: 100 }))}
         onPress={() => onOpenTransactionModal('INCOME')}
         accessibilityRole="button"
         accessibilityLabel={t('addIncome')}
@@ -40,25 +44,13 @@ export function QuickActionsGrid({ onOpenTransactionModal }: QuickActionsGridPro
           <Plus size={20} color={colors.onSuccess} strokeWidth={2.5} />
         </View>
         <Text style={[styles.primaryActionText, { color: colors.onSuccess }]}>{t('addIncome')}</Text>
-      </MotiPressable>
+      </AnimatedPressable>
 
       {/* Botón Gasto */}
-      <MotiPressable
-        containerStyle={{ flex: 1 }}
-        style={[
-          styles.primaryActionBtn,
-          { backgroundColor: colors.error },
-        ]}
-        animate={({ pressed }) => {
-          'worklet';
-          return {
-            scale: pressed ? 0.96 : 1,
-          };
-        }}
-        transition={{
-          type: 'timing',
-          duration: 100,
-        } as any}
+      <AnimatedPressable
+        style={[styles.primaryActionBtn, { backgroundColor: colors.error }, expenseStyle]}
+        onPressIn={() => expenseScale.set(withTiming(0.96, { duration: 100 }))}
+        onPressOut={() => expenseScale.set(withTiming(1, { duration: 100 }))}
         onPress={() => onOpenTransactionModal('EXPENSE')}
         accessibilityRole="button"
         accessibilityLabel={t('addExpense')}
@@ -67,7 +59,7 @@ export function QuickActionsGrid({ onOpenTransactionModal }: QuickActionsGridPro
           <Minus size={20} color={colors.onError} strokeWidth={2.5} />
         </View>
         <Text style={[styles.primaryActionText, { color: colors.onError }]}>{t('addExpense')}</Text>
-      </MotiPressable>
+      </AnimatedPressable>
     </View>
   );
 }

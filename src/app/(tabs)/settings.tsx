@@ -1,7 +1,13 @@
 import React, { useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { Bell, Coins, Languages, Moon, Sun, TrendingDown, TrendingUp } from 'lucide-react-native';
+import Bell from 'lucide-react-native/icons/bell';
+import Coins from 'lucide-react-native/icons/coins';
+import Languages from 'lucide-react-native/icons/languages';
+import Moon from 'lucide-react-native/icons/moon';
+import Sun from 'lucide-react-native/icons/sun';
+import TrendingDown from 'lucide-react-native/icons/trending-down';
+import TrendingUp from 'lucide-react-native/icons/trending-up';
 import { useColors, useInsets, useThemeMode } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { BottomFade } from '@/components/ui/BottomFade';

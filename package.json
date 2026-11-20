@@ -27,7 +27,6 @@
     "expo-system-ui": "~58.0.6",
     "expo-web-browser": "~58.0.6",
     "lucide-react-native": "^1.59.0",
-    "moti": "^0.30.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-native": "0.88.1",

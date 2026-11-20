@@ -8,7 +8,8 @@ import {
   View,
 } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Plus } from 'lucide-react-native';
+import ArrowLeft from 'lucide-react-native/icons/arrow-left';
+import Plus from 'lucide-react-native/icons/plus';
 import { appAlert } from '@/components/ui/alert/appAlert';
 import { CategoryListRow } from '@/components/categories/CategoryListRow';
 import { bestTextColor, useColors, useInsets } from '@/components/ui/theme';

@@ -7,7 +7,7 @@ import {
   Pressable,
   TextInput,
 } from 'react-native';
-import { X } from 'lucide-react-native';
+import X from 'lucide-react-native/icons/x';
 import { appAlert } from '@/components/ui/alert/appAlert';
 import { TransactionPrefill, TransactionType } from '@/core/models/transaction';
 import { Account } from '@/core/models/account';

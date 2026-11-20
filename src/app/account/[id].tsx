@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft } from 'lucide-react-native';
+import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import { useColors, useInsets } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import {

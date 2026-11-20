@@ -9,8 +9,13 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { MotiView } from 'moti';
-import { Easing, LinearTransition } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { useColors, useInsets } from '@/components/ui/theme';
 import { BackdropBlur } from '@/components/ui/BackdropBlur';
 
@@ -43,6 +48,24 @@ export function BottomSheetModal({
 
   const [isRendered, setIsRendered] = useState(false);
   const [isAnimatingIn, setIsAnimatingIn] = useState(false);
+  const sheetProgress = useSharedValue(0);
+
+  useEffect(() => {
+    sheetProgress.set(
+      withTiming(isAnimatingIn ? 1 : 0, {
+        duration: isAnimatingIn ? OPEN_DURATION : CLOSE_DURATION,
+        easing: isAnimatingIn ? OPEN_EASING : CLOSE_EASING,
+      })
+    );
+  }, [isAnimatingIn, sheetProgress]);
+
+  const sheetAnimatedStyle = useAnimatedStyle(() => {
+    const value = sheetProgress.get();
+    return {
+      opacity: value,
+      transform: [{ translateY: (1 - value) * 500 }],
+    };
+  });
 
   useEffect(() => {
     let renderTimeout: ReturnType<typeof setTimeout>;
@@ -94,16 +117,7 @@ export function BottomSheetModal({
         <BackdropBlur visible={isAnimatingIn} onPress={handleClose} blurTarget={blurTarget} />
 
         <View style={styles.backdrop} pointerEvents="box-none">
-          <MotiView
-            animate={{
-              translateY: isAnimatingIn ? 0 : 500,
-              opacity: isAnimatingIn ? 1 : 0,
-            }}
-            transition={{
-              type: 'timing',
-              duration: isAnimatingIn ? OPEN_DURATION : CLOSE_DURATION,
-              easing: isAnimatingIn ? OPEN_EASING : CLOSE_EASING,
-            } as any}
+          <Animated.View
             layout={LinearTransition.duration(OPEN_DURATION).easing(OPEN_EASING)}
             style={[
               styles.sheet,
@@ -113,10 +127,11 @@ export function BottomSheetModal({
                 maxHeight,
               },
               sheetStyle,
+              sheetAnimatedStyle,
             ]}
           >
             {children}
-          </MotiView>
+          </Animated.View>
         </View>
       </KeyboardAvoidingView>
     </Modal>

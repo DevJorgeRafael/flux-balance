@@ -42,6 +42,12 @@ export function TranslationProvider({
   const locales = useLocales();
   const [languagePreference, setLanguagePreferenceState] =
     useState<LanguagePreference>(initialPreference);
+  const [startupPreference, setStartupPreference] = useState(initialPreference);
+
+  if (initialPreference !== startupPreference) {
+    setStartupPreference(initialPreference);
+    setLanguagePreferenceState(initialPreference);
+  }
 
   const language = resolveLanguage(languagePreference, locales[0]?.languageCode);
 

@@ -8,7 +8,8 @@ import {
   Text,
   View,
 } from 'react-native';
-import { CircleAlert, TriangleAlert } from 'lucide-react-native';
+import CircleAlert from 'lucide-react-native/icons/circle-alert';
+import TriangleAlert from 'lucide-react-native/icons/triangle-alert';
 import { Card } from '@/components/ui/Card';
 import {
   fontSize,

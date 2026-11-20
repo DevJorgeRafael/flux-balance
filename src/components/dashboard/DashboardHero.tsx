@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Eye, EyeOff } from 'lucide-react-native';
+import Eye from 'lucide-react-native/icons/eye';
+import EyeOff from 'lucide-react-native/icons/eye-off';
 import { CountUpText } from '@/components/ui/atoms/CountUpText';
 import { useColors } from '@/components/ui/theme';
 import { useSplashTransition } from '@/context/SplashTransitionContext';

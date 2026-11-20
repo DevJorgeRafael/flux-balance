@@ -1,7 +1,7 @@
 {
   "summary": {
     "groups": 16,
-    "packages": 603
+    "packages": 588
   },
   "groups": [
     {
@@ -297,14 +297,6 @@
           "version": "7.29.11"
         },
         {
-          "name": "@emotion/is-prop-valid",
-          "version": "0.8.8"
-        },
-        {
-          "name": "@emotion/memoize",
-          "version": "0.7.4"
-        },
-        {
           "name": "@expo/cli",
           "version": "58.1.18"
         },
@@ -487,30 +479,6 @@
         {
           "name": "@jridgewell/trace-mapping",
           "version": "0.3.31"
-        },
-        {
-          "name": "@motionone/animation",
-          "version": "10.18.0"
-        },
-        {
-          "name": "@motionone/dom",
-          "version": "10.12.0"
-        },
-        {
-          "name": "@motionone/easing",
-          "version": "10.18.0"
-        },
-        {
-          "name": "@motionone/generators",
-          "version": "10.18.0"
-        },
-        {
-          "name": "@motionone/types",
-          "version": "10.17.1"
-        },
-        {
-          "name": "@motionone/utils",
-          "version": "10.18.0"
         },
         {
           "name": "@noxcturnal/noxcturnal-darwin-arm64",
@@ -1257,14 +1225,6 @@
           "version": "0.336.0"
         },
         {
-          "name": "framer-motion",
-          "version": "6.5.1"
-        },
-        {
-          "name": "framesync",
-          "version": "6.0.1"
-        },
-        {
           "name": "fresh",
           "version": "0.5.2"
         },
@@ -1303,10 +1263,6 @@
         {
           "name": "hermes-parser",
           "version": "0.36.1"
-        },
-        {
-          "name": "hey-listen",
-          "version": "1.0.8"
         },
         {
           "name": "http-errors",
@@ -1569,10 +1525,6 @@
           "version": "1.2.0"
         },
         {
-          "name": "moti",
-          "version": "0.30.0"
-        },
-        {
           "name": "ms",
           "version": "2.0.0"
         },
@@ -1692,10 +1644,6 @@
         {
           "name": "pngjs",
           "version": "3.4.0"
-        },
-        {
-          "name": "popmotion",
-          "version": "11.0.3"
         },
         {
           "name": "postcss",
@@ -1948,10 +1896,6 @@
         {
           "name": "structured-headers",
           "version": "0.4.1"
-        },
-        {
-          "name": "style-value-types",
-          "version": "5.0.0"
         },
         {
           "name": "styleq",
@@ -2426,20 +2370,6 @@
       ]
     },
     {
-      "license": "0BSD",
-      "text": "Zero-Clause BSD\n\nPermission to use, copy, modify, and/or distribute this software for\nany purpose with or without fee is hereby granted.\n\nTHE SOFTWARE IS PROVIDED “AS IS” AND THE AUTHOR DISCLAIMS ALL\nWARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES\nOF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE\nFOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY\nDAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN\nAN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT\nOF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.",
-      "packages": [
-        {
-          "name": "jsc-safe-url",
-          "version": "0.2.4"
-        },
-        {
-          "name": "tslib",
-          "version": "2.9.1"
-        }
-      ]
-    },
-    {
       "license": "Unlicense",
       "text": "This is free and unencumbered software released into the public domain.\n\nAnyone is free to copy, modify, publish, use, compile, sell, or\ndistribute this software, either in source code form or as a compiled\nbinary, for any purpose, commercial or non-commercial, and by any\nmeans.\n\nIn jurisdictions that recognize copyright laws, the author or authors\nof this software dedicate any and all copyright interest in the\nsoftware to the public domain. We make this dedication for the benefit\nof the public at large and to the detriment of our heirs and\nsuccessors. We intend this dedication to be an overt act of\nrelinquishment in perpetuity of all present and future rights to this\nsoftware under copyright law.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\nIN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR\nOTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,\nARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR\nOTHER DEALINGS IN THE SOFTWARE.\n\nFor more information, please refer to <http://unlicense.org>",
       "packages": [
@@ -2470,6 +2400,16 @@
         {
           "name": "fb-dotslash",
           "version": "0.5.8"
+        }
+      ]
+    },
+    {
+      "license": "0BSD",
+      "text": "Zero-Clause BSD\n\nPermission to use, copy, modify, and/or distribute this software for\nany purpose with or without fee is hereby granted.\n\nTHE SOFTWARE IS PROVIDED “AS IS” AND THE AUTHOR DISCLAIMS ALL\nWARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES\nOF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE\nFOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY\nDAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN\nAN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT\nOF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.",
+      "packages": [
+        {
+          "name": "jsc-safe-url",
+          "version": "0.2.4"
         }
       ]
     },

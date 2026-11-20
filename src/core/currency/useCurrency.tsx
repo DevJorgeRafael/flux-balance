@@ -49,6 +49,12 @@ export function CurrencyProvider({ children, initialCurrency }: CurrencyProvider
   const [currency, setCurrencyState] = useState<string>(() =>
     resolveCurrencyCode(initialCurrency)
   );
+  const [startupCurrency, setStartupCurrency] = useState(initialCurrency);
+
+  if (initialCurrency !== undefined && initialCurrency !== startupCurrency) {
+    setStartupCurrency(initialCurrency);
+    setCurrencyState(resolveCurrencyCode(initialCurrency));
+  }
 
   useEffect(() => {
     if (initialCurrency !== undefined) return;

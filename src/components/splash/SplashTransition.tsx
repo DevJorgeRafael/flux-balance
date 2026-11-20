@@ -34,6 +34,7 @@ type Phase = 'hold' | 'exit' | 'done';
 
 interface SplashTransitionProps {
   children: React.ReactNode;
+  startupReady: boolean;
 }
 
 function clamp01(value: number): number {
@@ -51,7 +52,7 @@ function easeInOutCubic(value: number): number {
   return value < 0.5 ? 4 * value ** 3 : 1 - (-2 * value + 2) ** 3 / 2;
 }
 
-export function SplashTransition({ children }: SplashTransitionProps) {
+export function SplashTransition({ children, startupReady }: SplashTransitionProps) {
   const { isLoading } = useDashboard();
   const systemScheme = useColorScheme();
   const reduceMotion = useReduceMotion();
@@ -125,7 +126,7 @@ export function SplashTransition({ children }: SplashTransitionProps) {
       !handoffReady ||
       phase !== 'hold' ||
       (!introReady && !forceReveal && !reduceMotion) ||
-      (isLoading && !forceReveal)
+      ((isLoading || !startupReady) && !forceReveal)
     ) {
       return;
     }
@@ -162,6 +163,7 @@ export function SplashTransition({ children }: SplashTransitionProps) {
     phase,
     progress,
     reduceMotion,
+    startupReady,
   ]);
 
   const backgroundStyle = useAnimatedStyle(() => {
