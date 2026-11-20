@@ -104,6 +104,7 @@ export function useCurrency() {
       return formatMoney(amount, currency, locale, {
         showSign: options?.showSign,
         showCurrency: options?.showCurrency,
+        decimals: options?.decimals,
       });
     },
     [currency, locale]
