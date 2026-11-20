@@ -10,6 +10,7 @@ import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface AccountCardProps {
   account: Account;
+  isBalanceVisible: boolean;
   isSelected: boolean;
   onPress: () => void;
 }
@@ -32,7 +33,12 @@ function formatDateOnly(value: string, locale: string): string {
   });
 }
 
-export function AccountCard({ account, isSelected, onPress }: AccountCardProps) {
+export function AccountCard({
+  account,
+  isBalanceVisible,
+  isSelected,
+  onPress,
+}: AccountCardProps) {
   const colors = useColors();
   const { format, locale } = useCurrency();
   const { t } = useTranslation();
@@ -57,7 +63,9 @@ export function AccountCard({ account, isSelected, onPress }: AccountCardProps) 
       shadowSize="sm"
       style={styles.card}
       onPress={onPress}
-      accessibilityLabel={`${account.name}, ${format(account.balance)}`}
+      accessibilityLabel={`${account.name}, ${format(account.balance, {
+        hidden: !isBalanceVisible,
+      })}`}
       accessibilityState={{ selected: isSelected }}
     >
         <View style={styles.accountCardHeader}>
@@ -98,7 +106,7 @@ export function AccountCard({ account, isSelected, onPress }: AccountCardProps) 
           adjustsFontSizeToFit
           minimumFontScale={0.8}
         >
-          {format(account.balance)}
+          {format(account.balance, { hidden: !isBalanceVisible })}
         </Text>
 
         {isFlexible && (

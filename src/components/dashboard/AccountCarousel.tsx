@@ -19,6 +19,7 @@ import { useTranslation } from '@/core/i18n/useTranslation';
 interface AccountCarouselProps {
   accounts: Account[];
   totalBalance: number;
+  isBalanceVisible: boolean;
   selectedFilterAccountId?: string | null;
   onSelectAccountFilter?: (id: string | null) => void;
   onOpenCreateAccountModal: () => void;
@@ -31,6 +32,7 @@ interface AccountCarouselProps {
 export function AccountCarousel({
   accounts,
   totalBalance,
+  isBalanceVisible,
   selectedFilterAccountId = null,
   onSelectAccountFilter,
   onOpenCreateAccountModal,
@@ -117,7 +119,9 @@ export function AccountCarousel({
               shadowSize="sm"
               style={styles.allAccountsCard}
               onPress={() => onSelectAccountFilter?.(null)}
-              accessibilityLabel={`${t('allAccounts')}, ${format(totalBalance)}`}
+              accessibilityLabel={`${t('allAccounts')}, ${format(totalBalance, {
+                hidden: !isBalanceVisible,
+              })}`}
               accessibilityState={{ selected: selectedFilterAccountId === null }}
             >
                 <View style={styles.accountCardHeader}>
@@ -159,7 +163,7 @@ export function AccountCarousel({
                   adjustsFontSizeToFit
                   minimumFontScale={0.8}
                 >
-                  {format(totalBalance)}
+                  {format(totalBalance, { hidden: !isBalanceVisible })}
                 </Text>
 
                 <View
@@ -195,6 +199,7 @@ export function AccountCarousel({
             <AccountCard
               key={acc.id}
               account={acc}
+              isBalanceVisible={isBalanceVisible}
               isSelected={showAllFilter && selectedFilterAccountId === acc.id}
               onPress={() => {
                 if (onPressAccount) {

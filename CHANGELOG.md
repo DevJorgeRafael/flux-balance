@@ -2,6 +2,12 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.1.1] - 2026-11-20
+
+### Corregido
+
+- El ojo que oculta saldos también oculta Todas las cuentas, cada cuenta y los movimientos del inicio.
+
 ## [2.1.0] - 2026-11-20
 
 ### Añadido

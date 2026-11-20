@@ -98,6 +98,7 @@ export default function DashboardScreen() {
               <AccountCarousel
                 accounts={accounts}
                 totalBalance={totalBalance}
+                isBalanceVisible={isBalanceVisible}
                 selectedFilterAccountId={selectedFilterAccountId}
                 onSelectAccountFilter={handleSelectAccountFilter}
                 onOpenCreateAccountModal={openAccountModal}
@@ -106,6 +107,7 @@ export default function DashboardScreen() {
 
               <RecentTransactionsList
                 transactions={accounts.length === 0 ? [] : transactions}
+                isBalanceVisible={isBalanceVisible}
                 selectedFilterAccountId={selectedFilterAccountId}
                 selectedAccountName={selectedAccountName}
                 defaultAccountId={accounts[0]?.id}
