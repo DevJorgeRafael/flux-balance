@@ -2,6 +2,27 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.2.0] - 2026-11-20
+
+### Añadido
+
+- Nueva vista Tendencia con la evolución diaria de ingresos y gastos.
+- Nueva vista Saldo con la evolución diaria del saldo del mes.
+- Filtro por cuenta en la vista Saldo.
+- Resumen con saldo inicial, saldo final y variación.
+
+### Mejorado
+
+- Las estadísticas muestran los decimales de la moneda.
+- Los gráficos permiten tocar un día para ver su detalle.
+- La vista Tendencia resume promedio diario, día más alto y días con ingresos o gastos.
+- La vista Saldo admite cuentas con saldo negativo.
+
+### Corregido
+
+- Los movimientos con fecha sin hora ya no se agrupan en el día anterior.
+- La vista Saldo no muestra importes antes de crear la cuenta.
+
 ## [2.1.1] - 2026-11-20
 
 ### Corregido
