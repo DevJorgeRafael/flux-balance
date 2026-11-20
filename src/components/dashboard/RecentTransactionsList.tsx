@@ -19,6 +19,7 @@ import { useCurrency } from '@/core/currency/useCurrency';
 
 interface RecentTransactionsListProps {
   transactions: Transaction[];
+  isBalanceVisible: boolean;
   selectedFilterAccountId: string | null;
   selectedAccountName?: string;
   defaultAccountId?: string;
@@ -26,6 +27,7 @@ interface RecentTransactionsListProps {
 
 export function RecentTransactionsList({
   transactions,
+  isBalanceVisible,
   selectedFilterAccountId,
   selectedAccountName,
   defaultAccountId,
@@ -152,6 +154,7 @@ export function RecentTransactionsList({
                     {format(isIncome ? tx.totalAmount : -tx.totalAmount, {
                       showSign: isIncome,
                       showCurrency: false,
+                      hidden: !isBalanceVisible,
                     })}
                   </Text>
                 </Pressable>
