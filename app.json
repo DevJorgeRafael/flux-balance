@@ -14,7 +14,7 @@
     },
     "android": {
       "package": "com.devjorgerafael.flux_balance",
-      "versionCode": 9,
+      "versionCode": 8,
       "allowBackup": false,
       "blockedPermissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
