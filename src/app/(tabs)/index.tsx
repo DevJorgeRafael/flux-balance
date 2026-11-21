@@ -18,6 +18,7 @@ import { DashboardHero } from '@/components/dashboard/DashboardHero';
 import { DashboardSummaryCard } from '@/components/dashboard/DashboardSummaryCard';
 import { AccountCarousel } from '@/components/dashboard/AccountCarousel';
 import { RecentTransactionsList } from '@/components/dashboard/RecentTransactionsList';
+import { UpcomingRemindersCard } from '@/components/reminders/UpcomingRemindersCard';
 import { HomeReveal } from '@/components/dashboard/HomeReveal';
 import { BottomFade } from '@/components/ui/BottomFade';
 import { useDashboard } from '@/context/DashboardContext';
@@ -112,6 +113,8 @@ export default function DashboardScreen() {
                 selectedAccountName={selectedAccountName}
                 defaultAccountId={accounts[0]?.id}
               />
+
+              <UpcomingRemindersCard />
             </HomeReveal>
           </View>
         </View>
