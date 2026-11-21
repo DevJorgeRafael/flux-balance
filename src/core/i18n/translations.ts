@@ -1,6 +1,7 @@
 import { alertTranslations } from './alert-translations';
 import { backupExcelTranslations } from './backup-excel-translations';
 import { dataTransferTranslations } from './data-transfer-translations';
+import { homeTranslations } from './home-translations';
 import { movementTranslations } from './movement-translations';
 import { reminderTranslations } from './reminder-translations';
 import { startupTranslations } from './startup-translations';
@@ -16,7 +17,7 @@ export const translations = {
     ...dataTransferTranslations.es,
     ...backupExcelTranslations.es,
     ...validationTranslations.es,
-    ...startupTranslations.es, ...statsTranslations.es,
+    ...startupTranslations.es, ...statsTranslations.es, ...homeTranslations.es,
     ...reminderTranslations.es,
     home: 'Inicio',
     accountsTab: 'Cuentas',
@@ -234,7 +235,7 @@ export const translations = {
     ...dataTransferTranslations.en,
     ...backupExcelTranslations.en,
     ...validationTranslations.en,
-    ...startupTranslations.en, ...statsTranslations.en,
+    ...startupTranslations.en, ...statsTranslations.en, ...homeTranslations.en,
     ...reminderTranslations.en,
     home: 'Home',
     accountsTab: 'Accounts',
