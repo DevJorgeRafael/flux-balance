@@ -1,31 +1,28 @@
 import React, { useRef, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  TextInput,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import X from 'lucide-react-native/icons/x';
 import { appAlert } from '@/components/ui/alert/appAlert';
-import { TransactionPrefill, TransactionType } from '@/core/models/transaction';
-import { Account } from '@/core/models/account';
-import { Category } from '@/core/models/category';
-import { useColors } from '@/components/ui/theme';
 import { Button } from '@/components/ui/atoms/Button';
-import { OptionChips } from '@/components/ui/OptionChips';
-import { SelectField } from '@/components/ui/SelectField';
-import { SegmentedTypeControl } from '@/components/ui/SegmentedTypeControl';
-import { MAX_ACCOUNT_CHIPS } from '@/core/constants/formOptions';
-import { SqliteTransactionRepository } from '@/infrastructure/repositories';
-import { useTranslation } from '@/core/i18n/useTranslation';
-import { useCurrency } from '@/core/currency/useCurrency';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
+import { useColors } from '@/components/ui/theme';
+import { TransactionFormFields } from '@/components/transactions/TransactionFormFields';
+import {
+  resolveTransactionFormSelection,
+  type TransactionFormValues,
+} from '@/components/transactions/transactionFormState';
 import { getCurrencyDecimals } from '@/core/constants/currencies';
-import { MAX_AMOUNT, MAX_TRANSACTION_DESCRIPTION_LENGTH } from '@/core/constants/inputLimits';
+import { MAX_AMOUNT } from '@/core/constants/inputLimits';
+import { useCurrency } from '@/core/currency/useCurrency';
+import { useTranslation } from '@/core/i18n/useTranslation';
 import { getAmountInputErrorKey } from '@/core/i18n/validationMessages';
+import type { Account } from '@/core/models/account';
+import type { Category } from '@/core/models/category';
+import type {
+  TransactionPrefill,
+  TransactionType,
+} from '@/core/models/transaction';
 import { parseAmountInput } from '@/core/utils/money';
+import { SqliteTransactionRepository } from '@/infrastructure/repositories';
 import { applyTransactionPrefill } from './transactionPrefill';
 
 interface CreateTransactionModalProps {
@@ -56,45 +53,53 @@ export function CreateTransactionModal({
   const { t } = useTranslation();
   const submittingRef = useRef(false);
 
-  const [txType, setTxType] = useState<TransactionType>(initialType);
-  const [txAmount, setTxAmount] = useState('');
-  const [txDesc, setTxDesc] = useState('');
-  const [selectedAccountId, setSelectedAccountId] = useState<string>('');
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [formValues, setFormValues] = useState<TransactionFormValues>(() => ({
+    type: initialType,
+    amount: '',
+    description: '',
+    accountId: accounts[0]?.id ?? '',
+    categoryId: '',
+  }));
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [appliedPrefill, setAppliedPrefill] = useState<TransactionPrefill | null>(null);
-  const typeCategories = categories.filter((category) => category.type === txType);
-  const activeCategoryId = typeCategories.some(
-    (category) => category.id === selectedCategoryId
-  )
-    ? selectedCategoryId
-    : typeCategories[0]?.id ?? '';
-  const selectedCategory = typeCategories.find(
-    (category) => category.id === activeCategoryId
+  const [appliedPrefill, setAppliedPrefill] = useState<TransactionPrefill | null>(
+    null
   );
-  const effectiveAccountId = selectedAccountId || accounts[0]?.id || '';
-  const selectedAccount = accounts.find(
-    (account) => account.id === effectiveAccountId
-  );
-  const useAccountChips = accounts.length <= MAX_ACCOUNT_CHIPS;
+
+  const updateField = (
+    field: 'amount' | 'description' | 'accountId' | 'categoryId',
+    value: string
+  ) => {
+    setFormValues((current) => ({ ...current, [field]: value }));
+  };
 
   const resetForm = () => {
-    setTxAmount('');
-    setTxDesc('');
-    setSelectedAccountId(accounts[0]?.id || '');
-    setSelectedCategoryId('');
+    setFormValues((current) => ({
+      ...current,
+      amount: '',
+      description: '',
+      accountId: accounts[0]?.id ?? '',
+      categoryId: '',
+    }));
   };
 
   const handleTypeChange = (type: TransactionType) => {
-    setTxType(type);
-    setSelectedCategoryId('');
+    setFormValues((current) => ({ ...current, type, categoryId: '' }));
   };
 
   const applyPrefill = (prefill: TransactionPrefill, type: TransactionType) => {
     setAppliedPrefill(prefill);
-    applyTransactionPrefill(prefill, type, accounts, categories,
+    applyTransactionPrefill(
+      prefill,
+      type,
+      accounts,
+      categories,
       (value) => format(value, { showCurrency: false }),
-      { amount: setTxAmount, description: setTxDesc, accountId: setSelectedAccountId, categoryId: setSelectedCategoryId }
+      {
+        amount: (value) => updateField('amount', value),
+        description: (value) => updateField('description', value),
+        accountId: (value) => updateField('accountId', value),
+        categoryId: (value) => updateField('categoryId', value),
+      }
     );
   };
 
@@ -102,18 +107,18 @@ export function CreateTransactionModal({
   if (visible !== prevVisible) {
     setPrevVisible(visible);
     if (visible) {
-      setTxType(initialType);
+      setFormValues((current) => ({ ...current, type: initialType }));
       if (initialPrefill) {
         applyPrefill(initialPrefill, initialType);
       } else if (appliedPrefill) {
         setAppliedPrefill(null);
         resetForm();
-      } else if (accounts.length > 0 && !selectedAccountId) {
-        setSelectedAccountId(accounts[0].id);
+      } else if (accounts.length > 0 && !formValues.accountId) {
+        setFormValues((current) => ({ ...current, accountId: accounts[0].id }));
       }
     }
   } else if (visible && initialPrefill && initialPrefill !== appliedPrefill) {
-    setTxType(initialType);
+    setFormValues((current) => ({ ...current, type: initialType }));
     applyPrefill(initialPrefill, initialType);
   }
 
@@ -121,7 +126,11 @@ export function CreateTransactionModal({
     if (submittingRef.current) return;
 
     const decimals = getCurrencyDecimals(currency);
-    const amountResult = parseAmountInput(txAmount, locale, decimals);
+    const amountResult = parseAmountInput(
+      formValues.amount,
+      locale,
+      decimals
+    );
     if (!amountResult.ok) {
       void appAlert({
         type: 'error',
@@ -136,7 +145,12 @@ export function CreateTransactionModal({
     }
     const amountVal = amountResult.value;
 
-    const accountId = effectiveAccountId;
+    const selection = resolveTransactionFormSelection(
+      formValues,
+      accounts,
+      categories
+    );
+    const accountId = selection.effectiveAccountId;
     if (!accountId) {
       void appAlert({
         type: 'warning',
@@ -147,20 +161,22 @@ export function CreateTransactionModal({
       return;
     }
 
-    const catId = activeCategoryId;
+    if (formValues.type !== 'INCOME' && formValues.type !== 'EXPENSE') {
+      return;
+    }
 
     submittingRef.current = true;
     try {
       setIsSubmitting(true);
       await transactionRepo.createWithSplits({
-        type: txType,
+        type: formValues.type,
         date: new Date().toISOString(),
         totalAmount: amountVal,
-        description: txDesc.trim() || undefined,
+        description: formValues.description.trim() || undefined,
         splits: [
           {
-            accountId: accountId,
-            categoryId: catId,
+            accountId,
+            categoryId: selection.activeCategoryId,
             amount: amountVal,
           },
         ],
@@ -192,7 +208,9 @@ export function CreateTransactionModal({
     >
       <View style={styles.modalTopBar}>
         <Text style={[styles.modalHeading, { color: colors.text }]}>
-          {txType === 'INCOME' ? t('registerIncome') : t('registerExpense')}
+          {formValues.type === 'INCOME'
+            ? t('registerIncome')
+            : t('registerExpense')}
         </Text>
         <Pressable
           onPress={onClose}
@@ -211,126 +229,16 @@ export function CreateTransactionModal({
         style={{ flexGrow: 0 }}
         contentContainerStyle={{ paddingBottom: 32 }}
       >
-        <SegmentedTypeControl
-          value={txType}
-          options={[
-            {
-              value: 'INCOME',
-              label: t('income'),
-              color: colors.successSoft,
-              textColor: colors.successText,
-            },
-            {
-              value: 'EXPENSE',
-              label: t('expense'),
-              color: colors.errorSoft,
-              textColor: colors.errorText,
-            },
-          ]}
-          onChange={handleTypeChange}
-          style={styles.typeSegmentedControl}
+        <TransactionFormFields
+          values={formValues}
+          onChange={updateField}
+          onTypeChange={handleTypeChange}
+          accounts={accounts}
+          categories={categories}
+          autoFocusAmount
+          fallbackToFirstCategory
+          allowEmptyCategory={false}
         />
-
-        <Text style={[styles.formLabel, { color: colors.textLight }]}>
-          {t('amount', { currency })}
-        </Text>
-        <TextInput
-          style={[
-            styles.largeAmountInput,
-            {
-              color: colors.text,
-              backgroundColor: colors.inputBackground,
-              borderColor: colors.border,
-            },
-          ]}
-          placeholder={format(0, { showCurrency: false })}
-          placeholderTextColor={colors.textLight}
-          keyboardType="decimal-pad"
-          value={txAmount}
-          onChangeText={setTxAmount}
-          autoFocus
-        />
-
-        <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14 }]}>
-          {t('description')}
-        </Text>
-        <TextInput
-          style={[
-            styles.standardInput,
-            {
-              color: colors.text,
-              backgroundColor: colors.inputBackground,
-              borderColor: colors.border,
-            },
-          ]}
-          placeholder={t('descriptionPlaceholder')}
-          placeholderTextColor={colors.textLight}
-          value={txDesc}
-          onChangeText={setTxDesc}
-          maxLength={MAX_TRANSACTION_DESCRIPTION_LENGTH}
-        />
-
-        {accounts.length > 0 &&
-          (useAccountChips ? (
-            <View>
-              <Text
-                style={[
-                  styles.formLabel,
-                  styles.fieldLabel,
-                  { color: colors.textLight },
-                ]}
-              >
-                {t('destinationAccount')}
-              </Text>
-              <OptionChips
-                options={accounts.map((account) => ({
-                  id: account.id,
-                  label: account.name,
-                }))}
-                selectedId={effectiveAccountId}
-                onSelect={setSelectedAccountId}
-              />
-            </View>
-          ) : (
-            <SelectField
-              label={t('destinationAccount')}
-              title={t('account')}
-              emptyLabel={t('reminderNoAccount')}
-              accessibilityLabel={`${t('account')}: ${
-                selectedAccount?.name ?? t('reminderNoAccount')
-              }`}
-              options={accounts.map((account) => ({
-                id: account.id,
-                name: account.name,
-              }))}
-              selectedId={effectiveAccountId}
-              onSelect={setSelectedAccountId}
-              allowEmpty={false}
-            />
-          ))}
-
-        {typeCategories.length > 0 && (
-          <SelectField
-            label={t('category')}
-            title={t('category')}
-            emptyLabel={t('reminderNoCategory')}
-            accessibilityLabel={`${t('category')}: ${
-              selectedCategory?.name ?? t('reminderNoCategory')
-            }`}
-            options={typeCategories.map((category) => ({
-              id: category.id,
-              name: category.name,
-              color: category.color,
-            }))}
-            selectedId={activeCategoryId}
-            onSelect={setSelectedCategoryId}
-            allowEmpty={false}
-            showColor
-            searchable
-            searchPlaceholder={t('reminderSearch')}
-            noResultsLabel={t('reminderNoCategoriesFound')}
-          />
-        )}
 
         <Button
           title={t('saveMovement')}
@@ -354,36 +262,6 @@ const styles = StyleSheet.create({
   modalHeading: {
     fontSize: 20,
     fontWeight: '800',
-  },
-  typeSegmentedControl: {
-    marginBottom: 18,
-  },
-  formLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-    marginBottom: 8,
-  },
-  fieldLabel: {
-    marginTop: 18,
-  },
-  largeAmountInput: {
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    fontSize: 28,
-    fontWeight: '800',
-    textAlign: 'center',
-  },
-  standardInput: {
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 15,
-    fontWeight: '500',
   },
   submitTransactionButton: {
     marginTop: 20,

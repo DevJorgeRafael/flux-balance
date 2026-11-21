@@ -19,6 +19,14 @@ export const transactionTranslations = {
     deleteThisMovement: 'Eliminar este movimiento',
     movementDetail: 'Detalle del movimiento',
     movementNotFound: 'Movimiento no encontrado',
+    editMovement: 'Editar movimiento',
+    updateTransactionError: 'No se pudo actualizar el movimiento.',
+    transactionUpdateInvalid: 'Revisa los datos del movimiento.',
+    movementNotEditable: 'Este movimiento no se puede editar.',
+    movementTransferNotEditable: 'Las transferencias no se pueden editar.',
+    movementSplitNotEditable: 'Los movimientos divididos no se pueden editar.',
+    accountChangeHint:
+      'Si cambias de cuenta, el saldo anterior se ajustará automáticamente.',
   },
   en: {
     incomeRegistered: 'Income recorded',
@@ -40,5 +48,13 @@ export const transactionTranslations = {
     deleteThisMovement: 'Delete this movement',
     movementDetail: 'Movement details',
     movementNotFound: 'Movement not found',
+    editMovement: 'Edit movement',
+    updateTransactionError: 'The movement could not be updated.',
+    transactionUpdateInvalid: 'Check the movement details.',
+    movementNotEditable: 'This movement cannot be edited.',
+    movementTransferNotEditable: 'Transfers cannot be edited.',
+    movementSplitNotEditable: 'Split movements cannot be edited.',
+    accountChangeHint:
+      'If you change the account, the previous balance will be adjusted automatically.',
   },
 };

@@ -9,8 +9,14 @@ import type {
   TransactionSplit,
   CreateTransactionDTO,
   TransactionFilterDTO,
+  UpdateTransactionDTO,
 } from '@/core/models/transaction';
 import { categoryTableForType } from '@/core/services/category-resolution';
+import {
+  canEditTransaction,
+  getBalanceDelta,
+  validateTransactionUpdate,
+} from '@/core/services/transaction-edit';
 import { getDatabase } from '../database/db';
 
 type DatabaseProvider = () => Promise<SQLiteDatabase>;
@@ -283,6 +289,131 @@ export class SqliteTransactionRepository implements ITransactionRepository {
     });
 
     return created!;
+  }
+
+  async updateWithSplits(
+    id: string,
+    data: UpdateTransactionDTO
+  ): Promise<Transaction> {
+    if (!id) {
+      throw new Error('El movimiento no existe.');
+    }
+
+    const validation = validateTransactionUpdate(data);
+    if (!validation.ok) {
+      throw new Error(`Datos del movimiento inválidos: ${validation.error}.`);
+    }
+
+    const db = await this.getDb();
+    let updated: Transaction | null = null;
+
+    await db.withExclusiveTransactionAsync(async (txn) => {
+      const current = await this.getByIdWithDb(txn, id);
+      if (!current) {
+        throw new Error(`El movimiento ${id} no existe.`);
+      }
+      if (!canEditTransaction(current)) {
+        throw new Error('Este movimiento no se puede editar.');
+      }
+
+      const preservedNotes =
+        data.splits.length === 1 ? current.splits[0]?.notes ?? undefined : undefined;
+      const newSplits = data.splits.map((split) => ({
+        ...split,
+        categoryId: split.categoryId?.trim() ?? '',
+        notes: split.notes ?? preservedNotes,
+      }));
+
+      if (data.type === 'INCOME' || data.type === 'EXPENSE') {
+        const table = categoryTableForType(data.type);
+
+        for (const split of newSplits) {
+          if (!split.categoryId) continue;
+
+          const category = await txn.getFirstAsync<{ id: string }>(
+            `SELECT id FROM ${table} WHERE id = ?`,
+            [split.categoryId]
+          );
+
+          if (!category) {
+            throw new Error(
+              `La categoría ${split.categoryId} no existe para movimientos ${data.type}.`
+            );
+          }
+        }
+      }
+
+      for (const split of newSplits) {
+        const account = await txn.getFirstAsync<{ id: string }>(
+          'SELECT id FROM accounts WHERE id = ?',
+          [split.accountId]
+        );
+
+        if (!account) {
+          throw new Error(`La cuenta ${split.accountId} no existe.`);
+        }
+      }
+
+      const now = new Date().toISOString();
+
+      for (const split of current.splits) {
+        await txn.runAsync(
+          'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
+          [getBalanceDelta(current.type, -split.amount), now, split.accountId]
+        );
+      }
+
+      await txn.runAsync(
+        `UPDATE transactions
+            SET type = ?, total_amount = ?, description = ?, date = ?
+          WHERE id = ?`,
+        [
+          data.type,
+          data.totalAmount,
+          data.description?.trim() || null,
+          data.date,
+          id,
+        ]
+      );
+
+      await txn.runAsync(
+        'DELETE FROM transaction_splits WHERE transaction_id = ?',
+        [id]
+      );
+
+      for (const split of newSplits) {
+        const splitId = `sp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        await txn.runAsync(
+          `INSERT INTO transaction_splits (id, transaction_id, account_id, category_id, amount, notes)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            splitId,
+            id,
+            split.accountId,
+            split.categoryId,
+            split.amount,
+            split.notes ?? null,
+          ]
+        );
+
+        await txn.runAsync(
+          'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
+          [getBalanceDelta(data.type, split.amount), now, split.accountId]
+        );
+      }
+
+      const result = await this.getByIdWithDb(txn, id);
+      if (!result) {
+        throw new Error(`El movimiento ${id} no se pudo actualizar.`);
+      }
+      updated = result;
+    });
+
+    if (!updated) {
+      throw new Error(`El movimiento ${id} no se pudo actualizar.`);
+    }
+
+    return updated;
   }
 
   async delete(id: string): Promise<void> {

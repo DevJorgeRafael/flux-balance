@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,7 +8,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, router } from 'expo-router';
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import { useColors, useInsets } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
@@ -55,35 +55,11 @@ export default function AccountDetailScreen() {
     }
   }, [id]);
 
-  useEffect(() => {
-    let isCancelled = false;
-    const fetchAccountData = async () => {
-      if (!id) return;
-      try {
-        const acc = await accountRepo.getById(id);
-        let txs: Transaction[] = [];
-        if (acc) {
-          txs = await transactionRepo.getAll({ accountId: id });
-        }
-        if (!isCancelled) {
-          setAccount(acc);
-          setTransactions(txs);
-        }
-      } catch (e) {
-        console.error('Error cargando detalle de cuenta:', e);
-      } finally {
-        if (!isCancelled) {
-          setIsLoading(false);
-          setIsRefreshing(false);
-        }
-      }
-    };
-
-    void fetchAccountData();
-    return () => {
-      isCancelled = true;
-    };
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      void loadAccountData();
+    }, [loadAccountData])
+  );
 
   const handleRefresh = () => {
     setIsRefreshing(true);
