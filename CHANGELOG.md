@@ -12,6 +12,7 @@ Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
 - El inicio muestra solo los movimientos del mes actual.
 - Si no hay movimientos del mes, muestra los últimos 5.
+- La moneda del splash se ve redondeada y sin el recorte inferior.
 
 ## [2.2.0] - 2026-11-20
 

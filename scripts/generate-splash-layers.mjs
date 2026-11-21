@@ -12,6 +12,7 @@ const metadataPath = join(assetsDir, 'logo-splash-layers.json');
 
 const COIN_CENTER = { x: 479.5, y: 209.5 };
 const COIN_MASK_RADIUS = 130.5;
+const COIN_EDGE_RADIUS = 125;
 const BODY_MARGIN = 2;
 const COIN_CROP = { left: 352, top: 82, width: 256, height: 256 };
 const SLOT = { x: 455.5, y: 409 };
@@ -36,8 +37,9 @@ for (let y = 0; y < height; y += 1) {
   for (let x = 0; x < width; x += 1) {
     const pixel = y * width + x;
     const offset = pixel * 4;
-    const insideCoin =
-      Math.hypot(x - COIN_CENTER.x, y - COIN_CENTER.y) <= COIN_MASK_RADIUS;
+    const distance = Math.hypot(x - COIN_CENTER.x, y - COIN_CENTER.y);
+    const insideCoin = distance <= COIN_MASK_RADIUS;
+    const coinEdge = Math.min(1, Math.max(0, COIN_EDGE_RADIUS - distance));
 
     body[offset] = 255;
     body[offset + 1] = 255;
@@ -47,7 +49,7 @@ for (let y = 0; y < height; y += 1) {
     coin[offset] = 255;
     coin[offset + 1] = 255;
     coin[offset + 2] = 255;
-    coin[offset + 3] = insideCoin ? data[offset + 3] : 0;
+    coin[offset + 3] = Math.round(data[offset + 3] * coinEdge);
   }
 }
 
