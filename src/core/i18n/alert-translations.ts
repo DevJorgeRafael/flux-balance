@@ -7,7 +7,7 @@ export const alertTranslations = {
     deleteTransactionMessage: 'Esta acción revertirá automáticamente el saldo de la cuenta asociada y no se puede deshacer.',
     deleteTransactionError: 'No se pudo eliminar el movimiento.',
     demoDataLoadedTitle: 'Datos cargados',
-    demoDataLoadedMessage: 'Se agregaron {{accounts}} cuentas y {{transactions}} movimientos con la fecha actual.',
+    demoDataLoadedMessage: 'Se agregaron {{accounts}} cuentas y {{transactions}} movimientos de las últimas 3 semanas.',
     demoDataLoadError: 'No se pudieron cargar los datos demo.',
   },
   en: {
@@ -18,7 +18,7 @@ export const alertTranslations = {
     deleteTransactionMessage: 'This action will automatically revert the associated account balance and cannot be undone.',
     deleteTransactionError: 'The movement could not be deleted.',
     demoDataLoadedTitle: 'Data loaded',
-    demoDataLoadedMessage: 'Added {{accounts}} accounts and {{transactions}} movements with today\'s date.',
+    demoDataLoadedMessage: 'Added {{accounts}} accounts and {{transactions}} movements from the last 3 weeks.',
     demoDataLoadError: 'Demo data could not be loaded.',
   },
 };

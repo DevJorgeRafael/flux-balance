@@ -16,6 +16,11 @@ import { spacing, useColors, useThemeMode } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
+import {
+  RECENT_TRANSACTIONS_FALLBACK_LIMIT,
+  selectRecentTransactions,
+} from '@/core/services/recent-transactions';
+import { parseLedgerDate } from '@/core/utils/ledger-date';
 
 interface RecentTransactionsListProps {
   transactions: Transaction[];
@@ -36,6 +41,8 @@ export function RecentTransactionsList({
   const { isDark } = useThemeMode();
   const { format, locale } = useCurrency();
   const { t } = useTranslation();
+  const { transactions: visibleTransactions, isFallback } =
+    selectRecentTransactions(transactions);
 
   const handleSeeMore = () => {
     const targetId = selectedFilterAccountId || defaultAccountId;
@@ -58,13 +65,20 @@ export function RecentTransactionsList({
     <>
       {/* Sección Últimos Movimientos con botón 'Ver más →' */}
       <View style={styles.sectionHeaderRow}>
-        <View>
+        <View style={styles.sectionTitleBlock}>
           <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('latestMovements')}</Text>
           {selectedAccountName && (
             <Text style={[styles.sectionSubfilter, { color: colors.primaryText }]}>
               {t('filteredBy', { name: selectedAccountName })}
             </Text>
           )}
+          {isFallback ? (
+            <Text style={[styles.sectionFallback, { color: colors.textLight }]}>
+              {t('latestMovementsFallback', {
+                count: RECENT_TRANSACTIONS_FALLBACK_LIMIT,
+              })}
+            </Text>
+          ) : null}
         </View>
 
         {/* Botón Ver más */}
@@ -84,7 +98,7 @@ export function RecentTransactionsList({
         </Pressable>
       </View>
 
-      {transactions.length === 0 ? (
+      {visibleTransactions.length === 0 ? (
         <Card style={styles.emptyContainer}>
           <Text style={[styles.emptySubtext, { color: colors.textLight }]}>
             {selectedFilterAccountId ? t('noAccountMovements') : t('noMovementsPeriod')}
@@ -92,9 +106,10 @@ export function RecentTransactionsList({
         </Card>
       ) : (
         <Card>
-          {transactions.map((tx, idx) => {
+          {visibleTransactions.map((tx, idx) => {
             const isIncome = tx.type === 'INCOME';
-            const dateFormatted = new Date(tx.date).toLocaleDateString(locale, {
+            const transactionDate = parseLedgerDate(tx.date) ?? new Date(tx.date);
+            const dateFormatted = transactionDate.toLocaleDateString(locale, {
               day: 'numeric',
               month: 'short',
             });
@@ -174,6 +189,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: spacing.lg,
   },
+  sectionTitleBlock: {
+    flex: 1,
+    marginRight: spacing.sm,
+  },
   sectionHeading: {
     fontSize: 18,
     fontWeight: '800',
@@ -181,6 +200,11 @@ const styles = StyleSheet.create({
   },
   sectionSubfilter: {
     fontSize: 12,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  sectionFallback: {
+    fontSize: 11,
     fontWeight: '600',
     marginTop: 2,
   },
