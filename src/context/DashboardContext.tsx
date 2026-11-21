@@ -47,6 +47,7 @@ interface DashboardContextValue {
   selectedAccountName?: string;
   handleSelectAccountFilter: (id: string | null) => void;
   handleRefresh: () => void;
+  refreshData: () => void;
   handleSeedDemoData: () => Promise<void>;
   handleResetAllData: () => Promise<void>;
   handleDataImported: () => Promise<void>;
@@ -157,6 +158,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       selectedAccountName,
       handleSelectAccountFilter,
       handleRefresh: handleRefreshAll,
+      refreshData: handleDataChanged,
       handleSeedDemoData,
       handleResetAllData,
       handleDataImported,
@@ -177,6 +179,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       selectedAccountName,
       handleSelectAccountFilter,
       handleRefreshAll,
+      handleDataChanged,
       handleSeedDemoData,
       handleResetAllData,
       handleDataImported,

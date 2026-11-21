@@ -2,6 +2,18 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.2.3] - 2026-11-21
+
+### Añadido
+
+- Los movimientos simples se editan desde su detalle.
+- La edición cambia tipo, importe, descripción, cuenta y categoría.
+- Los saldos se ajustan al cambiar de cuenta.
+
+### Mejorado
+
+- El detalle y el saldo se actualizan al volver de editar.
+
 ## [2.2.2] - 2026-11-20
 
 ### Corregido

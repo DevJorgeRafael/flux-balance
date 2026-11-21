@@ -10,6 +10,7 @@ import Receipt from 'lucide-react-native/icons/receipt';
 import Plus from 'lucide-react-native/icons/plus';
 import Minus from 'lucide-react-native/icons/minus';
 import Trash from 'lucide-react-native/icons/trash';
+import Pencil from 'lucide-react-native/icons/pencil';
 import { Transaction } from '@/core/models/transaction';
 import { useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
@@ -19,13 +20,17 @@ import { useTranslation } from '@/core/i18n/useTranslation';
 interface TransactionDetailCardProps {
   transaction: Transaction;
   isDeleting: boolean;
+  canEdit?: boolean;
   onDelete: () => void;
+  onEdit?: () => void;
 }
 
 export function TransactionDetailCard({
   transaction,
   isDeleting,
+  canEdit = false,
   onDelete,
+  onEdit,
 }: TransactionDetailCardProps) {
   const colors = useColors();
   const { format, locale } = useCurrency();
@@ -254,11 +259,39 @@ export function TransactionDetailCard({
         </View>
       )}
 
+      {canEdit && onEdit ? (
+        <Pressable
+          style={({ pressed }) => [
+            styles.editActionButton,
+            { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+            pressed && styles.pressed,
+          ]}
+          onPress={onEdit}
+          disabled={isDeleting}
+          accessibilityRole="button"
+          accessibilityLabel={t('editMovement')}
+        >
+          <Pencil size={18} color={colors.primaryText} strokeWidth={2.5} />
+          <Text
+            style={[
+              styles.editActionButtonText,
+              { color: colors.primaryText },
+            ]}
+          >
+            {t('editMovement')}
+          </Text>
+        </Pressable>
+      ) : null}
+
       {/* Botón Eliminar Destacado */}
       <Pressable
         style={({ pressed }) => [
           styles.deleteActionButton,
-          { backgroundColor: colors.errorSoft, borderColor: colors.error },
+          {
+            backgroundColor: colors.errorSoft,
+            borderColor: colors.error,
+            marginTop: canEdit ? 12 : 32,
+          },
           pressed && styles.pressed,
         ]}
         onPress={onDelete}
@@ -388,6 +421,20 @@ const styles = StyleSheet.create({
   },
   splitAmount: {
     fontSize: 16,
+    fontWeight: '800',
+  },
+  editActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    height: 52,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    marginTop: 32,
+  },
+  editActionButtonText: {
+    fontSize: 15,
     fontWeight: '800',
   },
   deleteActionButton: {
