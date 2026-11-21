@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { useColors } from '@/components/ui/theme';
+import { radius, spacing, useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
@@ -100,18 +100,18 @@ export function StatsTypeSelector({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    gap: 4,
-    padding: 4,
-    marginBottom: 20,
+    gap: spacing.xs,
+    padding: spacing.xs,
+    marginBottom: spacing.xl,
   },
   option: {
     flex: 1,
     minHeight: 58,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
-    paddingHorizontal: 12,
-    borderRadius: 18,
+    gap: spacing.xxs,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.xxl,
   },
   optionLabel: {
     fontSize: 12,
