@@ -15,12 +15,16 @@ interface DemoAccountSeed {
 }
 
 interface DemoMovementSeed {
-  id: string;
   accountId: string;
   type: Extract<TransactionType, 'INCOME' | 'EXPENSE'>;
   categoryId: string;
   description: string;
   amount: number;
+}
+
+interface DatedDemoMovement extends DemoMovementSeed {
+  id: string;
+  date: string;
 }
 
 export interface DemoAccount {
@@ -58,108 +62,130 @@ const DEMO_ACCOUNTS: DemoAccountSeed[] = [
     id: DEMO_ACCOUNT_IDS.checking,
     name: 'Cuenta Sueldo (Galicia)',
     type: 'CHECKING',
-    openingBalance: 600000,
+    openingBalance: 1200,
     annualRate: null,
   },
   {
     id: DEMO_ACCOUNT_IDS.savings,
     name: 'Fondo MercadoPago',
     type: 'FLEXIBLE_SAVINGS',
-    openingBalance: 300000,
+    openingBalance: 3200,
     annualRate: 0.375,
   },
 ];
 
-const DEMO_MOVEMENTS: DemoMovementSeed[] = [
-  {
-    id: 'demo-tx-1',
-    accountId: DEMO_ACCOUNT_IDS.checking,
+const DEMO_DAY_COUNTS = [0, 2, 1, 3, 0, 2, 1, 0, 3, 2, 0, 1, 3, 2, 0, 1, 2, 0, 3, 1, 2];
+
+function income(
+  accountId: string,
+  categoryId: string,
+  description: string,
+  amount: number
+): DemoMovementSeed {
+  return {
+    accountId,
     type: 'INCOME',
-    categoryId: 'cat_inc_salary',
-    description: 'Acreditación de haberes',
-    amount: 1250000,
-  },
-  {
-    id: 'demo-tx-2',
-    accountId: DEMO_ACCOUNT_IDS.checking,
+    categoryId,
+    description,
+    amount,
+  };
+}
+
+function expense(
+  accountId: string,
+  categoryId: string,
+  description: string,
+  amount: number
+): DemoMovementSeed {
+  return {
+    accountId,
     type: 'EXPENSE',
-    categoryId: 'cat_exp_housing',
-    description: 'Alquiler',
-    amount: 380000,
-  },
-  {
-    id: 'demo-tx-3',
-    accountId: DEMO_ACCOUNT_IDS.checking,
-    type: 'EXPENSE',
-    categoryId: 'cat_exp_food',
-    description: 'Supermercado',
-    amount: 95500,
-  },
-  {
-    id: 'demo-tx-4',
-    accountId: DEMO_ACCOUNT_IDS.checking,
-    type: 'EXPENSE',
-    categoryId: 'cat_exp_transport',
-    description: 'Transporte',
-    amount: 42000,
-  },
-  {
-    id: 'demo-tx-5',
-    accountId: DEMO_ACCOUNT_IDS.checking,
-    type: 'EXPENSE',
-    categoryId: 'cat_exp_services',
-    description: 'Servicios del hogar',
-    amount: 58000,
-  },
-  {
-    id: 'demo-tx-6',
-    accountId: DEMO_ACCOUNT_IDS.savings,
-    type: 'INCOME',
-    categoryId: 'cat_inc_freelance',
-    description: 'Proyecto freelance',
-    amount: 280000,
-  },
-  {
-    id: 'demo-tx-7',
-    accountId: DEMO_ACCOUNT_IDS.savings,
-    type: 'INCOME',
-    categoryId: 'cat_inc_invest',
-    description: 'Rendimientos del fondo',
-    amount: 35000,
-  },
-  {
-    id: 'demo-tx-8',
-    accountId: DEMO_ACCOUNT_IDS.savings,
-    type: 'EXPENSE',
-    categoryId: 'cat_exp_health',
-    description: 'Farmacia',
-    amount: 28000,
-  },
-  {
-    id: 'demo-tx-9',
-    accountId: DEMO_ACCOUNT_IDS.savings,
-    type: 'EXPENSE',
-    categoryId: 'cat_exp_entertainment',
-    description: 'Cine y streaming',
-    amount: 45000,
-  },
-  {
-    id: 'demo-tx-10',
-    accountId: DEMO_ACCOUNT_IDS.savings,
-    type: 'EXPENSE',
-    categoryId: 'cat_exp_other',
-    description: 'Gastos varios',
-    amount: 18000,
-  },
+    categoryId,
+    description,
+    amount,
+  };
+}
+
+const DEMO_MOVEMENT_SEEDS: DemoMovementSeed[] = [
+  income(DEMO_ACCOUNT_IDS.checking, 'cat_inc_salary', 'Salario mensual', 482),
+  expense(DEMO_ACCOUNT_IDS.checking, 'cat_exp_housing', 'Alquiler', 180),
+  income(DEMO_ACCOUNT_IDS.checking, 'cat_inc_freelance', 'Diseño de landing page', 120),
+  expense(DEMO_ACCOUNT_IDS.checking, 'cat_exp_food', 'Supermercado', 64.3),
+  income(DEMO_ACCOUNT_IDS.savings, 'cat_inc_invest', 'Rendimiento del fondo', 24.5),
+  expense(DEMO_ACCOUNT_IDS.checking, 'cat_exp_transport', 'Transporte público', 12),
+  income(DEMO_ACCOUNT_IDS.checking, 'cat_inc_other', 'Venta de artículos usados', 45),
+  expense(DEMO_ACCOUNT_IDS.checking, 'cat_exp_services', 'Luz y agua', 38.5),
+  income(DEMO_ACCOUNT_IDS.savings, 'cat_inc_freelance', 'Mantenimiento web', 160),
+  expense(DEMO_ACCOUNT_IDS.checking, 'cat_exp_food', 'Almuerzo semanal', 23.75),
+  income(DEMO_ACCOUNT_IDS.savings, 'cat_inc_invest', 'Intereses de cuenta', 31.2),
+  expense(DEMO_ACCOUNT_IDS.savings, 'cat_exp_health', 'Farmacia', 15.2),
+  income(DEMO_ACCOUNT_IDS.checking, 'cat_inc_other', 'Reembolso de seguro', 28),
+  expense(DEMO_ACCOUNT_IDS.checking, 'cat_exp_transport', 'Taxi', 9.5),
+  income(DEMO_ACCOUNT_IDS.checking, 'cat_inc_freelance', 'Asesoría contable', 95),
+  expense(DEMO_ACCOUNT_IDS.checking, 'cat_exp_food', 'Supermercado', 42.9),
+  income(DEMO_ACCOUNT_IDS.savings, 'cat_inc_invest', 'Rendimiento del fondo', 18.75),
+  expense(DEMO_ACCOUNT_IDS.savings, 'cat_exp_entertainment', 'Streaming y cine', 18),
+  income(DEMO_ACCOUNT_IDS.savings, 'cat_inc_other', 'Regalo familiar', 36),
+  expense(DEMO_ACCOUNT_IDS.checking, 'cat_exp_services', 'Internet', 32.4),
+  income(DEMO_ACCOUNT_IDS.checking, 'cat_inc_freelance', 'Proyecto de diseño', 135),
+  expense(DEMO_ACCOUNT_IDS.checking, 'cat_exp_food', 'Mercado', 27.1),
+  income(DEMO_ACCOUNT_IDS.savings, 'cat_inc_invest', 'Intereses de cuenta', 27.4),
+  expense(DEMO_ACCOUNT_IDS.checking, 'cat_exp_other', 'Gastos varios', 14),
+  income(DEMO_ACCOUNT_IDS.checking, 'cat_inc_other', 'Venta de libros', 22),
+  expense(DEMO_ACCOUNT_IDS.savings, 'cat_exp_entertainment', 'Café con amigos', 11.5),
+  income(DEMO_ACCOUNT_IDS.savings, 'cat_inc_freelance', 'Clases particulares', 85),
+  expense(DEMO_ACCOUNT_IDS.savings, 'cat_exp_health', 'Farmacia', 8.75),
+  income(DEMO_ACCOUNT_IDS.savings, 'cat_inc_invest', 'Rendimiento del fondo', 19.6),
 ];
+
+function roundCents(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+function demoDate(loadedAt: Date, daysAgo: number): Date {
+  const date = new Date(loadedAt);
+  date.setDate(date.getDate() - daysAgo);
+  return date;
+}
+
+function buildDatedMovements(loadedAt: Date): DatedDemoMovement[] {
+  const movements: DatedDemoMovement[] = [];
+  let seedIndex = 0;
+
+  for (const [dayIndex, count] of DEMO_DAY_COUNTS.entries()) {
+    const daysAgo = DEMO_DAY_COUNTS.length - 1 - dayIndex;
+
+    for (let index = 0; index < count; index++) {
+      const seed = DEMO_MOVEMENT_SEEDS[seedIndex];
+      if (!seed) throw new Error('Not enough demo movements');
+
+      movements.push({
+        ...seed,
+        id: `demo-tx-${seedIndex + 1}`,
+        date: demoDate(loadedAt, daysAgo).toISOString(),
+      });
+      seedIndex += 1;
+    }
+  }
+
+  if (seedIndex !== DEMO_MOVEMENT_SEEDS.length) {
+    throw new Error('Demo day counts do not match the available movements');
+  }
+
+  return movements;
+}
 
 export function buildDemoDataSet(loadedAt: Date = new Date()): DemoDataSet {
   const timestamp = loadedAt.toISOString();
+  const windowStart = demoDate(loadedAt, DEMO_DAY_COUNTS.length - 1);
+  windowStart.setHours(0, 0, 0, 0);
+  const windowStartIso = windowStart.toISOString();
+  const movements = buildDatedMovements(loadedAt);
   const balances = new Map(
     DEMO_ACCOUNTS.map((account) => [account.id, account.openingBalance])
   );
 
-  for (const movement of DEMO_MOVEMENTS) {
+  for (const movement of movements) {
     const currentBalance = balances.get(movement.accountId);
 
     if (currentBalance === undefined) {
@@ -177,18 +203,18 @@ export function buildDemoDataSet(loadedAt: Date = new Date()): DemoDataSet {
       id: account.id,
       name: account.name,
       type: account.type,
-      balance: balances.get(account.id) ?? account.openingBalance,
+      balance: roundCents(balances.get(account.id) ?? account.openingBalance),
       annualRate: account.annualRate,
-      createdAt: timestamp,
+      createdAt: windowStartIso,
       updatedAt: timestamp,
     })),
-    transactions: DEMO_MOVEMENTS.map((movement, index) => ({
+    transactions: movements.map((movement, index) => ({
       id: movement.id,
       type: movement.type,
       totalAmount: movement.amount,
       description: movement.description,
-      date: timestamp,
-      createdAt: timestamp,
+      date: movement.date,
+      createdAt: movement.date,
       split: {
         id: `demo-split-${index + 1}`,
         accountId: movement.accountId,

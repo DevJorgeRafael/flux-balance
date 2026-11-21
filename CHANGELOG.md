@@ -4,6 +4,10 @@ Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
 ## [2.2.1] - 2026-11-20
 
+### Mejorado
+
+- Los datos demo reparten movimientos realistas en las últimas 3 semanas.
+
 ### Corregido
 
 - El inicio muestra solo los movimientos del mes actual.
