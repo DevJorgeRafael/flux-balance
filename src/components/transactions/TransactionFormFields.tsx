@@ -19,7 +19,7 @@ import {
 interface TransactionFormFieldsProps {
   values: TransactionFormValues;
   onChange: (
-    field: 'amount' | 'description' | 'accountId' | 'categoryId',
+    field: 'amount' | 'description' | 'accountId' | 'destinationAccountId' | 'categoryId',
     value: string
   ) => void;
   onTypeChange: (type: TransactionType) => void;
@@ -63,9 +63,15 @@ export function TransactionFormFields({
           },
           {
             value: 'EXPENSE',
-            label: t('expense'),
+            label: t('addExpense'),
             color: colors.errorSoft,
             textColor: colors.errorText,
+          },
+          {
+            value: 'TRANSFER',
+            label: t('transfer'),
+            color: colors.primarySoft,
+            textColor: colors.primaryText,
           },
         ]}
         onChange={onTypeChange}
@@ -121,7 +127,7 @@ export function TransactionFormFields({
                 { color: colors.textLight },
               ]}
             >
-              {t('destinationAccount')}
+              {values.type === 'TRANSFER' ? t('sourceAccount') : t('destinationAccount')}
             </Text>
             <OptionChips
               options={accounts.map((account) => ({
@@ -134,7 +140,7 @@ export function TransactionFormFields({
           </View>
         ) : (
           <SelectField
-            label={t('destinationAccount')}
+            label={values.type === 'TRANSFER' ? t('sourceAccount') : t('destinationAccount')}
             title={t('account')}
             emptyLabel={t('reminderNoAccount')}
             accessibilityLabel={`${t('account')}: ${
@@ -147,7 +153,39 @@ export function TransactionFormFields({
           />
         ))}
 
-      {selection.typeCategories.length > 0 && (
+      {values.type === 'TRANSFER' && accounts.length > 0 &&
+        (useAccountChips ? (
+          <View style={styles.fieldLabel}>
+            <Text style={[styles.formLabel, { color: colors.textLight }]}>
+              {t('destinationAccount')}
+            </Text>
+            <OptionChips
+              options={accounts
+                .filter((account) => account.id !== selection.effectiveAccountId)
+                .map((account) => ({ id: account.id, label: account.name }))}
+              selectedId={values.destinationAccountId}
+              onSelect={(id) => onChange('destinationAccountId', id)}
+            />
+          </View>
+        ) : (
+          <SelectField
+            label={t('destinationAccount')}
+            title={t('account')}
+            emptyLabel={t('reminderNoAccount')}
+            accessibilityLabel={`${t('destinationAccount')}: ${
+              accounts.find((account) => account.id === values.destinationAccountId)?.name ??
+              t('reminderNoAccount')
+            }`}
+            options={accounts.filter(
+              (account) => account.id !== selection.effectiveAccountId
+            )}
+            selectedId={values.destinationAccountId}
+            onSelect={(id) => onChange('destinationAccountId', id)}
+            allowEmpty={false}
+          />
+        ))}
+
+      {values.type === 'TRANSFER' ? null : selection.typeCategories.length > 0 && (
         <SelectField
           label={t('category')}
           title={t('category')}

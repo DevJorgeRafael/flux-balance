@@ -15,6 +15,7 @@ import { MAX_AMOUNT } from '@/core/constants/inputLimits';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { getAmountInputErrorKey } from '@/core/i18n/validationMessages';
+import { buildTransferDraft, validateTransferInput } from '@/core/services/transfer';
 import type { Account } from '@/core/models/account';
 import type { Category } from '@/core/models/category';
 import type {
@@ -58,6 +59,7 @@ export function CreateTransactionModal({
     amount: '',
     description: '',
     accountId: accounts[0]?.id ?? '',
+    destinationAccountId: accounts[1]?.id ?? '',
     categoryId: '',
   }));
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,7 +68,7 @@ export function CreateTransactionModal({
   );
 
   const updateField = (
-    field: 'amount' | 'description' | 'accountId' | 'categoryId',
+    field: 'amount' | 'description' | 'accountId' | 'destinationAccountId' | 'categoryId',
     value: string
   ) => {
     setFormValues((current) => ({ ...current, [field]: value }));
@@ -78,12 +80,21 @@ export function CreateTransactionModal({
       amount: '',
       description: '',
       accountId: accounts[0]?.id ?? '',
+      destinationAccountId: accounts[1]?.id ?? '',
       categoryId: '',
     }));
   };
 
   const handleTypeChange = (type: TransactionType) => {
-    setFormValues((current) => ({ ...current, type, categoryId: '' }));
+    setFormValues((current) => ({
+      ...current,
+      type,
+      categoryId: '',
+      destinationAccountId:
+        type === 'TRANSFER' && current.destinationAccountId === current.accountId
+          ? (accounts.find((account) => account.id !== current.accountId)?.id ?? '')
+          : current.destinationAccountId,
+    }));
   };
 
   const applyPrefill = (prefill: TransactionPrefill, type: TransactionType) => {
@@ -161,6 +172,54 @@ export function CreateTransactionModal({
       return;
     }
 
+    if (formValues.type === 'TRANSFER') {
+      const input = {
+        sourceAccountId: accountId,
+        destinationAccountId: formValues.destinationAccountId,
+        amount: amountVal,
+        date: new Date().toISOString(),
+        description: formValues.description,
+      };
+      const validation = validateTransferInput(input);
+      if (validation) {
+        void appAlert({
+          type: 'warning',
+          title: t('error'),
+          message: t(
+            validation === 'invalidAccounts'
+              ? 'transferInvalidAccounts'
+              : 'transferInvalidInput'
+          ),
+          buttons: [{ text: t('accept') }],
+        });
+        return;
+      }
+
+      const transfer = buildTransferDraft(input);
+      if (!transfer.ok) return;
+
+      submittingRef.current = true;
+      try {
+        setIsSubmitting(true);
+        await transactionRepo.createWithSplits(transfer.draft);
+        resetForm();
+        onClose();
+        onTransactionCreated();
+      } catch (err: unknown) {
+        console.error('Error creating transfer:', err);
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('createTransactionError'),
+          buttons: [{ text: t('accept') }],
+        });
+      } finally {
+        submittingRef.current = false;
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
     if (formValues.type !== 'INCOME' && formValues.type !== 'EXPENSE') {
       return;
     }
@@ -210,7 +269,9 @@ export function CreateTransactionModal({
         <Text style={[styles.modalHeading, { color: colors.text }]}>
           {formValues.type === 'INCOME'
             ? t('registerIncome')
-            : t('registerExpense')}
+            : formValues.type === 'TRANSFER'
+              ? t('registerTransfer')
+              : t('registerExpense')}
         </Text>
         <Pressable
           onPress={onClose}

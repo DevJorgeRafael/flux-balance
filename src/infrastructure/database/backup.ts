@@ -180,7 +180,7 @@ export async function buildBackupFromDatabase(
         'SELECT * FROM transactions ORDER BY date DESC, created_at DESC, id ASC'
       ),
       db.getAllAsync<SplitRow>(
-        'SELECT * FROM transaction_splits ORDER BY transaction_id ASC, id ASC'
+        'SELECT * FROM transaction_splits ORDER BY transaction_id ASC, rowid ASC'
       ),
       db.getAllAsync<ReminderRow>(
         'SELECT * FROM reminders ORDER BY created_at ASC, id ASC'

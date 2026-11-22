@@ -13,6 +13,10 @@ import type {
 } from '@/core/models/transaction';
 import { categoryTableForType } from '@/core/services/category-resolution';
 import {
+  getSplitBalanceDelta,
+  isTransferDraftValid,
+} from '@/core/services/transfer';
+import {
   canEditTransaction,
   getBalanceDelta,
   validateTransactionUpdate,
@@ -178,6 +182,7 @@ export class SqliteTransactionRepository implements ITransactionRepository {
       LEFT JOIN income_categories ic ON t.type = 'INCOME' AND ic.id = s.category_id
       LEFT JOIN expense_categories ec ON t.type = 'EXPENSE' AND ec.id = s.category_id
       WHERE s.transaction_id = ?
+      ORDER BY s.rowid ASC
     `, [id]);
 
     const splits: TransactionSplit[] = splitRows.map((s) => ({
@@ -215,6 +220,10 @@ export class SqliteTransactionRepository implements ITransactionRepository {
     let created: Transaction | null = null;
 
     await db.withExclusiveTransactionAsync(async (txn) => {
+      if (data.type === 'TRANSFER' && !isTransferDraftValid(data)) {
+        throw new Error('La transferencia requiere dos cuentas distintas y el mismo importe.');
+      }
+
       if (data.type === 'INCOME' || data.type === 'EXPENSE') {
         const table = categoryTableForType(data.type);
 
@@ -261,7 +270,7 @@ export class SqliteTransactionRepository implements ITransactionRepository {
       }
 
       // 2. Insertar cada división (split) y actualizar saldo de la cuenta correspondiente
-      for (const split of splits) {
+      for (const [index, split] of splits.entries()) {
         const splitId = `sp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         if (split.notes) {
           await txn.runAsync(
@@ -277,8 +286,8 @@ export class SqliteTransactionRepository implements ITransactionRepository {
           );
         }
 
-        // Actualizar saldo: los ingresos suman, los gastos restan
-        const balanceDelta = data.type === 'INCOME' ? split.amount : -split.amount;
+        // Los ingresos suman, los gastos restan y la transferencia mueve entre cuentas
+        const balanceDelta = getSplitBalanceDelta(data.type, index, split.amount);
         await txn.runAsync(
           'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
           [balanceDelta, now, split.accountId]
@@ -424,8 +433,8 @@ export class SqliteTransactionRepository implements ITransactionRepository {
 
       const now = new Date().toISOString();
       // Revertir cambios de saldo
-      for (const split of tx.splits) {
-        const revertDelta = tx.type === 'INCOME' ? -split.amount : split.amount;
+      for (const [index, split] of tx.splits.entries()) {
+        const revertDelta = -getSplitBalanceDelta(tx.type, index, split.amount);
         await txn.runAsync(
           'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
           [revertDelta, now, split.accountId]
