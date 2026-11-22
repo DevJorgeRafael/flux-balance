@@ -2,8 +2,11 @@ import React, { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
+import Pencil from 'lucide-react-native/icons/pencil';
+import Trash from 'lucide-react-native/icons/trash';
 import { appAlert } from '@/components/ui/alert/appAlert';
 import { Button } from '@/components/ui/atoms/Button';
+import { IconButton } from '@/components/ui/atoms/IconButton';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 import { Card } from '@/components/ui/Card';
 import { SelectField } from '@/components/ui/SelectField';
@@ -180,16 +183,14 @@ export default function BudgetsScreen() {
                       {format(budget.limitAmount, { showCurrency: true })}
                     </Text>
                   </View>
-                  <Button
-                    title={t('editBudget')}
-                    variant="ghost"
-                    size="sm"
+                  <IconButton
+                    icon={<Pencil size={18} color={colors.text} strokeWidth={2.2} />}
+                    accessibilityLabel={t('editBudget')}
                     onPress={() => openModal(budget)}
                   />
-                  <Button
-                    title={t('deleteBudget')}
-                    variant="ghost"
-                    size="sm"
+                  <IconButton
+                    icon={<Trash size={18} color={colors.errorText} strokeWidth={2.2} />}
+                    accessibilityLabel={t('deleteBudget')}
                     onPress={() => handleDelete(budget)}
                   />
                 </View>

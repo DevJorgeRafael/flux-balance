@@ -8,6 +8,7 @@ Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
 - Presupuestos mensuales por categoría, con alta, edición y borrado en Ajustes.
 - Tarjeta de anticipaciones en el inicio: avisa de presupuestos al límite, plazos fijos por vencer, saldo bajo y gastos atípicos.
+- Notificación del sistema una vez al día cuando hay anticipaciones; al tocarla se abre la pantalla de presupuestos.
 
 ## [2.3.0] - 2026-11-21
 

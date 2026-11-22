@@ -13,6 +13,8 @@ export const anticipationTranslations = {
     anticipationDepositMaturing: '{{name}} vence en {{days}} días',
     anticipationLowBalance: 'Saldo bajo en {{name}}',
     anticipationSpendingSpike: 'Gasto de hoy {{amount}} (promedio {{limit}})',
+    anticipationNotificationTitle: 'Tienes anticipaciones',
+    anticipationNotificationBody: 'Revisa tus presupuestos y avisos en la app.',
   },
   en: {
     anticipationTitle: 'Anticipations',
@@ -28,5 +30,7 @@ export const anticipationTranslations = {
     anticipationDepositMaturing: '{{name}} matures in {{days}} days',
     anticipationLowBalance: 'Low balance in {{name}}',
     anticipationSpendingSpike: 'Today spent {{amount}} (average {{limit}})',
+    anticipationNotificationTitle: 'You have anticipations',
+    anticipationNotificationBody: 'Review your budgets and alerts in the app.',
   },
 };
