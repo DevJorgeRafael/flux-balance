@@ -5,6 +5,7 @@
 // (migración 1); app_settings se crea en 002_app_settings.ts (migración 2);
 // reminders se crea en 003_reminders.ts (migración 3).
 // budgets se crea en 004_budgets.ts (migración 4).
+// category_rules se crea en 005_category_rules.ts (migración 5).
 // categories_backup_v1 lo crea migrateCategories.ts durante la migración 1.
 
 Table accounts {
@@ -143,6 +144,22 @@ Table budgets {
   }
 
   Note: '''Creada por la migración 4 (004_budgets.ts). CHECK: type IN ('INCOME', 'EXPENSE'); length(year_month) = 7 (YYYY-MM); limit_amount > 0. category_id referencia income_categories.id o expense_categories.id según type, sin FK declarada; se valida en SqliteBudgetRepository.'''
+}
+
+Table category_rules {
+  id TEXT [pk, not null]
+  keyword TEXT [not null]
+  category_id TEXT [not null]
+  type TEXT [not null]
+  hits INTEGER [not null, default: 1]
+  created_at TEXT [not null]
+  updated_at TEXT [not null]
+
+  indexes {
+    (type, keyword) [name: 'idx_category_rules_type_keyword']
+  }
+
+  Note: '''Creada por la migración 5 (005_category_rules.ts). CHECK: type IN ('INCOME', 'EXPENSE'); hits >= 1. category_id referencia income_categories.id o expense_categories.id según type, sin FK declarada; la lógica vive en category-rules.ts y SqliteCategoryRuleRepository.'''
 }
 
 Table app_settings {

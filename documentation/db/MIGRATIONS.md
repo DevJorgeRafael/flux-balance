@@ -5,7 +5,7 @@ Flux Balance usa SQLite (expo-sqlite). Las migraciones son funciones SQL version
 ## Versión de esquema
 
 - La versión se guarda con `PRAGMA user_version` (entero dentro del archivo de la base).
-- `user_version = 0` significa base sin versionar. La última versión es 4.
+- `user_version = 0` significa base sin versionar. La última versión es 5.
 - Cada migración sube la versión en una unidad.
 
 ## Versiones
@@ -16,6 +16,7 @@ Flux Balance usa SQLite (expo-sqlite). Las migraciones son funciones SQL version
 | 2 | `migrations/002_app_settings.ts` | Crea `app_settings`. Reemplaza la creación perezosa en `appSettings.ts`. |
 | 3 | `migrations/003_reminders.ts` | Crea `reminders` con sus CHECK, FK a `accounts` y los índices `idx_reminders_due`, `idx_reminders_account` e `idx_reminders_category`. |
 | 4 | `migrations/004_budgets.ts` | Crea `budgets` (límite mensual por categoría) y el índice `idx_budgets_month`. |
+| 5 | `migrations/005_category_rules.ts` | Crea `category_rules` (palabras aprendidas por categoría) y el índice `idx_category_rules_type_keyword`. |
 
 `categories_backup_v1` no tiene versión propia. Lo crea la migración 1 solo si existe la tabla legacy `categories`.
 
@@ -68,4 +69,5 @@ export const migration = {
 - Migración que falla a propósito: `user_version` no cambia.
 - Base con filas huérfanas: `runMigrations` advierte por consola y no bloquea el arranque.
 - Migración 3: instalación nueva y base en versión 2 terminan con `reminders`, sus índices y la FK `account_id` con `ON DELETE SET NULL`.
-- Migración 4: instalación nueva termina en 4 con `budgets` y `idx_budgets_month`.
+- Migración 4: instalación nueva termina con `budgets` y `idx_budgets_month`.
+- Migración 5: instalación nueva termina en 5 con `category_rules` y su índice.

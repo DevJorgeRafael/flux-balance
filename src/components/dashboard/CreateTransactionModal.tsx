@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import X from 'lucide-react-native/icons/x';
 import { appAlert } from '@/components/ui/alert/appAlert';
@@ -16,6 +16,11 @@ import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { getAmountInputErrorKey } from '@/core/i18n/validationMessages';
 import { buildTransferDraft, validateTransferInput } from '@/core/services/transfer';
+import {
+  buildLearnedRules,
+  suggestCategory,
+  type CategoryRule,
+} from '@/core/services/category-rules';
 import type { Account } from '@/core/models/account';
 import type { Category } from '@/core/models/category';
 import type {
@@ -23,7 +28,10 @@ import type {
   TransactionType,
 } from '@/core/models/transaction';
 import { parseAmountInput } from '@/core/utils/money';
-import { SqliteTransactionRepository } from '@/infrastructure/repositories';
+import {
+  SqliteCategoryRuleRepository,
+  SqliteTransactionRepository,
+} from '@/infrastructure/repositories';
 import { applyTransactionPrefill } from './transactionPrefill';
 
 interface CreateTransactionModalProps {
@@ -38,6 +46,7 @@ interface CreateTransactionModalProps {
 }
 
 const transactionRepo = new SqliteTransactionRepository();
+const categoryRuleRepo = new SqliteCategoryRuleRepository();
 
 export function CreateTransactionModal({
   visible,
@@ -53,6 +62,25 @@ export function CreateTransactionModal({
   const { currency, format, locale } = useCurrency();
   const { t } = useTranslation();
   const submittingRef = useRef(false);
+  const rulesRef = useRef<CategoryRule[]>([]);
+  const categoryTouchedRef = useRef(false);
+
+  useEffect(() => {
+    if (!visible) return;
+    categoryTouchedRef.current = false;
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) return;
+    categoryRuleRepo
+      .getAll()
+      .then((rules) => {
+        rulesRef.current = rules;
+      })
+      .catch((error) => {
+        console.error('Error cargando reglas de categoría:', error);
+      });
+  }, [visible]);
 
   const [formValues, setFormValues] = useState<TransactionFormValues>(() => ({
     type: initialType,
@@ -72,6 +100,31 @@ export function CreateTransactionModal({
     value: string
   ) => {
     setFormValues((current) => ({ ...current, [field]: value }));
+  };
+
+  const handleFieldChange = (
+    field: 'amount' | 'description' | 'accountId' | 'destinationAccountId' | 'categoryId',
+    value: string
+  ) => {
+    if (field === 'categoryId') categoryTouchedRef.current = true;
+    if (field === 'description') {
+      setFormValues((current) => {
+        const suggestion =
+          current.type === 'TRANSFER'
+            ? null
+            : suggestCategory(value, rulesRef.current, current.type);
+        return {
+          ...current,
+          description: value,
+          categoryId:
+            !categoryTouchedRef.current && suggestion
+              ? suggestion.categoryId
+              : current.categoryId,
+        };
+      });
+      return;
+    }
+    updateField(field, value);
   };
 
   const resetForm = () => {
@@ -241,6 +294,21 @@ export function CreateTransactionModal({
         ],
       });
 
+      const learned = buildLearnedRules(
+        formValues.description,
+        selection.activeCategoryId,
+        formValues.type,
+        rulesRef.current
+      );
+      if (learned.length > 0) {
+        await Promise.all(learned.map((draft) => categoryRuleRepo.create(draft))).catch(
+          (error) => {
+            console.error('Error aprendiendo reglas de categoría:', error);
+          }
+        );
+        rulesRef.current = await categoryRuleRepo.getAll().catch(() => rulesRef.current);
+      }
+
       resetForm();
       onClose();
       onTransactionCreated();
@@ -292,7 +360,7 @@ export function CreateTransactionModal({
       >
         <TransactionFormFields
           values={formValues}
-          onChange={updateField}
+          onChange={handleFieldChange}
           onTypeChange={handleTypeChange}
           accounts={accounts}
           categories={categories}

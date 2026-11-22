@@ -2,6 +2,13 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.4.0] - 2026-11-21
+
+### Añadido
+
+- Cerebro local: sugiere la categoría al escribir la descripción y aprende de las correcciones, sin enviar datos a ningún servidor.
+- Pantalla de reglas aprendidas en Ajustes, con opción de borrarlas.
+
 ## [2.3.1] - 2026-11-21
 
 ### Añadido
