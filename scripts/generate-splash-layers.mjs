@@ -19,66 +19,52 @@ const SLOT = { x: 455.5, y: 409 };
 const BACK_LINE_PATH =
   'M 330 357 C 380 350 430 341 480 344 C 530 347 580 355 630 372';
 const BACK_LINE_WIDTH = 29;
-const OUTLINE_SMOOTH = { left: 200, right: 660, bottom: 230, window: 24 };
+const OUTLINE_SMOOTH = { left: 250, right: 660, bottom: 230, degree: 6 };
 
-function quadraticFit(values, center, left, right, window) {
-  let n = 0;
-  let sumU = 0;
-  let sumU2 = 0;
-  let sumU3 = 0;
-  let sumU4 = 0;
-  let sumY = 0;
-  let sumUY = 0;
-  let sumU2Y = 0;
+function polynomialFit(values, left, right, degree) {
+  const size = degree + 1;
+  const matrix = Array.from({ length: size }, () => Array(size).fill(0));
+  const vector = Array(size).fill(0);
 
-  for (let offset = -window; offset <= window; offset += 1) {
-    const x = center + offset;
-    if (x < left || x > right || values[x] < 0) continue;
-    const y = values[x];
-    const u2 = offset * offset;
-    n += 1;
-    sumU += offset;
-    sumU2 += u2;
-    sumU3 += u2 * offset;
-    sumU4 += u2 * u2;
-    sumY += y;
-    sumUY += offset * y;
-    sumU2Y += u2 * y;
+  for (let x = left; x <= right; x += 1) {
+    if (values[x] < 0) continue;
+    const u = (x - left) / (right - left);
+    for (let i = 0; i < size; i += 1) {
+      const ui = u ** i;
+      vector[i] += values[x] * ui;
+      for (let j = 0; j < size; j += 1) matrix[i][j] += ui * u ** j;
+    }
   }
 
-  const matrix = [
-    [n, sumU, sumU2],
-    [sumU, sumU2, sumU3],
-    [sumU2, sumU3, sumU4],
-  ];
-  const result = [sumY, sumUY, sumU2Y];
-
-  for (let column = 0; column < 3; column += 1) {
+  for (let column = 0; column < size; column += 1) {
     let pivot = column;
-    for (let row = column + 1; row < 3; row += 1) {
+    for (let row = column + 1; row < size; row += 1) {
       if (Math.abs(matrix[row][column]) > Math.abs(matrix[pivot][column])) pivot = row;
     }
     [matrix[column], matrix[pivot]] = [matrix[pivot], matrix[column]];
-    [result[column], result[pivot]] = [result[pivot], result[column]];
+    [vector[column], vector[pivot]] = [vector[pivot], vector[column]];
 
     const divisor = matrix[column][column];
     if (divisor === 0) continue;
-    for (let c = column; c < 3; c += 1) matrix[column][c] /= divisor;
-    result[column] /= divisor;
+    for (let c = column; c < size; c += 1) matrix[column][c] /= divisor;
+    vector[column] /= divisor;
 
-    for (let row = 0; row < 3; row += 1) {
+    for (let row = 0; row < size; row += 1) {
       if (row === column) continue;
       const factor = matrix[row][column];
-      for (let c = column; c < 3; c += 1) matrix[row][c] -= factor * matrix[column][c];
-      result[row] -= factor * result[column];
+      for (let c = column; c < size; c += 1) matrix[row][c] -= factor * matrix[column][c];
+      vector[row] -= factor * vector[column];
     }
   }
 
-  return result[0];
+  return (x) => {
+    const u = (x - left) / (right - left);
+    return vector.reduce((sum, coefficient, i) => sum + coefficient * u ** i, 0);
+  };
 }
 
 function smoothTopOutline(rgba, width, height) {
-  const { left, right, bottom, window } = OUTLINE_SMOOTH;
+  const { left, right, bottom, degree } = OUTLINE_SMOOTH;
   const lastX = Math.min(right, width - 1);
   const lastY = Math.min(bottom, height - 1);
   const alphaAt = (x, y) => rgba[(y * width + x) * 4 + 3];
@@ -104,11 +90,13 @@ function smoothTopOutline(rgba, width, height) {
     inner[x] = last;
   }
 
+  const topCurve = polynomialFit(outer, left, lastX, degree);
+  const bottomCurve = polynomialFit(inner, left, lastX, degree);
   const smoothed = Buffer.from(rgba);
   for (let x = left; x <= lastX; x += 1) {
     if (outer[x] < 0) continue;
-    const top = quadraticFit(outer, x, left, lastX, window);
-    const bottomEdge = quadraticFit(inner, x, left, lastX, window);
+    const top = topCurve(x);
+    const bottomEdge = bottomCurve(x);
     const from = Math.max(0, Math.floor(top) - 4);
     const to = Math.min(height - 1, Math.ceil(bottomEdge) + 4);
 
