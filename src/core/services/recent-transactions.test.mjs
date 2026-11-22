@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { selectRecentTransactions } from './recent-transactions.ts';
+import {
+  selectRecentTransactions,
+  selectVisibleRecentTransactions,
+} from './recent-transactions.ts';
 
 const NOW = new Date(2026, 10, 20, 12);
 
@@ -78,4 +81,32 @@ test('devuelve vacío y sin fallback cuando no hay movimientos válidos', () => 
 
   assert.deepEqual(result.transactions, []);
   assert.equal(result.isFallback, false);
+});
+
+test('muestra 5 movimientos y cuenta los ocultos', () => {
+  const all = Array.from({ length: 7 }, (_, index) =>
+    transaction(`tx-${index}`, `2026-11-${20 - index}`)
+  );
+
+  const collapsed = selectVisibleRecentTransactions(all);
+  assert.equal(collapsed.transactions.length, 5);
+  assert.equal(collapsed.hiddenCount, 2);
+  assert.deepEqual(
+    collapsed.transactions.map((item) => item.id),
+    ['tx-0', 'tx-1', 'tx-2', 'tx-3', 'tx-4']
+  );
+
+  const expanded = selectVisibleRecentTransactions(all, { expanded: true });
+  assert.equal(expanded.transactions.length, 7);
+  assert.equal(expanded.hiddenCount, 0);
+});
+
+test('respeta un límite personalizado y tolera valores inválidos', () => {
+  const all = Array.from({ length: 4 }, (_, index) =>
+    transaction(`tx-${index}`, `2026-11-${20 - index}`)
+  );
+
+  assert.equal(selectVisibleRecentTransactions(all, { limit: 2 }).hiddenCount, 2);
+  assert.equal(selectVisibleRecentTransactions(all, { limit: 0 }).transactions.length, 0);
+  assert.equal(selectVisibleRecentTransactions(all, { limit: -1 }).transactions.length, 4);
 });
