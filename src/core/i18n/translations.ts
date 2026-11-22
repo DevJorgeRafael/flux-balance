@@ -1,4 +1,5 @@
 import { alertTranslations } from './alert-translations';
+import { anticipationTranslations } from './anticipation-translations';
 import { backupExcelTranslations } from './backup-excel-translations';
 import { dataTransferTranslations } from './data-transfer-translations';
 import { homeTranslations } from './home-translations';
@@ -14,10 +15,9 @@ export type Language = 'es' | 'en';
 
 export const translations = {
   es: {
-    ...alertTranslations.es, ...movementTranslations.es, ...transactionTranslations.es,
+    ...alertTranslations.es, ...anticipationTranslations.es, ...movementTranslations.es, ...transactionTranslations.es,
     ...dataTransferTranslations.es, ...backupExcelTranslations.es, ...transferTranslations.es,
-    ...validationTranslations.es,
-    ...startupTranslations.es, ...statsTranslations.es, ...homeTranslations.es,
+    ...validationTranslations.es, ...startupTranslations.es, ...statsTranslations.es, ...homeTranslations.es,
     ...reminderTranslations.es,
     home: 'Inicio',
     accountsTab: 'Cuentas',
@@ -231,10 +231,9 @@ export const translations = {
     months: 'meses',
   },
   en: {
-    ...alertTranslations.en, ...movementTranslations.en, ...transactionTranslations.en,
+    ...alertTranslations.en, ...anticipationTranslations.en, ...movementTranslations.en, ...transactionTranslations.en,
     ...dataTransferTranslations.en, ...backupExcelTranslations.en, ...transferTranslations.en,
-    ...validationTranslations.en,
-    ...startupTranslations.en, ...statsTranslations.en, ...homeTranslations.en,
+    ...validationTranslations.en, ...startupTranslations.en, ...statsTranslations.en, ...homeTranslations.en,
     ...reminderTranslations.en,
     home: 'Home',
     accountsTab: 'Accounts',
