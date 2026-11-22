@@ -2,7 +2,7 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
-## [No publicado]
+## [2.3.1] - 2026-11-21
 
 ### Añadido
 
