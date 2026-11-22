@@ -91,6 +91,7 @@ Flux Balance se distribuye bajo la [licencia MIT](LICENSE).
 La app es gratuita y de código abierto. Si te resulta útil, puedes apoyar su desarrollo de forma voluntaria; no desbloquea funciones. El enlace de apoyo se configura en `src/constants/about.ts`.
 
 - [Repositorio](https://github.com/DevJorgeRafael/flux-balance)
+- [Apoyar el proyecto](https://ko-fi.com/devjorgerafael)
 
 ## Política de privacidad
 
