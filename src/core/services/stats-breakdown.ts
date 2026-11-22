@@ -1,5 +1,6 @@
 import type { Category } from '@/core/models/category';
 import type { Transaction, TransactionType } from '@/core/models/transaction';
+import { parseLedgerDate } from '@/core/utils/ledger-date';
 import { resolveCategoryForType } from './category-resolution';
 
 export type StatsTransactionType = Extract<TransactionType, 'INCOME' | 'EXPENSE'>;
@@ -49,9 +50,9 @@ interface CategoryBucket {
 const EMPTY_BREAKDOWN: CategoryBreakdown = { total: 0, slices: [] };
 
 function isSameCalendarMonth(dateValue: string, year: number, monthIndex: number) {
-  const date = new Date(dateValue);
+  const date = parseLedgerDate(dateValue);
   return (
-    !Number.isNaN(date.getTime()) &&
+    date !== null &&
     date.getFullYear() === year &&
     date.getMonth() === monthIndex
   );

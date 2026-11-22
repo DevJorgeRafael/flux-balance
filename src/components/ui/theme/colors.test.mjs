@@ -55,6 +55,81 @@ test('acepta hex de 3 y 6 dígitos, con o sin numeral', () => {
   assert.equal(getReadableTextColor('#2868B5'), getReadableTextColor('2868B5'));
 });
 
+const FILLED_ACCENT_PAIRS = [
+  ['primary', 'onPrimary'],
+  ['secondary', 'onSecondary'],
+  ['success', 'onSuccess'],
+  ['error', 'onError'],
+  ['warning', 'onWarning'],
+];
+
+const SURFACE_ROLES = [
+  'background',
+  'surface',
+  'surfaceMuted',
+  'surfaceRaised',
+  'inputBackground',
+  'controlTrack',
+  'cardRaised',
+  'modal',
+  'sheet',
+];
+
+const ACCENT_TEXT_ROLES = [
+  ['primaryText', 'primarySoft'],
+  ['secondaryText', 'secondarySoft'],
+  ['successText', 'successSoft'],
+  ['errorText', 'errorSoft'],
+  ['warningText', 'warningSoft'],
+];
+
+for (const [theme, palette] of Object.entries({
+  claro: lightPalette,
+  oscuro: darkPalette,
+})) {
+  test(`los rellenos de acento tienen texto AA en ${theme}`, () => {
+    for (const [fill, onFill] of FILLED_ACCENT_PAIRS) {
+      const ratio = contrast(palette[fill], palette[onFill]);
+      assert.ok(
+        ratio >= AA_CONTRAST,
+        `${fill}/${onFill}: ${palette[fill]}/${palette[onFill]} (${ratio})`
+      );
+    }
+  });
+
+  test(`el texto secundario es AA sobre las superficies en ${theme}`, () => {
+    for (const surface of SURFACE_ROLES) {
+      const ratio = contrast(palette[surface], palette.textLight);
+      assert.ok(
+        ratio >= AA_CONTRAST,
+        `${surface}/textLight: ${palette[surface]}/${palette.textLight} (${ratio})`
+      );
+    }
+  });
+
+  test(`los textos de acento son AA sobre las superficies en ${theme}`, () => {
+    for (const [textRole] of ACCENT_TEXT_ROLES) {
+      for (const surface of SURFACE_ROLES) {
+        const ratio = contrast(palette[surface], palette[textRole]);
+        assert.ok(
+          ratio >= AA_CONTRAST,
+          `${surface}/${textRole}: ${palette[surface]}/${palette[textRole]} (${ratio})`
+        );
+      }
+    }
+  });
+}
+
+test('los textos de acento son AA sobre sus fondos tenues en claro', () => {
+  for (const [textRole, softRole] of ACCENT_TEXT_ROLES) {
+    const ratio = contrast(lightPalette[softRole], lightPalette[textRole]);
+    assert.ok(
+      ratio >= AA_CONTRAST,
+      `${softRole}/${textRole}: ${lightPalette[softRole]}/${lightPalette[textRole]} (${ratio})`
+    );
+  }
+});
+
 const CARD_BACKGROUNDS = [
   ['claro', lightPalette.surface, false],
   ['oscuro', darkPalette.surface, true],

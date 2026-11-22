@@ -54,3 +54,4 @@ export {
 } from './UIProvider';
 export type { UIProviderProps, ThemeMode } from './UIProvider';
 export { ThemeTransitionProvider, useThemeTransition } from './ThemeTransition';
+export { useReduceMotion } from './useReduceMotion';

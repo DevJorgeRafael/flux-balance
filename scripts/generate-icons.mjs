@@ -13,6 +13,7 @@ const output = {
   icon: join(assetsDir, 'icon-1024.png'),
   playStore: join(assetsDir, 'play-store-icon-512.png'),
   foreground: join(assetsDir, 'logo-foreground-1024.png'),
+  background: join(assetsDir, 'logo-background-1024.png'),
   monochrome: join(assetsDir, 'logo-monochrome-1024.png'),
   splash: join(assetsDir, 'logo-splash.png'),
   glyph: join(assetsDir, 'glyph-white-2000.png'),
@@ -23,14 +24,19 @@ const output = {
 
 const EDGE_SAMPLES = 8;
 const MIN_ALPHA = 2;
-const FOREGROUND_SAFE_DIAMETER = 640;
-const FOREGROUND_SAFE_MARGIN = 2;
 const SPLASH_MARGIN_RATIO = 0.1;
 const SPLASH_MAX_SIZE = 1024;
 const TILE_SIZE = 280;
 const TILE_GAP = 20;
 const TILE_MARGIN = 24;
 const LABEL_HEIGHT = 34;
+const ADAPTIVE_LAYER_SIZE = 1024;
+const ANDROID_LAYER_DP = 108;
+const ANDROID_VISIBLE_DP = 72;
+const ADAPTIVE_VISIBLE_INSET = Math.round(
+  (ADAPTIVE_LAYER_SIZE * (ANDROID_LAYER_DP - ANDROID_VISIBLE_DP)) / (2 * ANDROID_LAYER_DP)
+);
+const ADAPTIVE_VISIBLE_SIZE = ADAPTIVE_LAYER_SIZE - ADAPTIVE_VISIBLE_INSET * 2;
 
 function median(values) {
   const sorted = [...values].sort((a, b) => a - b);
@@ -82,6 +88,30 @@ function alphaStats(alpha, width, height) {
     meanOnGlyph: pixels > 0 ? sum / pixels : 0,
     max,
   };
+}
+
+function buildAdaptiveBackground(rows, height) {
+  const layer = Buffer.alloc(ADAPTIVE_LAYER_SIZE * ADAPTIVE_LAYER_SIZE * 3);
+  const gradientEnd = ADAPTIVE_LAYER_SIZE - ADAPTIVE_VISIBLE_INSET - 1;
+  const gradientRows = gradientEnd - ADAPTIVE_VISIBLE_INSET;
+
+  for (let y = 0; y < ADAPTIVE_LAYER_SIZE; y += 1) {
+    const clampedY = Math.min(Math.max(y, ADAPTIVE_VISIBLE_INSET), gradientEnd);
+    const sourceRow = Math.round(
+      ((clampedY - ADAPTIVE_VISIBLE_INSET) / gradientRows) * (height - 1)
+    );
+    const { r, g, b } = rows[sourceRow];
+    const offset = y * ADAPTIVE_LAYER_SIZE * 3;
+
+    for (let x = 0; x < ADAPTIVE_LAYER_SIZE; x += 1) {
+      const pixel = offset + x * 3;
+      layer[pixel] = r;
+      layer[pixel + 1] = g;
+      layer[pixel + 2] = b;
+    }
+  }
+
+  return layer;
 }
 
 const { data, info } = await sharp(sourcePath)
@@ -184,12 +214,7 @@ const croppedGlyph = await sharp(glyph, { raw: { width, height, channels: 4 } })
   .png({ compressionLevel: 9 })
   .toBuffer();
 
-const foregroundContentSize = FOREGROUND_SAFE_DIAMETER - FOREGROUND_SAFE_MARGIN * 2;
-const foregroundScale = Math.min(
-  foregroundContentSize / bbox.width,
-  foregroundContentSize / bbox.height,
-  (FOREGROUND_SAFE_DIAMETER / 2 - FOREGROUND_SAFE_MARGIN) / maxRadius
-);
+const foregroundScale = ADAPTIVE_VISIBLE_SIZE / width;
 
 const foregroundWidth = Math.max(1, Math.round(bbox.width * foregroundScale));
 const foregroundHeight = Math.max(1, Math.round(bbox.height * foregroundScale));
@@ -220,6 +245,12 @@ const foreground = await sharp({
 
 await writeFile(output.foreground, foreground);
 await writeFile(output.monochrome, foreground);
+
+await sharp(buildAdaptiveBackground(backgroundRows, height), {
+  raw: { width: ADAPTIVE_LAYER_SIZE, height: ADAPTIVE_LAYER_SIZE, channels: 3 },
+})
+  .png({ compressionLevel: 9 })
+  .toFile(output.background);
 
 await sharp(sourcePath)
   .resize(1024, 1024, { fit: 'cover', kernel: 'lanczos3' })
@@ -295,7 +326,7 @@ const checkerSvg = Buffer.from(
 
 const checkerTile = await sharp(checkerSvg).png().toBuffer();
 
-const previewWidth = TILE_MARGIN * 2 + TILE_SIZE * 5 + TILE_GAP * 4;
+const previewWidth = TILE_MARGIN * 2 + TILE_SIZE * 6 + TILE_GAP * 5;
 const previewHeight = TILE_MARGIN * 2 + TILE_SIZE + LABEL_HEIGHT;
 
 const previewItems = [
@@ -311,6 +342,12 @@ const previewItems = [
     path: output.foreground,
     fit: 'contain',
     background: checkerTile,
+  },
+  {
+    name: 'logo-background-1024.png',
+    path: output.background,
+    fit: 'cover',
+    background: null,
   },
   {
     name: 'logo-monochrome-1024.png',
@@ -409,8 +446,15 @@ const generated = {
     scale: foregroundScale,
     contentWidth: foregroundWidth,
     contentHeight: foregroundHeight,
-    safeDiameter: FOREGROUND_SAFE_DIAMETER,
-    safeMargin: FOREGROUND_SAFE_MARGIN,
+    visibleSize: ADAPTIVE_VISIBLE_SIZE,
+    visibleInset: ADAPTIVE_VISIBLE_INSET,
+    visibleWidthRatio: foregroundWidth / ADAPTIVE_VISIBLE_SIZE,
+  },
+  background: {
+    layerSize: ADAPTIVE_LAYER_SIZE,
+    visibleSize: ADAPTIVE_VISIBLE_SIZE,
+    visibleInset: ADAPTIVE_VISIBLE_INSET,
+    mode: 'visible-area',
   },
   splash: {
     padding: splashPadding,

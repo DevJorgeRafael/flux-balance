@@ -1,6 +1,11 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import { Plus, Minus, Zap, TrendingUp, Clock, Calendar } from 'lucide-react-native';
+import Plus from 'lucide-react-native/icons/plus';
+import Minus from 'lucide-react-native/icons/minus';
+import Zap from 'lucide-react-native/icons/zap';
+import TrendingUp from 'lucide-react-native/icons/trending-up';
+import Clock from 'lucide-react-native/icons/clock';
+import Calendar from 'lucide-react-native/icons/calendar';
 import { Account, AccountType } from '@/core/models/account';
 import { useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
@@ -13,9 +18,24 @@ interface AccountDetailHeroProps {
   totalOut: number;
 }
 
+function formatDateOnly(value: string, locale: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  const date = match
+    ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+    : new Date(value);
+
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
 export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailHeroProps) {
   const colors = useColors();
-  const { format } = useCurrency();
+  const { format, locale } = useCurrency();
   const { t } = useTranslation();
 
   const getAccountTypeLabel = (type: AccountType) => {
@@ -46,7 +66,7 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
           {isFlexible && account.annualRate && (
             <View style={[styles.rateBadge, { backgroundColor: colors.primarySoft }]}>
               <Text style={[styles.rateBadgeText, { color: colors.primaryText }]}>
-                {(account.annualRate * 100).toFixed(1)}% TNA
+                {(account.annualRate * 100).toFixed(1)}% {t('annualRateShort')}
               </Text>
             </View>
           )}
@@ -103,14 +123,16 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
             <View style={{ flex: 1 }}>
               <Text style={[styles.yieldTitle, { color: colors.text }]}>{t('activeDailyReturn')}</Text>
               <Text style={[styles.yieldSubtitle, { color: colors.textLight }]}>
-                Generando intereses compuestos en base al saldo
+                {t('compoundInterestActive')}
               </Text>
             </View>
           </View>
 
           <View style={[styles.yieldStatsRow, { borderTopColor: colors.border }]}>
             <View style={styles.yieldStatCol}>
-              <Text style={[styles.yieldStatLabel, { color: colors.textLight }]}>TNA {t('annual')}</Text>
+              <Text style={[styles.yieldStatLabel, { color: colors.textLight }]}>
+                {t('annualRateShort')}
+              </Text>
               <Text style={[styles.yieldStatNumber, { color: colors.text }]}>
                 {(account.annualRate * 100).toFixed(2)}%
               </Text>
@@ -137,7 +159,7 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
       {isFixed && account.fixedTermDeposits && account.fixedTermDeposits.length > 0 && (
         <View style={{ marginBottom: 20 }}>
           <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 12 }]}>
-            Certificados de Plazo Fijo
+            {t('fixedTermCertificates')}
           </Text>
 
           {account.fixedTermDeposits.map((dep) => (
@@ -151,7 +173,7 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
                 </View>
                 <View style={[styles.depositBadge, { backgroundColor: colors.warningSoft }]}>
                   <Text style={[styles.depositBadgeText, { color: colors.warningText }]}>
-                    {(dep.annualRate * 100).toFixed(2)}% TNA
+                    {(dep.annualRate * 100).toFixed(2)}% {t('annualRateShort')}
                   </Text>
                 </View>
               </View>
@@ -160,14 +182,14 @@ export function AccountDetailHero({ account, totalIn, totalOut }: AccountDetailH
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <Clock size={12} color={colors.textLight} />
                   <Text style={[styles.depositDateText, { color: colors.textLight }]}>
-                    Inicio: {dep.startDate}
+                    {t('startDate')}: {formatDateOnly(dep.startDate, locale)}
                   </Text>
                 </View>
 
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <Calendar size={12} color={colors.primaryText} />
                   <Text style={[styles.depositDateText, { color: colors.primaryText, fontWeight: '700' }]}>
-                    Vence: {dep.maturityDate}
+                    {t('due')}: {formatDateOnly(dep.maturityDate, locale)}
                   </Text>
                 </View>
               </View>

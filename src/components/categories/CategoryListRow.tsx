@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Pencil } from 'lucide-react-native';
+import Pencil from 'lucide-react-native/icons/pencil';
 import type { Category } from '@/core/models/category';
 import { isHexColor, useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';

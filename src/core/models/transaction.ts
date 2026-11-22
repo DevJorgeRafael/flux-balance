@@ -39,6 +39,21 @@ export interface CreateTransactionDTO {
   splits: CreateTransactionSplitDTO[];
 }
 
+export interface UpdateTransactionDTO {
+  type: TransactionType;
+  totalAmount: number;
+  description?: string | null;
+  date: string;
+  splits: CreateTransactionSplitDTO[];
+}
+
+export interface TransactionPrefill {
+  amount?: number;
+  description?: string;
+  accountId?: string;
+  categoryId?: string;
+}
+
 export interface TransactionFilterDTO {
   accountId?: string;
   categoryId?: string;

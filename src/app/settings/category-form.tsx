@@ -11,7 +11,9 @@ import {
   View,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Check, Trash } from 'lucide-react-native';
+import ArrowLeft from 'lucide-react-native/icons/arrow-left';
+import Check from 'lucide-react-native/icons/check';
+import Trash from 'lucide-react-native/icons/trash';
 import { appAlert, appConfirm } from '@/components/ui/alert/appAlert';
 import { CategoryColorGrid } from '@/components/categories/CategoryColorGrid';
 import { bestTextColor, useColors, useInsets } from '@/components/ui/theme';

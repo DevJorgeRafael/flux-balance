@@ -2,14 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 
-import { SCHEMA_DDL } from '../database/schema.sql.ts';
+import { BASELINE_DDL } from '../database/migrations/001_baseline.ts';
 import { SqliteAccountRepository } from './SqliteAccountRepository.ts';
 import { SqliteTransactionRepository } from './SqliteTransactionRepository.ts';
 
 function createDatabase({ failOn } = {}) {
   const raw = new DatabaseSync(':memory:');
   raw.exec('PRAGMA foreign_keys = ON;');
-  raw.exec(SCHEMA_DDL);
+  raw.exec(BASELINE_DDL);
 
   const createApi = () => ({
     async execAsync(sql) {

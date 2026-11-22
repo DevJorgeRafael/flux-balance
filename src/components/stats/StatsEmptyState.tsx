@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { ChartPie } from 'lucide-react-native';
+import ChartPie from 'lucide-react-native/icons/chart-pie';
 import { useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';

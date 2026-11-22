@@ -185,13 +185,13 @@ export async function importBackupIntoDatabase(
 ): Promise<void> {
   await db.withExclusiveTransactionAsync(async (txn) => {
     await txn.execAsync(`
+      UPDATE reminders SET account_id = NULL, category_id = NULL;
       DELETE FROM transaction_splits;
       DELETE FROM transactions;
       DELETE FROM fixed_term_deposits;
       DELETE FROM accounts;
       DELETE FROM income_categories;
       DELETE FROM expense_categories;
-      CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);
     `);
 
     for (const account of backup.accounts) {

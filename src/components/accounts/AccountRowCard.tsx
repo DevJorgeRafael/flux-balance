@@ -1,12 +1,10 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import {
-  Calendar,
-  CreditCard,
-  TrendingUp,
-  Zap,
-  type LucideIcon,
-} from 'lucide-react-native';
+import Calendar from 'lucide-react-native/icons/calendar';
+import CreditCard from 'lucide-react-native/icons/credit-card';
+import TrendingUp from 'lucide-react-native/icons/trending-up';
+import Zap from 'lucide-react-native/icons/zap';
+import type { LucideIcon } from 'lucide-react-native';
 import type { Account, AccountType, FixedTermDeposit } from '@/core/models/account';
 import { calculateDailyProjection } from '@/core/services/interest-calculator';
 import { useCurrency } from '@/core/currency/useCurrency';
@@ -285,8 +283,8 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
   },
   estimatedText: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '800',
   },
   fixedHeaderRow: {
     flexDirection: 'row',

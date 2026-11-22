@@ -16,7 +16,14 @@ import type { IconName } from '../icons/types';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'link' | 'destructive';
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'outline'
+  | 'ghost'
+  | 'link'
+  | 'destructive';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps {
@@ -75,6 +82,8 @@ function resolveColors(variant: ButtonVariant, disabled: boolean, colors: Return
       return { background: 'transparent', text: colors.primaryText, border: 'transparent' };
     case 'secondary':
       return { background: colors.secondary, text: colors.onSecondary, border: 'transparent' };
+    case 'success':
+      return { background: colors.success, text: colors.onSuccess, border: 'transparent' };
     case 'destructive':
       return { background: colors.error, text: colors.onError, border: 'transparent' };
     case 'primary':
@@ -112,7 +121,11 @@ export const Button = memo(
     const allowFontScaling = useAllowFontScaling();
     const scale = useRef(new Animated.Value(1)).current;
     const isDisabled = disabled || loading;
-    const isFilled = variant === 'primary' || variant === 'secondary' || variant === 'destructive';
+    const isFilled =
+      variant === 'primary' ||
+      variant === 'secondary' ||
+      variant === 'success' ||
+      variant === 'destructive';
 
     const resolved = resolveColors(variant, disabled, colors);
     const effectiveIconColor = iconColor ?? resolved.text;

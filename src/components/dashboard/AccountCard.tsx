@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Zap, Calendar } from 'lucide-react-native';
+import { StyleSheet, View, Text } from 'react-native';
+import Zap from 'lucide-react-native/icons/zap';
+import Calendar from 'lucide-react-native/icons/calendar';
 import { Account, AccountType } from '@/core/models/account';
 import { spacing, useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
@@ -9,6 +10,7 @@ import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface AccountCardProps {
   account: Account;
+  isBalanceVisible: boolean;
   isSelected: boolean;
   onPress: () => void;
 }
@@ -16,9 +18,29 @@ interface AccountCardProps {
 /** Alto común de todas las cards del carrusel de cuentas. */
 export const ACCOUNT_CARD_HEIGHT = 144;
 
-export function AccountCard({ account, isSelected, onPress }: AccountCardProps) {
+function formatDateOnly(value: string, locale: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  const date = match
+    ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+    : new Date(value);
+
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+export function AccountCard({
+  account,
+  isBalanceVisible,
+  isSelected,
+  onPress,
+}: AccountCardProps) {
   const colors = useColors();
-  const { format } = useCurrency();
+  const { format, locale } = useCurrency();
   const { t } = useTranslation();
   const getAccountTypeLabel = (type: AccountType) => {
     switch (type) {
@@ -36,16 +58,16 @@ export function AccountCard({ account, isSelected, onPress }: AccountCardProps) 
   const isFixed = account.type === 'FIXED_TERM';
 
   return (
-    <TouchableOpacity
-      style={styles.cardPressable}
+    <Card
+      variant={isSelected ? 'raised' : 'default'}
+      shadowSize="sm"
+      style={styles.card}
       onPress={onPress}
-      activeOpacity={0.8}
+      accessibilityLabel={`${account.name}, ${format(account.balance, {
+        hidden: !isBalanceVisible,
+      })}`}
+      accessibilityState={{ selected: isSelected }}
     >
-      <Card
-        variant={isSelected ? 'raised' : 'default'}
-        shadowSize="sm"
-        style={styles.card}
-      >
         <View style={styles.accountCardHeader}>
           <Text
             style={[styles.accountTypeHeader, { color: colors.textLight }]}
@@ -61,7 +83,7 @@ export function AccountCard({ account, isSelected, onPress }: AccountCardProps) 
           ) : isFlexible && account.annualRate ? (
             <View style={[styles.tnaBadge, { backgroundColor: colors.primarySoft }]}>
               <Text style={[styles.tnaBadgeText, { color: colors.primaryText }]}>
-                {(account.annualRate * 100).toFixed(1)}% TNA
+                {(account.annualRate * 100).toFixed(1)}% {t('annualRateShort')}
               </Text>
             </View>
           ) : isFixed ? (
@@ -84,7 +106,7 @@ export function AccountCard({ account, isSelected, onPress }: AccountCardProps) 
           adjustsFontSizeToFit
           minimumFontScale={0.8}
         >
-          {format(account.balance)}
+          {format(account.balance, { hidden: !isBalanceVisible })}
         </Text>
 
         {isFlexible && (
@@ -110,19 +132,15 @@ export function AccountCard({ account, isSelected, onPress }: AccountCardProps) 
           >
             <Calendar size={12} color={colors.textLight} strokeWidth={2} />
             <Text style={[styles.fixedDateText, { color: colors.textLight }]}>
-              {t('due')}: {account.fixedTermDeposits[0].maturityDate}
+              {t('due')}: {formatDateOnly(account.fixedTermDeposits[0].maturityDate, locale)}
             </Text>
           </View>
         )}
-      </Card>
-    </TouchableOpacity>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  cardPressable: {
-    width: 220,
-  },
   card: {
     width: 220,
     minHeight: ACCOUNT_CARD_HEIGHT,

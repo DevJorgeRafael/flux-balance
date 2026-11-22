@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Eye, EyeOff } from 'lucide-react-native';
-import { MotiView } from 'moti';
+import Eye from 'lucide-react-native/icons/eye';
+import EyeOff from 'lucide-react-native/icons/eye-off';
+import { CountUpText } from '@/components/ui/atoms/CountUpText';
 import { useColors } from '@/components/ui/theme';
+import { useSplashTransition } from '@/context/SplashTransitionContext';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
+import { HomeReveal } from './HomeReveal';
+
+let hasPlayedBalanceIntro = false;
 
 interface DashboardHeroProps {
   totalBalance: number;
@@ -20,14 +25,16 @@ export function DashboardHero({
   const colors = useColors();
   const { format } = useCurrency();
   const { t } = useTranslation();
+  const { isSplashHidden } = useSplashTransition();
+  const animateBalance = isSplashHidden && !hasPlayedBalanceIntro;
+  const displayedBalance = isSplashHidden ? totalBalance : 0;
+
+  const handleBalanceIntroStart = useCallback(() => {
+    hasPlayedBalanceIntro = true;
+  }, []);
 
   return (
-    <MotiView
-      from={{ opacity: 0, translateY: 15 }}
-      animate={{ opacity: 1, translateY: 0 }}
-      transition={{ type: 'timing', duration: 500 } as any}
-      style={styles.heroContainer}
-    >
+    <HomeReveal distance={15} style={styles.heroContainer}>
       <View style={styles.heroLabelRow}>
         <Text style={[styles.heroLabel, { color: colors.onHero }]}>
           {t('consolidatedBalance').toUpperCase()}
@@ -38,7 +45,7 @@ export function DashboardHero({
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           pointerEvents="auto"
           accessibilityRole="button"
-          accessibilityLabel={isBalanceVisible ? 'Hide balance' : 'Show balance'}
+          accessibilityLabel={t(isBalanceVisible ? 'hideBalance' : 'showBalance')}
         >
           {isBalanceVisible ? (
             <Eye size={18} color={colors.onHero} strokeWidth={2} />
@@ -48,14 +55,18 @@ export function DashboardHero({
         </Pressable>
       </View>
 
-      <Text
+      <CountUpText
+        value={displayedBalance}
+        animate={animateBalance}
+        formatValue={format}
+        hidden={!isBalanceVisible}
+        hiddenText={format(totalBalance, { hidden: true })}
+        onStart={handleBalanceIntroStart}
         style={[styles.heroAmount, { color: colors.onHero }]}
         adjustsFontSizeToFit
         numberOfLines={1}
-      >
-        {format(totalBalance, { hidden: !isBalanceVisible })}
-      </Text>
-    </MotiView>
+      />
+    </HomeReveal>
   );
 }
 

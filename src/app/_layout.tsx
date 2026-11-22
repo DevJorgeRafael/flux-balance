@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { isRunningInExpoGo } from 'expo';
 import { LogBox } from 'react-native';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as SystemUI from 'expo-system-ui';
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -13,15 +14,23 @@ import {
   UIProvider,
   useColors,
   useThemeMode,
+  type EdgeInsets,
+  type Labels,
   type ThemeMode,
 } from '@/components/ui/theme';
 import { initDatabase } from '@/infrastructure/database/db';
-import { cleanupExportCache } from '@/infrastructure/backup/exportCache';
 import { DashboardProvider } from '@/context/DashboardContext';
-import { TranslationProvider } from '@/core/i18n/useTranslation';
+import { SplashTransition } from '@/components/splash/SplashTransition';
+import { SPLASH_NATIVE_FADE_MS } from '@/components/splash/splashTiming';
+import {
+  TranslationProvider,
+  useTranslation,
+} from '@/core/i18n/useTranslation';
 import { CurrencyProvider, loadStoredCurrency } from '@/core/currency/useCurrency';
+import { DEFAULT_CURRENCY_CODE } from '@/core/constants/currencies';
 import { runStartup } from '@/core/services/startup';
 import {
+  DEFAULT_PREFERENCES,
   loadStoredPreferences,
   saveThemePreference,
   type StoredPreferences,
@@ -29,9 +38,22 @@ import {
 import type { ThemePreference } from '@/core/preferences/preferences';
 
 const STARTUP_TIMEOUT_MS = 8000;
-const SPLASH_FADE_DURATION_MS = 300;
 
-SplashScreen.setOptions({ duration: SPLASH_FADE_DURATION_MS, fade: true });
+const ReminderNotificationsProvider = lazy(() =>
+  import('@/context/ReminderNotificationsProvider').then((module) => ({
+    default: module.ReminderNotificationsProvider,
+  }))
+);
+
+function cleanupExportCacheInBackground() {
+  void import('@/infrastructure/backup/exportCache')
+    .then((module) => module.cleanupExportCache())
+    .catch(() => {});
+}
+
+if (!isRunningInExpoGo()) {
+  SplashScreen.setOptions({ duration: SPLASH_NATIVE_FADE_MS, fade: true });
+}
 SplashScreen.preventAutoHideAsync();
 
 LogBox.ignoreLogs([
@@ -41,11 +63,81 @@ LogBox.ignoreLogs([
 
 type StartupPreferences = StoredPreferences & { currency: string };
 
-function RootNavigator({ initialPreferences }: { initialPreferences: StartupPreferences }) {
+const DEFAULT_STARTUP_PREFERENCES: StartupPreferences = {
+  ...DEFAULT_PREFERENCES,
+  currency: DEFAULT_CURRENCY_CODE,
+};
+
+function LocalizedUIProvider({
+  children,
+  insets,
+  mode,
+  onModeChange,
+}: {
+  children: React.ReactNode;
+  insets: EdgeInsets;
+  mode: ThemeMode;
+  onModeChange: (mode: ThemeMode) => void;
+}) {
+  const { language, t } = useTranslation();
+
+  const labels = useMemo<Partial<Labels>>(() => {
+    const locale = language === 'es' ? 'es' : 'en';
+    const monthFormatter = new Intl.DateTimeFormat(locale, { month: 'long' });
+    const weekdayFormatter = new Intl.DateTimeFormat(locale, { weekday: 'narrow' });
+
+    return {
+      close: t('close'),
+      cancel: t('cancel'),
+      confirm: t('done'),
+      previousMonth: t('previousMonth'),
+      nextMonth: t('nextMonth'),
+      months: Array.from({ length: 12 }, (_, month) =>
+        monthFormatter.format(new Date(2026, month, 1))
+      ),
+      weekdaysShort: Array.from({ length: 7 }, (_, day) =>
+        weekdayFormatter.format(new Date(2026, 0, 4 + day))
+      ),
+      selectDate: t('selectDate'),
+      timeHour: t('timeHour'),
+      timeMinute: t('timeMinute'),
+      am: t('am'),
+      pm: t('pm'),
+      timeUnselected: t('timeUnselected'),
+    };
+  }, [language, t]);
+
+  return (
+    <UIProvider
+      insets={insets}
+      mode={mode}
+      onModeChange={onModeChange}
+      labels={labels}
+    >
+      {children}
+    </UIProvider>
+  );
+}
+
+function RootNavigator({
+  preferences,
+  startupReady,
+}: {
+  preferences: StartupPreferences;
+  startupReady: boolean;
+}) {
   const insets = useSafeAreaInsets();
   const [themePreference, setThemePreference] = useState<ThemePreference>(
-    initialPreferences.themePreference
+    preferences.themePreference
   );
+  const [startupThemePreference, setStartupThemePreference] = useState<ThemePreference>(
+    preferences.themePreference
+  );
+
+  if (preferences.themePreference !== startupThemePreference) {
+    setStartupThemePreference(preferences.themePreference);
+    setThemePreference(preferences.themePreference);
+  }
 
   const handleModeChange = useCallback((mode: ThemeMode) => {
     setThemePreference(mode);
@@ -55,17 +147,21 @@ function RootNavigator({ initialPreferences }: { initialPreferences: StartupPref
   }, []);
 
   return (
-    <TranslationProvider initialPreference={initialPreferences.languagePreference}>
-      <CurrencyProvider initialCurrency={initialPreferences.currency}>
-        <UIProvider insets={insets} mode={themePreference} onModeChange={handleModeChange}>
-          <RootWithTheme />
-        </UIProvider>
+    <TranslationProvider initialPreference={preferences.languagePreference}>
+      <CurrencyProvider initialCurrency={preferences.currency}>
+        <LocalizedUIProvider
+          insets={insets}
+          mode={themePreference}
+          onModeChange={handleModeChange}
+        >
+          <RootWithTheme startupReady={startupReady} />
+        </LocalizedUIProvider>
       </CurrencyProvider>
     </TranslationProvider>
   );
 }
 
-function RootWithTheme() {
+function RootWithTheme({ startupReady }: { startupReady: boolean }) {
   const { isDark } = useThemeMode();
   const colors = useColors();
 
@@ -93,16 +189,27 @@ function RootWithTheme() {
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <ThemeProvider value={navigationTheme}>
         <DashboardProvider>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              animation: 'slide_from_right',
-              gestureEnabled: true,
-              contentStyle: { backgroundColor: colors.background },
-            }}
-          >
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
+          <SplashTransition startupReady={startupReady}>
+            <Suspense fallback={null}>
+              <ReminderNotificationsProvider>
+                <SafeAreaView
+                  edges={['left', 'right']}
+                  style={{ flex: 1, backgroundColor: colors.background }}
+                >
+                  <Stack
+                    screenOptions={{
+                      headerShown: false,
+                      animation: 'slide_from_right',
+                      gestureEnabled: true,
+                      contentStyle: { backgroundColor: colors.background },
+                    }}
+                  >
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  </Stack>
+                </SafeAreaView>
+              </ReminderNotificationsProvider>
+            </Suspense>
+          </SplashTransition>
         </DashboardProvider>
       </ThemeProvider>
     </>
@@ -128,7 +235,7 @@ function RootLayoutContent() {
 
     async function prepare() {
       const result = await runStartup({
-        cleanup: cleanupExportCache,
+        cleanup: cleanupExportCacheInBackground,
         initialize: initDatabase,
         loadPreferences: async () => {
           const [storedPreferences, currency] = await Promise.all([
@@ -160,20 +267,6 @@ function RootLayoutContent() {
     };
   }, [attempt]);
 
-  const splashHidden = useRef(false);
-
-  const hideSplash = useCallback(() => {
-    if (splashHidden.current) return;
-    splashHidden.current = true;
-    SplashScreen.hide();
-  }, []);
-
-  useEffect(() => {
-    if (preferences || startupError) {
-      hideSplash();
-    }
-  }, [preferences, startupError, hideSplash]);
-
   const handleRetry = useCallback(() => {
     if (retrying) return;
     setRetrying(true);
@@ -193,13 +286,12 @@ function RootLayoutContent() {
     );
   }
 
-  if (!preferences) {
-    return null;
-  }
-
   return (
     <SafeAreaProvider>
-      <RootNavigator initialPreferences={preferences} />
+      <RootNavigator
+        preferences={preferences ?? DEFAULT_STARTUP_PREFERENCES}
+        startupReady={preferences !== null}
+      />
     </SafeAreaProvider>
   );
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Calculator, TrendingUp } from 'lucide-react-native';
+import Calculator from 'lucide-react-native/icons/calculator';
+import TrendingUp from 'lucide-react-native/icons/trending-up';
 import { Account } from '@/core/models/account';
 import {
   calculateDailyProjection,
@@ -66,9 +67,9 @@ export function AccountProjectionCard({ account }: AccountProjectionCardProps) {
       </View>
 
       <View style={[styles.rateRow, { borderBottomColor: colors.border }]}>
-        <Text style={[styles.label, { color: colors.textLight }]}>Tasa aplicada</Text>
+        <Text style={[styles.label, { color: colors.textLight }]}>{t('appliedRate')}</Text>
         <Text style={[styles.rate, { color: isFixed ? colors.warningText : colors.successText }]}>
-          {rate.toFixed(2)}% TNA
+          {rate.toFixed(2)}% {t('annualRateShort')}
         </Text>
       </View>
 

@@ -1,10 +1,8 @@
-import {
-  ChartColumn,
-  CreditCard,
-  Home,
-  Settings as SettingsIcon,
-  type LucideIcon,
-} from 'lucide-react-native';
+import ChartColumn from 'lucide-react-native/icons/chart-column';
+import CreditCard from 'lucide-react-native/icons/credit-card';
+import Home from 'lucide-react-native/icons/house';
+import SettingsIcon from 'lucide-react-native/icons/settings';
+import type { LucideIcon } from 'lucide-react-native';
 import type { TranslationKey } from '@/core/i18n/translations';
 
 /**

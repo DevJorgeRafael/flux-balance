@@ -27,6 +27,7 @@
   ],
   "exclude": [
     "example",
+    ".opencode",
     "node_modules"
   ]
 }

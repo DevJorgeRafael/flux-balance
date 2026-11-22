@@ -1,22 +1,27 @@
 import { alertTranslations } from './alert-translations';
 import { backupExcelTranslations } from './backup-excel-translations';
 import { dataTransferTranslations } from './data-transfer-translations';
+import { homeTranslations } from './home-translations';
+import { movementTranslations } from './movement-translations';
+import { reminderTranslations } from './reminder-translations';
 import { startupTranslations } from './startup-translations';
+import { statsTranslations } from './stats-translations';
+import { transactionTranslations } from './transaction-translations';
 import { validationTranslations } from './validation-translations';
 
 export type Language = 'es' | 'en';
 
 export const translations = {
   es: {
-    ...alertTranslations.es,
+    ...alertTranslations.es, ...movementTranslations.es, ...transactionTranslations.es,
     ...dataTransferTranslations.es,
     ...backupExcelTranslations.es,
     ...validationTranslations.es,
-    ...startupTranslations.es,
+    ...startupTranslations.es, ...statsTranslations.es, ...homeTranslations.es,
+    ...reminderTranslations.es,
     home: 'Inicio',
     accountsTab: 'Cuentas',
     stats: 'Stats',
-    comingSoon: 'Próximamente',
     total: 'Total',
     uncategorized: 'Sin categoría',
     otherCategories: 'Otros',
@@ -226,15 +231,15 @@ export const translations = {
     months: 'meses',
   },
   en: {
-    ...alertTranslations.en,
+    ...alertTranslations.en, ...movementTranslations.en, ...transactionTranslations.en,
     ...dataTransferTranslations.en,
     ...backupExcelTranslations.en,
     ...validationTranslations.en,
-    ...startupTranslations.en,
+    ...startupTranslations.en, ...statsTranslations.en, ...homeTranslations.en,
+    ...reminderTranslations.en,
     home: 'Home',
     accountsTab: 'Accounts',
     stats: 'Stats',
-    comingSoon: 'Coming soon',
     total: 'Total',
     uncategorized: 'Uncategorized',
     otherCategories: 'Other',

@@ -44,6 +44,26 @@ You can start developing by editing the files inside the **src/app** directory. 
 - `npm run licenses:generate`: Regenerate the third-party license catalog.
 - `npm run icons:generate`: Regenerate the app icon set.
 
+## Reminder notifications
+
+Reminders are stored in local SQLite and scheduled with `expo-notifications`. There is no backend and no background JavaScript: upcoming occurrences are replenished on launch and whenever the app returns to the foreground.
+
+- Android 13+ requests notification permission when the first reminder is saved. If permission is denied, the reminder is still saved without alerts.
+- Scheduling is `bestEffort`; battery optimizations may delay notifications.
+- iOS keeps at most 60 scheduled occurrences, so the app fills the nearest ones.
+- Xiaomi, Redmi, and POCO devices show a one-time MIUI setup tip after notifications are enabled.
+- `expo-notifications` contains native code. Validate reminders with a development build or a release APK, not only with Expo Go.
+
+Manual smoke test on a release APK:
+
+1. Create a reminder and grant notification permission.
+2. Check the alert with the app in the foreground, in the background, and closed.
+3. Tap the alert and confirm the transaction form opens prefilled.
+4. Revoke notification permission and confirm pending alerts are cancelled.
+5. Test a `ONCE` reminder and a monthly reminder that starts on the 31st.
+
+Generate a local Android release APK with `npm run apk:local`.
+
 ## Tests
 
 The project uses Node's built-in test runner, not Jest. Test files are colocated with the code they cover and end in `.test.mjs`. Add every new test file to the `test` script in `package.json`.

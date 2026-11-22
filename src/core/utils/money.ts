@@ -8,6 +8,7 @@ import { MAX_AMOUNT } from '../constants/inputLimits';
 export interface FormatMoneyOptions {
   showSign?: boolean;
   showCurrency?: boolean;
+  decimals?: number;
 }
 
 export type AmountInputError =
@@ -208,10 +209,15 @@ export function formatMoney(
   amount: number,
   currencyCode: string,
   locale: string,
-  { showSign = false, showCurrency = true }: FormatMoneyOptions = {}
+  { showSign = false, showCurrency = true, decimals: requestedDecimals }: FormatMoneyOptions = {}
 ): string {
   const code = resolveCurrencyCode(currencyCode);
-  const decimals = getCurrencyDecimals(code);
+  const decimals =
+    requestedDecimals !== undefined &&
+    Number.isInteger(requestedDecimals) &&
+    requestedDecimals >= 0
+      ? requestedDecimals
+      : getCurrencyDecimals(code);
   const value = Number.isFinite(amount) ? amount : 0;
   const formatted = formatAbsolute(Math.abs(value), locale, decimals);
   const sign = value < 0 ? '-' : showSign && value > 0 ? '+' : '';

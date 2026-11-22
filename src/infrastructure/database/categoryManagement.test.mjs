@@ -28,6 +28,11 @@ function createDb({ failOn } = {}) {
       transaction_id TEXT NOT NULL,
       category_id TEXT NOT NULL
     );
+    CREATE TABLE reminders (
+      id TEXT PRIMARY KEY NOT NULL,
+      category_id TEXT,
+      type TEXT NOT NULL
+    );
   `);
 
   raw.exec(`
@@ -49,6 +54,13 @@ function createDb({ failOn } = {}) {
       VALUES ('split-income-1', 'tx-income-1', 'cat_custom');
     INSERT INTO transaction_splits (id, transaction_id, category_id)
       VALUES ('split-default', 'tx-expense-1', 'cat_default');
+
+    INSERT INTO reminders (id, category_id, type)
+      VALUES ('rem-expense', 'cat_custom', 'EXPENSE');
+    INSERT INTO reminders (id, category_id, type)
+      VALUES ('rem-income', 'cat_custom', 'INCOME');
+    INSERT INTO reminders (id, category_id, type)
+      VALUES ('rem-default', 'cat_default', 'EXPENSE');
   `);
 
   const db = {
@@ -84,6 +96,15 @@ function splitCategories(raw) {
   );
 }
 
+function reminderCategories(raw) {
+  return Object.fromEntries(
+    raw
+      .prepare('SELECT id, category_id FROM reminders ORDER BY id')
+      .all()
+      .map((row) => [row.id, row.category_id])
+  );
+}
+
 test('counts distinct movements only within the category type', async () => {
   const { db } = createDb();
 
@@ -105,6 +126,11 @@ test('deletes only the selected type and moves its movements to uncategorized', 
     'split-expense-2': '',
     'split-income-1': 'cat_custom',
   });
+  assert.deepEqual(reminderCategories(raw), {
+    'rem-default': 'cat_default',
+    'rem-expense': null,
+    'rem-income': 'cat_custom',
+  });
 
   const income = raw
     .prepare("SELECT COUNT(*) AS count FROM income_categories WHERE id = 'cat_custom'")
@@ -121,6 +147,7 @@ test('revierte la eliminación si falla el DELETE de la categoría', async () =>
     failOn: (sql) => sql.startsWith('DELETE FROM expense_categories'),
   });
   const before = splitCategories(raw);
+  const remindersBefore = reminderCategories(raw);
 
   await assert.rejects(
     () => deleteCategoryAndUncategorize(db, 'cat_custom', 'EXPENSE'),
@@ -128,6 +155,7 @@ test('revierte la eliminación si falla el DELETE de la categoría', async () =>
   );
 
   assert.deepEqual(splitCategories(raw), before);
+  assert.deepEqual(reminderCategories(raw), remindersBefore);
   assert.equal(
     raw
       .prepare("SELECT COUNT(*) AS count FROM expense_categories WHERE id = 'cat_custom'")

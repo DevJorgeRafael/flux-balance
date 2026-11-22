@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { CreditCard, Plus } from 'lucide-react-native';
+import CreditCard from 'lucide-react-native/icons/credit-card';
+import Plus from 'lucide-react-native/icons/plus';
 import { useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';

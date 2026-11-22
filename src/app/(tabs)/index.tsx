@@ -18,6 +18,8 @@ import { DashboardHero } from '@/components/dashboard/DashboardHero';
 import { DashboardSummaryCard } from '@/components/dashboard/DashboardSummaryCard';
 import { AccountCarousel } from '@/components/dashboard/AccountCarousel';
 import { RecentTransactionsList } from '@/components/dashboard/RecentTransactionsList';
+import { UpcomingRemindersCard } from '@/components/reminders/UpcomingRemindersCard';
+import { HomeReveal } from '@/components/dashboard/HomeReveal';
 import { BottomFade } from '@/components/ui/BottomFade';
 import { useDashboard } from '@/context/DashboardContext';
 import { TAB_BAR_CONTENT_GAP, TAB_BAR_CONTENT_OFFSET } from '@/components/navigation/tabBarLayout';
@@ -77,10 +79,12 @@ export default function DashboardScreen() {
         </LinearGradient>
 
         <View style={styles.sheetStack}>
-          <DashboardSummaryCard
-            monthlyTotals={monthlyTotals}
-            isBalanceVisible={isBalanceVisible}
-          />
+          <HomeReveal delay={80} style={styles.summaryReveal}>
+            <DashboardSummaryCard
+              monthlyTotals={monthlyTotals}
+              isBalanceVisible={isBalanceVisible}
+            />
+          </HomeReveal>
 
           <View
             style={[
@@ -91,21 +95,27 @@ export default function DashboardScreen() {
               },
             ]}
           >
-            <AccountCarousel
-              accounts={accounts}
-              totalBalance={totalBalance}
-              selectedFilterAccountId={selectedFilterAccountId}
-              onSelectAccountFilter={handleSelectAccountFilter}
-              onOpenCreateAccountModal={openAccountModal}
-              showNewAccount={false}
-            />
+            <HomeReveal delay={140}>
+              <AccountCarousel
+                accounts={accounts}
+                totalBalance={totalBalance}
+                isBalanceVisible={isBalanceVisible}
+                selectedFilterAccountId={selectedFilterAccountId}
+                onSelectAccountFilter={handleSelectAccountFilter}
+                onOpenCreateAccountModal={openAccountModal}
+                showNewAccount={false}
+              />
 
-            <RecentTransactionsList
-              transactions={accounts.length === 0 ? [] : transactions}
-              selectedFilterAccountId={selectedFilterAccountId}
-              selectedAccountName={selectedAccountName}
-              defaultAccountId={accounts[0]?.id}
-            />
+              <RecentTransactionsList
+                transactions={accounts.length === 0 ? [] : transactions}
+                isBalanceVisible={isBalanceVisible}
+                selectedFilterAccountId={selectedFilterAccountId}
+                selectedAccountName={selectedAccountName}
+                defaultAccountId={accounts[0]?.id}
+              />
+
+              <UpcomingRemindersCard />
+            </HomeReveal>
           </View>
         </View>
       </ScrollView>
@@ -149,6 +159,10 @@ const styles = StyleSheet.create({
   sheetStack: {
     flexGrow: 1,
     marginTop: -72,
+  },
+  summaryReveal: {
+    position: 'relative',
+    zIndex: 2,
   },
   sheet: {
     position: 'relative',

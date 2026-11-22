@@ -1,22 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import { router } from 'expo-router';
-import { ChevronRight, Plus, Minus } from 'lucide-react-native';
-import { MotiView } from 'moti';
+import ChevronDown from 'lucide-react-native/icons/chevron-down';
+import ChevronRight from 'lucide-react-native/icons/chevron-right';
+import ChevronUp from 'lucide-react-native/icons/chevron-up';
+import Plus from 'lucide-react-native/icons/plus';
+import Minus from 'lucide-react-native/icons/minus';
+import Animated, { Keyframe } from 'react-native-reanimated';
 import { appAlert } from '@/components/ui/alert/appAlert';
 import { Transaction } from '@/core/models/transaction';
 import { spacing, useColors, useThemeMode } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
+import {
+  RECENT_TRANSACTIONS_FALLBACK_LIMIT,
+  selectRecentTransactions,
+  selectVisibleRecentTransactions,
+} from '@/core/services/recent-transactions';
+import { parseLedgerDate } from '@/core/utils/ledger-date';
 
 interface RecentTransactionsListProps {
   transactions: Transaction[];
+  isBalanceVisible: boolean;
   selectedFilterAccountId: string | null;
   selectedAccountName?: string;
   defaultAccountId?: string;
@@ -24,16 +35,30 @@ interface RecentTransactionsListProps {
 
 export function RecentTransactionsList({
   transactions,
+  isBalanceVisible,
   selectedFilterAccountId,
   selectedAccountName,
   defaultAccountId,
 }: RecentTransactionsListProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
-  const { format } = useCurrency();
+  const { format, locale } = useCurrency();
   const { t } = useTranslation();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { transactions: scopedTransactions, isFallback } =
+    selectRecentTransactions(transactions);
+  const { transactions: visibleTransactions, hiddenCount } =
+    selectVisibleRecentTransactions(scopedTransactions, {
+      expanded: isExpanded,
+    });
 
-  const handleSeeMore = () => {
+  const headerButtonStyle = (pressed: boolean) => [
+    styles.seeMoreBtn,
+    { backgroundColor: colors.cardRaised, borderColor: colors.border },
+    pressed && styles.pressed,
+  ];
+
+  const handleOpenHistory = () => {
     const targetId = selectedFilterAccountId || defaultAccountId;
     if (targetId) {
       router.push({
@@ -52,62 +77,99 @@ export function RecentTransactionsList({
 
   return (
     <>
-      {/* Sección Últimos Movimientos con botón 'Ver más →' */}
+      {/* Sección Últimos Movimientos con expansión o acceso al historial */}
       <View style={styles.sectionHeaderRow}>
-        <View>
+        <View style={styles.sectionTitleBlock}>
           <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('latestMovements')}</Text>
           {selectedAccountName && (
             <Text style={[styles.sectionSubfilter, { color: colors.primaryText }]}>
-              Filtrado por: {selectedAccountName}
+              {t('filteredBy', { name: selectedAccountName })}
             </Text>
           )}
+          {isFallback ? (
+            <Text style={[styles.sectionFallback, { color: colors.textLight }]}>
+              {t('latestMovementsFallback', {
+                count: RECENT_TRANSACTIONS_FALLBACK_LIMIT,
+              })}
+            </Text>
+          ) : null}
         </View>
 
-        {/* Botón Ver más */}
-        <TouchableOpacity
-          style={[styles.seeMoreBtn, { backgroundColor: colors.cardRaised, borderColor: colors.border }]}
-          onPress={handleSeeMore}
-          activeOpacity={0.7}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Text style={[styles.seeMoreText, { color: colors.text }]}>{t('seeMore')}</Text>
-          <ChevronRight size={14} color={colors.textLight} strokeWidth={2.5} />
-        </TouchableOpacity>
+        {hiddenCount > 0 ? (
+          <Pressable
+            style={({ pressed }) => headerButtonStyle(pressed)}
+            onPress={() => setIsExpanded((current) => !current)}
+            accessibilityRole="button"
+            accessibilityLabel={
+              isExpanded ? t('seeLess') : t('seeMoreCount', { count: hiddenCount })
+            }
+            accessibilityState={{ expanded: isExpanded }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={[styles.seeMoreText, { color: colors.text }]}>
+              {isExpanded ? t('seeLess') : t('seeMoreCount', { count: hiddenCount })}
+            </Text>
+            {isExpanded ? (
+              <ChevronUp size={14} color={colors.textLight} strokeWidth={2.5} />
+            ) : (
+              <ChevronDown size={14} color={colors.textLight} strokeWidth={2.5} />
+            )}
+          </Pressable>
+        ) : selectedFilterAccountId || defaultAccountId ? (
+          <Pressable
+            style={({ pressed }) => headerButtonStyle(pressed)}
+            onPress={handleOpenHistory}
+            accessibilityRole="button"
+            accessibilityLabel={t('seeAccountHistory')}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={[styles.seeMoreText, { color: colors.text }]}>
+              {t('seeAccountHistory')}
+            </Text>
+            <ChevronRight size={14} color={colors.textLight} strokeWidth={2.5} />
+          </Pressable>
+        ) : null}
       </View>
 
-      {transactions.length === 0 ? (
+      {visibleTransactions.length === 0 ? (
         <Card style={styles.emptyContainer}>
           <Text style={[styles.emptySubtext, { color: colors.textLight }]}>
-            {selectedFilterAccountId
-              ? 'Esta cuenta no tiene movimientos registrados.'
-              : t('noMovementsPeriod')}
+            {selectedFilterAccountId ? t('noAccountMovements') : t('noMovementsPeriod')}
           </Text>
         </Card>
       ) : (
         <Card>
-          {transactions.map((tx, idx) => {
+          {visibleTransactions.map((tx, idx) => {
             const isIncome = tx.type === 'INCOME';
-            const dateFormatted = new Date(tx.date).toLocaleDateString('es-ES', {
+            const transactionDate = parseLedgerDate(tx.date) ?? new Date(tx.date);
+            const dateFormatted = transactionDate.toLocaleDateString(locale, {
               day: 'numeric',
               month: 'short',
             });
 
             return (
-              <MotiView
+              <Animated.View
                 key={tx.id}
-                from={{ opacity: 0, translateY: 10 }}
-                animate={{ opacity: 1, translateY: 0 }}
-                transition={{ type: 'timing', duration: 350, delay: idx * 50 } as any}
+                entering={new Keyframe({
+                  from: { opacity: 0, transform: [{ translateY: 10 }] },
+                  to: { opacity: 1, transform: [{ translateY: 0 }] },
+                })
+                  .duration(350)
+                  .delay(Math.min(idx, 8) * 40)}
               >
-                <TouchableOpacity
-                  style={[styles.transactionItemRow, isDark && styles.transactionItemRowDark]}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.transactionItemRow,
+                    isDark && styles.transactionItemRowDark,
+                    pressed && styles.pressed,
+                  ]}
                   onPress={() => {
                     router.push({
                       pathname: '/transaction/[id]',
                       params: { id: tx.id },
                     });
                   }}
-                  activeOpacity={0.7}
+                  accessibilityRole="button"
                 >
                   <View
                     style={[
@@ -124,7 +186,7 @@ export function RecentTransactionsList({
 
                   <View style={styles.transactionDetails}>
                     <Text style={[styles.transactionTitle, { color: colors.text }]} numberOfLines={1}>
-                      {tx.description || (isIncome ? t('income') : t('expense'))}
+                      {tx.description || t(isIncome ? 'addIncome' : 'addExpense')}
                     </Text>
                     <Text style={[styles.transactionMeta, { color: colors.textLight }]}>
                       {tx.splits?.[0]?.accountName ?? t('account')} • {dateFormatted}
@@ -140,10 +202,11 @@ export function RecentTransactionsList({
                     {format(isIncome ? tx.totalAmount : -tx.totalAmount, {
                       showSign: isIncome,
                       showCurrency: false,
+                      hidden: !isBalanceVisible,
                     })}
                   </Text>
-                </TouchableOpacity>
-              </MotiView>
+                </Pressable>
+              </Animated.View>
             );
           })}
         </Card>
@@ -159,6 +222,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: spacing.lg,
   },
+  sectionTitleBlock: {
+    flex: 1,
+    marginRight: spacing.sm,
+  },
   sectionHeading: {
     fontSize: 18,
     fontWeight: '800',
@@ -169,9 +236,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 2,
   },
+  sectionFallback: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
+  },
   seeMoreBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 44,
     gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -193,7 +266,8 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginBottom: 16,
   },
-  transactionItemRow: {    flexDirection: 'row',
+  transactionItemRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 18,
@@ -227,5 +301,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: -0.3,
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });

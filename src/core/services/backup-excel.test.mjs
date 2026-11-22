@@ -350,14 +350,14 @@ test('rechaza montos negativos o demasiado grandes en Excel', () => {
   assert.equal(tooLargeError.sheet, 'Movimientos');
 });
 
-test('rechaza un saldo negativo en la hoja de cuentas', () => {
+test('acepta un saldo negativo en la hoja de cuentas', () => {
   const workbook = createMinimalWorkbook({
     accountRows: [['Cuenta', 'Corriente', '-1', 'EUR', null, 'No']],
   });
-  const error = firstError(parseWorkbook(workbook));
+  const result = parseWorkbook(workbook);
 
-  assert.equal(error.code, 'invalidAmount');
-  assert.equal(error.sheet, 'Cuentas');
+  assert.equal(result.ok, true);
+  assert.equal(result.backup.accounts[0].balance, -1);
 });
 
 test('rechaza un serial de fecha fuera de rango', () => {

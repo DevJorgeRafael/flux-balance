@@ -1,48 +1,53 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import {
-  Tag,
-  CreditCard,
-  Calendar,
-  Clock,
-  CircleCheck,
-  FileText,
-  Receipt,
-  Plus,
-  Minus,
-  Trash,
-} from 'lucide-react-native';
+import { StyleSheet, View, Text, Pressable } from 'react-native';
+import Tag from 'lucide-react-native/icons/tag';
+import CreditCard from 'lucide-react-native/icons/credit-card';
+import Calendar from 'lucide-react-native/icons/calendar';
+import Clock from 'lucide-react-native/icons/clock';
+import CircleCheck from 'lucide-react-native/icons/circle-check';
+import FileText from 'lucide-react-native/icons/file-text';
+import Receipt from 'lucide-react-native/icons/receipt';
+import Plus from 'lucide-react-native/icons/plus';
+import Minus from 'lucide-react-native/icons/minus';
+import Trash from 'lucide-react-native/icons/trash';
+import Pencil from 'lucide-react-native/icons/pencil';
 import { Transaction } from '@/core/models/transaction';
 import { useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { useCurrency } from '@/core/currency/useCurrency';
+import { useTranslation } from '@/core/i18n/useTranslation';
 
 interface TransactionDetailCardProps {
   transaction: Transaction;
   isDeleting: boolean;
+  canEdit?: boolean;
   onDelete: () => void;
+  onEdit?: () => void;
 }
 
 export function TransactionDetailCard({
   transaction,
   isDeleting,
+  canEdit = false,
   onDelete,
+  onEdit,
 }: TransactionDetailCardProps) {
   const colors = useColors();
-  const { format } = useCurrency();
+  const { format, locale } = useCurrency();
+  const { t } = useTranslation();
 
   const isIncome = transaction.type === 'INCOME';
   const primarySplit = transaction.splits?.[0];
-  const categoryName = primarySplit?.categoryName || 'Sin categoría';
+  const categoryName = primarySplit?.categoryName || t('uncategorized');
   const categoryColor = primarySplit?.categoryColor || (isIncome ? colors.success : colors.error);
-  const accountName = primarySplit?.accountName || 'Cuenta';
+  const accountName = primarySplit?.accountName || t('account');
   const notes = primarySplit?.notes;
 
   const formatFullDate = (dateStr: string) => {
     try {
       const d = new Date(dateStr);
       if (isNaN(d.getTime())) return dateStr;
-      const formatted = d.toLocaleDateString('es-ES', {
+      const formatted = d.toLocaleDateString(locale, {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
@@ -61,13 +66,10 @@ export function TransactionDetailCard({
         d = new Date(createdAtStr!);
       }
       if (isNaN(d.getTime())) return '--:--';
-      return (
-        d.toLocaleTimeString('es-ES', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }) + ' hs'
-      );
+      return d.toLocaleTimeString(locale, {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
     } catch {
       return '--:--';
     }
@@ -94,7 +96,7 @@ export function TransactionDetailCard({
               { color: isIncome ? colors.successText : colors.errorText },
             ]}
           >
-            {isIncome ? 'Ingreso registrado' : 'Gasto registrado'}
+            {t(isIncome ? 'incomeRegistered' : 'expenseRegistered')}
           </Text>
         </View>
 
@@ -110,17 +112,19 @@ export function TransactionDetailCard({
         </Text>
 
         <Text style={[styles.heroDescription, { color: colors.text }]}>
-          {transaction.description || (isIncome ? 'Ingreso General' : 'Gasto General')}
+          {transaction.description || t(isIncome ? 'generalIncome' : 'generalExpense')}
         </Text>
 
         <View style={[styles.statusChip, { backgroundColor: colors.surfaceMuted, borderColor: colors.border }]}>
           <CircleCheck size={14} color={colors.successText} strokeWidth={2.5} />
-          <Text style={[styles.statusChipText, { color: colors.textLight }]}>Confirmado en cuenta</Text>
+          <Text style={[styles.statusChipText, { color: colors.textLight }]}>
+            {t('confirmedInAccount')}
+          </Text>
         </View>
       </Card>
 
       {/* DETALLES DE LA OPERACIÓN */}
-      <Text style={[styles.sectionHeading, { color: colors.text }]}>Detalles de la Operación</Text>
+      <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('operationDetails')}</Text>
 
       <Card style={styles.detailsGroupCard}>
         <View style={styles.detailRow}>
@@ -128,7 +132,7 @@ export function TransactionDetailCard({
             <Tag size={18} color={categoryColor} strokeWidth={2.5} />
           </View>
           <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailLabel, { color: colors.textLight }]}>Categoría</Text>
+            <Text style={[styles.detailLabel, { color: colors.textLight }]}>{t('category')}</Text>
             <Text style={[styles.detailValue, { color: colors.text }]}>{categoryName}</Text>
           </View>
         </View>
@@ -140,7 +144,9 @@ export function TransactionDetailCard({
             <CreditCard size={18} color={colors.primaryText} strokeWidth={2.5} />
           </View>
           <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailLabel, { color: colors.textLight }]}>Cuenta asociada</Text>
+            <Text style={[styles.detailLabel, { color: colors.textLight }]}>
+              {t('associatedAccount')}
+            </Text>
             <Text style={[styles.detailValue, { color: colors.text }]}>{accountName}</Text>
           </View>
         </View>
@@ -152,7 +158,7 @@ export function TransactionDetailCard({
             <Calendar size={18} color={colors.text} strokeWidth={2.2} />
           </View>
           <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailLabel, { color: colors.textLight }]}>Fecha</Text>
+            <Text style={[styles.detailLabel, { color: colors.textLight }]}>{t('date')}</Text>
             <Text style={[styles.detailValue, { color: colors.text }]}>
               {formatFullDate(transaction.date)}
             </Text>
@@ -166,7 +172,9 @@ export function TransactionDetailCard({
             <Clock size={18} color={colors.text} strokeWidth={2.2} />
           </View>
           <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailLabel, { color: colors.textLight }]}>Hora registrada</Text>
+            <Text style={[styles.detailLabel, { color: colors.textLight }]}>
+              {t('recordedTime')}
+            </Text>
             <Text style={[styles.detailValue, { color: colors.text }]}>
               {formatTime(transaction.date, transaction.createdAt)}
             </Text>
@@ -175,7 +183,9 @@ export function TransactionDetailCard({
       </Card>
 
       {/* NOTAS Y REFERENCIA */}
-      <Text style={[styles.sectionHeading, { color: colors.text, marginTop: 24 }]}>Información Adicional</Text>
+      <Text style={[styles.sectionHeading, { color: colors.text, marginTop: 24 }]}>
+        {t('additionalInformation')}
+      </Text>
 
       <Card style={styles.detailsGroupCard}>
         <View style={styles.detailRow}>
@@ -183,9 +193,11 @@ export function TransactionDetailCard({
             <FileText size={18} color={colors.textLight} strokeWidth={2.2} />
           </View>
           <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailLabel, { color: colors.textLight }]}>Notas / Observaciones</Text>
+            <Text style={[styles.detailLabel, { color: colors.textLight }]}>
+              {t('notesObservations')}
+            </Text>
             <Text style={[styles.detailValue, { color: notes ? colors.text : colors.textLight }]}>
-              {notes || 'Sin observaciones'}
+              {notes || t('noNotes')}
             </Text>
           </View>
         </View>
@@ -197,7 +209,9 @@ export function TransactionDetailCard({
             <Receipt size={18} color={colors.textLight} strokeWidth={2.2} />
           </View>
           <View style={styles.detailTextContainer}>
-            <Text style={[styles.detailLabel, { color: colors.textLight }]}>Identificador interno</Text>
+            <Text style={[styles.detailLabel, { color: colors.textLight }]}>
+              {t('internalIdentifier')}
+            </Text>
             <Text style={[styles.idValueText, { color: colors.textLight }]} numberOfLines={1}>
               {transaction.id}
             </Text>
@@ -209,7 +223,7 @@ export function TransactionDetailCard({
       {transaction.splits && transaction.splits.length > 1 && (
         <View style={{ marginTop: 24 }}>
           <Text style={[styles.sectionHeading, { color: colors.text }]}>
-            Desglose de la Transacción ({transaction.splits.length})
+            {t('transactionBreakdown', { count: transaction.splits.length })}
           </Text>
 
           <Card style={styles.detailsGroupCard}>
@@ -220,10 +234,10 @@ export function TransactionDetailCard({
                   <View style={styles.splitRow}>
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.splitCategory, { color: colors.text }]}>
-                        {split.categoryName || 'General'}
+                        {split.categoryName || t('general')}
                       </Text>
                       <Text style={[styles.splitAccount, { color: colors.textLight }]}>
-                        {split.accountName || 'Cuenta'}
+                        {split.accountName || t('account')}
                       </Text>
                       {split.notes && (
                         <Text style={[styles.splitNotes, { color: colors.textLight }]}>
@@ -245,18 +259,52 @@ export function TransactionDetailCard({
         </View>
       )}
 
+      {canEdit && onEdit ? (
+        <Pressable
+          style={({ pressed }) => [
+            styles.editActionButton,
+            { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+            pressed && styles.pressed,
+          ]}
+          onPress={onEdit}
+          disabled={isDeleting}
+          accessibilityRole="button"
+          accessibilityLabel={t('editMovement')}
+        >
+          <Pencil size={18} color={colors.primaryText} strokeWidth={2.5} />
+          <Text
+            style={[
+              styles.editActionButtonText,
+              { color: colors.primaryText },
+            ]}
+          >
+            {t('editMovement')}
+          </Text>
+        </Pressable>
+      ) : null}
+
       {/* Botón Eliminar Destacado */}
-      <TouchableOpacity
-        style={[styles.deleteActionButton, { backgroundColor: colors.errorSoft, borderColor: colors.error }]}
+      <Pressable
+        style={({ pressed }) => [
+          styles.deleteActionButton,
+          {
+            backgroundColor: colors.errorSoft,
+            borderColor: colors.error,
+            marginTop: canEdit ? 12 : 32,
+          },
+          pressed && styles.pressed,
+        ]}
         onPress={onDelete}
-        activeOpacity={0.8}
         disabled={isDeleting}
+        accessibilityRole="button"
+        accessibilityLabel={isDeleting ? t('deleting') : t('deleteThisMovement')}
+        accessibilityState={{ disabled: isDeleting, busy: isDeleting }}
       >
         <Trash size={18} color={colors.errorText} strokeWidth={2.5} />
         <Text style={[styles.deleteActionButtonText, { color: colors.errorText }]}>
-          {isDeleting ? 'Eliminando...' : 'Eliminar este movimiento'}
+          {isDeleting ? t('deleting') : t('deleteThisMovement')}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     </>
   );
 }
@@ -375,6 +423,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
   },
+  editActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    height: 52,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    marginTop: 32,
+  },
+  editActionButtonText: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
   deleteActionButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -388,5 +450,8 @@ const styles = StyleSheet.create({
   deleteActionButtonText: {
     fontSize: 15,
     fontWeight: '800',
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });

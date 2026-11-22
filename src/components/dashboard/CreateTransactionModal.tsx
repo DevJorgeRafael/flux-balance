@@ -1,35 +1,34 @@
 import React, { useRef, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-} from 'react-native';
-import { X } from 'lucide-react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import X from 'lucide-react-native/icons/x';
 import { appAlert } from '@/components/ui/alert/appAlert';
-import { TransactionType } from '@/core/models/transaction';
-import { Account } from '@/core/models/account';
-import { Category } from '@/core/models/category';
-import { isHexColor, useColors, useThemeMode } from '@/components/ui/theme';
-import { Card } from '@/components/ui/Card';
-import { SqliteTransactionRepository } from '@/infrastructure/repositories';
-import { useTranslation } from '@/core/i18n/useTranslation';
-import { useCurrency } from '@/core/currency/useCurrency';
+import { Button } from '@/components/ui/atoms/Button';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
-import { getCurrencyDecimals } from '@/core/constants/currencies';
+import { useColors } from '@/components/ui/theme';
+import { TransactionFormFields } from '@/components/transactions/TransactionFormFields';
 import {
-  MAX_AMOUNT,
-  MAX_TRANSACTION_DESCRIPTION_LENGTH,
-} from '@/core/constants/inputLimits';
+  resolveTransactionFormSelection,
+  type TransactionFormValues,
+} from '@/components/transactions/transactionFormState';
+import { getCurrencyDecimals } from '@/core/constants/currencies';
+import { MAX_AMOUNT } from '@/core/constants/inputLimits';
+import { useCurrency } from '@/core/currency/useCurrency';
+import { useTranslation } from '@/core/i18n/useTranslation';
 import { getAmountInputErrorKey } from '@/core/i18n/validationMessages';
+import type { Account } from '@/core/models/account';
+import type { Category } from '@/core/models/category';
+import type {
+  TransactionPrefill,
+  TransactionType,
+} from '@/core/models/transaction';
 import { parseAmountInput } from '@/core/utils/money';
+import { SqliteTransactionRepository } from '@/infrastructure/repositories';
+import { applyTransactionPrefill } from './transactionPrefill';
 
 interface CreateTransactionModalProps {
   visible: boolean;
   initialType?: TransactionType;
+  initialPrefill?: TransactionPrefill | null;
   accounts: Account[];
   categories: Category[];
   onClose: () => void;
@@ -42,6 +41,7 @@ const transactionRepo = new SqliteTransactionRepository();
 export function CreateTransactionModal({
   visible,
   initialType = 'EXPENSE',
+  initialPrefill = null,
   accounts,
   categories,
   onClose,
@@ -49,42 +49,88 @@ export function CreateTransactionModal({
   blurTarget,
 }: CreateTransactionModalProps) {
   const colors = useColors();
-  const { isDark } = useThemeMode();
   const { currency, format, locale } = useCurrency();
   const { t } = useTranslation();
   const submittingRef = useRef(false);
 
-  const [txType, setTxType] = useState<TransactionType>(initialType);
-  const [txAmount, setTxAmount] = useState('');
-  const [txDesc, setTxDesc] = useState('');
-  const [selectedAccountId, setSelectedAccountId] = useState<string>('');
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [formValues, setFormValues] = useState<TransactionFormValues>(() => ({
+    type: initialType,
+    amount: '',
+    description: '',
+    accountId: accounts[0]?.id ?? '',
+    categoryId: '',
+  }));
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const typeCategories = categories.filter((category) => category.type === txType);
+  const [appliedPrefill, setAppliedPrefill] = useState<TransactionPrefill | null>(
+    null
+  );
+
+  const updateField = (
+    field: 'amount' | 'description' | 'accountId' | 'categoryId',
+    value: string
+  ) => {
+    setFormValues((current) => ({ ...current, [field]: value }));
+  };
+
+  const resetForm = () => {
+    setFormValues((current) => ({
+      ...current,
+      amount: '',
+      description: '',
+      accountId: accounts[0]?.id ?? '',
+      categoryId: '',
+    }));
+  };
+
+  const handleTypeChange = (type: TransactionType) => {
+    setFormValues((current) => ({ ...current, type, categoryId: '' }));
+  };
+
+  const applyPrefill = (prefill: TransactionPrefill, type: TransactionType) => {
+    setAppliedPrefill(prefill);
+    applyTransactionPrefill(
+      prefill,
+      type,
+      accounts,
+      categories,
+      (value) => format(value, { showCurrency: false }),
+      {
+        amount: (value) => updateField('amount', value),
+        description: (value) => updateField('description', value),
+        accountId: (value) => updateField('accountId', value),
+        categoryId: (value) => updateField('categoryId', value),
+      }
+    );
+  };
 
   const [prevVisible, setPrevVisible] = useState(visible);
   if (visible !== prevVisible) {
     setPrevVisible(visible);
     if (visible) {
-      setTxType(initialType);
-      if (accounts.length > 0 && !selectedAccountId) {
-        setSelectedAccountId(accounts[0].id);
+      setFormValues((current) => ({ ...current, type: initialType }));
+      if (initialPrefill) {
+        applyPrefill(initialPrefill, initialType);
+      } else if (appliedPrefill) {
+        setAppliedPrefill(null);
+        resetForm();
+      } else if (accounts.length > 0 && !formValues.accountId) {
+        setFormValues((current) => ({ ...current, accountId: accounts[0].id }));
       }
     }
+  } else if (visible && initialPrefill && initialPrefill !== appliedPrefill) {
+    setFormValues((current) => ({ ...current, type: initialType }));
+    applyPrefill(initialPrefill, initialType);
   }
-
-  const resetForm = () => {
-    setTxAmount('');
-    setTxDesc('');
-    setSelectedAccountId(accounts[0]?.id || '');
-    setSelectedCategoryId('');
-  };
 
   const handleCreate = async () => {
     if (submittingRef.current) return;
 
     const decimals = getCurrencyDecimals(currency);
-    const amountResult = parseAmountInput(txAmount, locale, decimals);
+    const amountResult = parseAmountInput(
+      formValues.amount,
+      locale,
+      decimals
+    );
     if (!amountResult.ok) {
       void appAlert({
         type: 'error',
@@ -99,7 +145,12 @@ export function CreateTransactionModal({
     }
     const amountVal = amountResult.value;
 
-    const accountId = selectedAccountId || accounts[0]?.id;
+    const selection = resolveTransactionFormSelection(
+      formValues,
+      accounts,
+      categories
+    );
+    const accountId = selection.effectiveAccountId;
     if (!accountId) {
       void appAlert({
         type: 'warning',
@@ -110,23 +161,22 @@ export function CreateTransactionModal({
       return;
     }
 
-    const catId =
-      typeCategories.find((category) => category.id === selectedCategoryId)?.id ??
-      typeCategories[0]?.id ??
-      '';
+    if (formValues.type !== 'INCOME' && formValues.type !== 'EXPENSE') {
+      return;
+    }
 
     submittingRef.current = true;
     try {
       setIsSubmitting(true);
       await transactionRepo.createWithSplits({
-        type: txType,
+        type: formValues.type,
         date: new Date().toISOString(),
         totalAmount: amountVal,
-        description: txDesc.trim() || undefined,
+        description: formValues.description.trim() || undefined,
         splits: [
           {
-            accountId: accountId,
-            categoryId: catId,
+            accountId,
+            categoryId: selection.activeCategoryId,
             amount: amountVal,
           },
         ],
@@ -158,11 +208,19 @@ export function CreateTransactionModal({
     >
       <View style={styles.modalTopBar}>
         <Text style={[styles.modalHeading, { color: colors.text }]}>
-          {txType === 'INCOME' ? t('registerIncome') : t('registerExpense')}
+          {formValues.type === 'INCOME'
+            ? t('registerIncome')
+            : t('registerExpense')}
         </Text>
-        <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+        <Pressable
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={t('close')}
+          hitSlop={14}
+          style={({ pressed }) => pressed && styles.pressed}
+        >
           <X size={22} color={colors.textLight} strokeWidth={2} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <ScrollView
@@ -171,199 +229,24 @@ export function CreateTransactionModal({
         style={{ flexGrow: 0 }}
         contentContainerStyle={{ paddingBottom: 32 }}
       >
-        {/* Segmented Control de Tipo */}
-          <Card
-            backgroundColor={colors.surfaceMuted}
-            style={styles.typeSegmentedControl}
-          >
-            <TouchableOpacity
-              style={[
-                styles.typeSegmentOption,
-                txType === 'INCOME' && { backgroundColor: colors.success, borderRadius: 10 },
-              ]}
-              onPress={() => {
-                setTxType('INCOME');
-                setSelectedCategoryId('');
-              }}
-            >
-              <Text
-                style={[
-                  styles.typeSegmentText,
-                  { color: txType === 'INCOME' ? colors.onSuccess : colors.textLight },
-                ]}
-              >
-                {t('income')}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.typeSegmentOption,
-                txType === 'EXPENSE' && { backgroundColor: colors.error, borderRadius: 10 },
-              ]}
-              onPress={() => {
-                setTxType('EXPENSE');
-                setSelectedCategoryId('');
-              }}
-            >
-              <Text
-                style={[
-                  styles.typeSegmentText,
-                  { color: txType === 'EXPENSE' ? colors.onError : colors.textLight },
-                ]}
-              >
-                {t('expense')}
-              </Text>
-            </TouchableOpacity>
-          </Card>
+        <TransactionFormFields
+          values={formValues}
+          onChange={updateField}
+          onTypeChange={handleTypeChange}
+          accounts={accounts}
+          categories={categories}
+          autoFocusAmount
+          fallbackToFirstCategory
+          allowEmptyCategory={false}
+        />
 
-          {/* Input de Monto */}
-          <Text style={[styles.formLabel, { color: colors.textLight }]}>
-            {t('amount', { currency })}
-          </Text>
-          <TextInput
-            style={[
-              styles.largeAmountInput,
-              {
-                color: colors.text,
-                backgroundColor: colors.inputBackground,
-                borderColor: colors.border,
-              },
-            ]}
-            placeholder={format(0, { showCurrency: false })}
-            placeholderTextColor={colors.textLight}
-            keyboardType="decimal-pad"
-            value={txAmount}
-            onChangeText={setTxAmount}
-            autoFocus
-          />
-
-          {/* Input de Descripción */}
-          <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14 }]}>{t('description')}</Text>
-          <TextInput
-            style={[
-              styles.standardInput,
-              {
-                color: colors.text,
-                backgroundColor: colors.inputBackground,
-                borderColor: colors.border,
-              },
-            ]}
-            placeholder={t('descriptionPlaceholder')}
-            placeholderTextColor={colors.textLight}
-            value={txDesc}
-            onChangeText={setTxDesc}
-            maxLength={MAX_TRANSACTION_DESCRIPTION_LENGTH}
-          />
-
-          {/* Selector de Categoría */}
-          {typeCategories.length > 0 && (
-            <>
-              <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14 }]}>{t('category')}</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
-                {typeCategories.map((cat) => (
-                  <TouchableOpacity
-                    key={cat.id}
-                    style={[
-                      styles.selectionChip,
-                      {
-                        backgroundColor:
-                          selectedCategoryId === cat.id
-                            ? colors.primary
-                            : isDark
-                              ? colors.surfaceMuted
-                              : colors.inputBackground,
-                        borderColor: colors.border,
-                      },
-                    ]}
-                    onPress={() => setSelectedCategoryId(cat.id)}
-                  >
-                    <View
-                      style={[
-                        styles.categoryColorDot,
-                        { backgroundColor: isHexColor(cat.color) ? cat.color : colors.chartOther },
-                      ]}
-                    />
-                    <Text
-                      style={[
-                        styles.selectionChipText,
-                        {
-                          color: selectedCategoryId === cat.id ? colors.onPrimary : colors.text,
-                        },
-                      ]}
-                    >
-                      {cat.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </>
-          )}
-
-          {/* Selector de Cuenta */}
-          {accounts.length > 0 && (
-            <>
-              <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 10 }]}>{t('destinationAccount')}</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
-                {accounts.map((acc) => (
-                  <TouchableOpacity
-                    key={acc.id}
-                    style={[
-                      styles.selectionChip,
-                      {
-                        backgroundColor:
-                          selectedAccountId === acc.id
-                            ? colors.primary
-                            : isDark
-                              ? colors.surfaceMuted
-                              : colors.inputBackground,
-                        borderColor: colors.border,
-                      },
-                    ]}
-                    onPress={() => setSelectedAccountId(acc.id)}
-                  >
-                    <Text
-                      style={[
-                        styles.selectionChipText,
-                        {
-                          color: selectedAccountId === acc.id ? colors.onPrimary : colors.text,
-                        },
-                      ]}
-                    >
-                      {acc.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </>
-          )}
-
-          {/* Botón Guardar */}
-          <TouchableOpacity
-            style={[
-              styles.submitTransactionButton,
-              {
-                backgroundColor: txType === 'INCOME' ? colors.success : colors.primary,
-                opacity: isSubmitting ? 0.7 : 1,
-              },
-            ]}
-            onPress={handleCreate}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator
-                color={txType === 'INCOME' ? colors.onSuccess : colors.onPrimary}
-              />
-            ) : (
-              <Text
-                style={[
-                  styles.submitTransactionButtonText,
-                  { color: txType === 'INCOME' ? colors.onSuccess : colors.onPrimary },
-                ]}
-              >
-                {t('saveMovement')}
-              </Text>
-            )}
-          </TouchableOpacity>
+        <Button
+          title={t('saveMovement')}
+          variant="primary"
+          onPress={handleCreate}
+          loading={isSubmitting}
+          style={styles.submitTransactionButton}
+        />
       </ScrollView>
     </BottomSheetModal>
   );
@@ -380,73 +263,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
   },
-  typeSegmentedControl: {
-    flexDirection: 'row',
-    padding: 4,
-    marginBottom: 18,
-  },
-  typeSegmentOption: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 10,
-  },
-  typeSegmentText: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  formLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-    marginBottom: 8,
-  },
-  largeAmountInput: {
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    fontSize: 28,
-    fontWeight: '800',
-    textAlign: 'center',
-  },
-  standardInput: {
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  selectionChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginRight: 8,
-  },
-  categoryColorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  selectionChipText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
   submitTransactionButton: {
-    borderRadius: 18,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginTop: 20,
   },
-  submitTransactionButtonText: {
-    fontSize: 16,
-    fontWeight: '800',
+  pressed: {
+    opacity: 0.85,
   },
 });

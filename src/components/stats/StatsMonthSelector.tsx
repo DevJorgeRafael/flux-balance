@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import ChevronLeft from 'lucide-react-native/icons/chevron-left';
+import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import { useColors } from '@/components/ui/theme';
 
 interface StatsMonthSelectorProps {
@@ -28,6 +29,7 @@ export function StatsMonthSelector({
         onPress={onPrevious}
         accessibilityRole="button"
         accessibilityLabel={previousLabel}
+        hitSlop={2}
         style={({ pressed }) => [
           styles.arrow,
           { backgroundColor: colors.surface },
@@ -51,6 +53,7 @@ export function StatsMonthSelector({
         accessibilityRole="button"
         accessibilityLabel={nextLabel}
         accessibilityState={{ disabled: nextDisabled }}
+        hitSlop={2}
         style={({ pressed }) => [
           styles.arrow,
           { backgroundColor: colors.surface },

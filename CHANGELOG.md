@@ -2,6 +2,180 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.2.4] - 2026-11-21
+
+### Añadido
+
+- Los próximos recordatorios aparecen en el inicio con creación rápida.
+- Ajustes muestra los recordatorios activos y acceso directo a crear uno.
+
+### Mejorado
+
+- El inicio muestra 5 movimientos y permite expandirlos en la misma pantalla.
+- “Ver historial” aparece solo cuando no quedan movimientos por expandir.
+
+## [2.2.3] - 2026-11-21
+
+### Añadido
+
+- Los movimientos simples se editan desde su detalle.
+- La edición cambia tipo, importe, descripción, cuenta y categoría.
+- Los saldos se ajustan al cambiar de cuenta.
+
+### Mejorado
+
+- El detalle y el saldo se actualizan al volver de editar.
+
+## [2.2.2] - 2026-11-20
+
+### Corregido
+
+- Las esquinas del selector de ingresos y gastos de Estadísticas quedan alineadas con su tarjeta.
+
+## [2.2.1] - 2026-11-20
+
+### Mejorado
+
+- Los datos demo reparten movimientos realistas en las últimas 3 semanas.
+
+### Corregido
+
+- El inicio muestra solo los movimientos del mes actual.
+- Si no hay movimientos del mes, muestra los últimos 5.
+- La moneda del splash se ve redondeada y sin el recorte inferior.
+
+## [2.2.0] - 2026-11-20
+
+### Añadido
+
+- Nueva vista Tendencia con la evolución diaria de ingresos y gastos.
+- Nueva vista Saldo con la evolución diaria del saldo del mes.
+- Filtro por cuenta en la vista Saldo.
+- Resumen con saldo inicial, saldo final y variación.
+
+### Mejorado
+
+- Las estadísticas muestran los decimales de la moneda.
+- Los gráficos permiten tocar un día para ver su detalle.
+- La vista Tendencia resume promedio diario, día más alto y días con ingresos o gastos.
+- La vista Saldo admite cuentas con saldo negativo.
+
+### Corregido
+
+- Los movimientos con fecha sin hora ya no se agrupan en el día anterior.
+- La vista Saldo no muestra importes antes de crear la cuenta.
+
+## [2.1.1] - 2026-11-20
+
+### Corregido
+
+- El ojo que oculta saldos también oculta Todas las cuentas, cada cuenta y los movimientos del inicio.
+
+## [2.1.0] - 2026-11-20
+
+### Añadido
+
+- El splash anima al cerdo y la moneda.
+- El balance del inicio hace un conteo ascendente.
+
+### Mejorado
+
+- El splash aparece antes y el arranque es más rápido.
+- El conteo se reproduce una vez por sesión y respeta la reducción de movimiento.
+- Las animaciones usan una sola librería y la app pesa menos.
+
+### Corregido
+
+- El ícono adaptativo de Android coincide con el arte de Play Store.
+
+## [2.0.4] - 2026-11-18
+
+### Mejorado
+
+- Selectores de cuenta y categoría unificados en movimientos y recordatorios, con búsqueda y hoja inferior.
+- Los formularios usan chips de cuenta cuando hay pocas y una fila con hoja inferior cuando hay muchas.
+- Los segmentos de ingreso/gasto y los filtros de movimientos usan fondos suaves con texto de alto contraste en modo claro.
+- El botón Guardar movimiento usa el color principal del tema.
+- Mejor contraste y jerarquía en el resumen de cuenta, el indicador de rendimiento y las tarjetas del inicio.
+- La navegación entre pestañas usa un fundido breve y respeta la reducción de movimiento.
+
+### Corregido
+
+- El selector de categorías ya no requiere desplazamiento horizontal.
+- La app admite rotación y ya no declara la pantalla vertical como requisito obligatorio, ampliando la disponibilidad en Google Play.
+
+## [2.0.3] - 2026-11-17
+
+### Mejorado
+
+- Selector de tipo unificado en movimientos y recordatorios.
+- Chips, tarjetas y botones con áreas táctiles de al menos 44 pt y etiquetas accesibles.
+- Fechas, cuentas y movimientos respetan el idioma y la configuración regional.
+- Se unificaron los estados presionados de la interfaz.
+
+### Cambiado
+
+- Se reemplazaron los TouchableOpacity restantes por Pressable.
+
+### Corregido
+
+- Los botones y segmentos de ingreso y gasto tienen mejor contraste en modo claro.
+- El punto de color de la categoría se distingue sobre el chip seleccionado.
+- Guardar el tema ya no puede fallar por una base de datos bloqueada.
+- Ya no aparece el aviso de splash al usar Expo Go.
+
+## [2.0.2] - 2026-11-17
+
+### Añadido
+
+- Selector de fecha con calendario en recordatorios.
+- Selector de hora con ruedas de hora y minuto.
+
+### Mejorado
+
+- Fecha y hora se eligen en una hoja inferior.
+- Los selectores respetan el idioma y el tema.
+- El calendario inicia en lunes en español.
+
+### Cambiado
+
+- orn-ui actualizado a 0.3.1.
+
+## [2.0.1] - 2026-11-09
+
+### Corregido
+
+- El teclado ya no tapa los campos del formulario de recordatorios.
+- El botón Guardar recordatorio permanece visible con el teclado abierto.
+
+### Mejorado
+
+- "Siguiente" recorre los campos y "Listo" cierra el teclado.
+- El selector de categorías usa una fila con hoja inferior y búsqueda.
+- La búsqueda de categorías ignora mayúsculas y acentos.
+- El selector de cuentas usa chips o fila según la cantidad.
+
+## [2.0.0] - 2026-11-09
+
+Versión mayor por la nueva función de recordatorios. Tus datos existentes no cambian.
+
+### Añadido
+
+- Nuevos recordatorios de gastos e ingresos.
+- Notificaciones locales para avisar de cada recordatorio.
+- Toca una notificación para registrar el movimiento.
+- El monto de los recordatorios ahora es opcional.
+- Los recordatorios archivados se pueden eliminar con confirmación.
+- Nueva nota sobre el ahorro de batería del teléfono.
+- Nuevo ícono para las notificaciones de recordatorios.
+
+### Corregido
+
+- Las notificaciones de recordatorios ya no se duplican.
+- Al conceder notificaciones ya no aparece un aviso adicional.
+- El encabezado de recordatorios ya no muestra un bloque vacío.
+- Los respaldos aceptan cuentas con saldo negativo.
+
 ## [1.6.7] - 2026-11-04
 
 ### Corregido

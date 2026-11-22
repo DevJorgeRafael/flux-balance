@@ -38,6 +38,14 @@ export function isValidBackupAmount(value: number): boolean {
   );
 }
 
+export function isValidBackupBalance(value: number): boolean {
+  return (
+    Number.isFinite(value) &&
+    value >= -MAX_AMOUNT &&
+    value <= MAX_AMOUNT
+  );
+}
+
 export function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -147,6 +155,22 @@ export function requireAmount(
 
   const field = value[key];
   if (typeof field !== 'number' || !isValidBackupAmount(field)) {
+    addError(errors, 'invalidAmount', path, { max: MAX_AMOUNT });
+    return null;
+  }
+  return field;
+}
+
+export function requireBalance(
+  value: UnknownRecord,
+  key: string,
+  path: string,
+  errors: BackupValidationError[]
+): number | null {
+  if (!hasOwn(value, key)) return missingField(errors, path);
+
+  const field = value[key];
+  if (typeof field !== 'number' || !isValidBackupBalance(field)) {
     addError(errors, 'invalidAmount', path, { max: MAX_AMOUNT });
     return null;
   }

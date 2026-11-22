@@ -82,7 +82,8 @@ export function parseAccountRows(
       row,
       'balance',
       errors,
-      false
+      false,
+      true
     );
     const currency = rowText(table, row, 'currency');
     if (!currency) {

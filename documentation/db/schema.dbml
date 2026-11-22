@@ -1,0 +1,157 @@
+// Generado desde src/infrastructure/database. Última revisión: 2026-11-05.
+// Versión de esquema: user_version = 3.
+
+// Esquema SQLite de Flux Balance. Las tablas base se crean en 001_baseline.ts
+// (migración 1); app_settings se crea en 002_app_settings.ts (migración 2);
+// reminders se crea en 003_reminders.ts (migración 3).
+// categories_backup_v1 lo crea migrateCategories.ts durante la migración 1.
+
+Table accounts {
+  id TEXT [pk, not null]
+  name TEXT [not null]
+  type TEXT [not null]
+  balance REAL [not null, default: 0.0]
+  currency TEXT [not null, default: 'USD']
+  annual_rate REAL [default: null]
+  is_archived INTEGER [not null, default: 0]
+  created_at TEXT [not null, default: `(datetime('now'))`]
+  updated_at TEXT [not null, default: `(datetime('now'))`]
+
+  Note: '''CHECK (type IN ('CHECKING', 'FLEXIBLE_SAVINGS', 'FIXED_TERM'))'''
+}
+
+Table fixed_term_deposits {
+  id TEXT [pk, not null]
+  account_id TEXT [not null]
+  principal_amount REAL [not null]
+  annual_rate REAL [not null]
+  term_months INTEGER [not null]
+  start_date TEXT [not null]
+  maturity_date TEXT [not null]
+  status TEXT [not null, default: 'ACTIVE']
+  created_at TEXT [not null, default: `(datetime('now'))`]
+
+  indexes {
+    account_id [name: 'idx_fixed_deposits_account']
+  }
+
+  Note: '''CHECK (status IN ('ACTIVE', 'MATURED', 'CANCELLED'))'''
+}
+
+Table income_categories {
+  id TEXT [pk, not null]
+  name TEXT [not null]
+  color TEXT
+  icon TEXT
+  is_default INTEGER [not null, default: 0]
+  sort_order INTEGER [not null, default: 0]
+  created_at TEXT [not null, default: `(datetime('now'))`]
+
+  indexes {
+    (sort_order, name) [name: 'idx_income_categories_order']
+  }
+
+  Note: '''CHECK (is_default IN (0, 1))'''
+}
+
+Table expense_categories {
+  id TEXT [pk, not null]
+  name TEXT [not null]
+  color TEXT
+  icon TEXT
+  is_default INTEGER [not null, default: 0]
+  sort_order INTEGER [not null, default: 0]
+  created_at TEXT [not null, default: `(datetime('now'))`]
+
+  indexes {
+    (sort_order, name) [name: 'idx_expense_categories_order']
+  }
+
+  Note: '''CHECK (is_default IN (0, 1))'''
+}
+
+Table transactions {
+  id TEXT [pk, not null]
+  type TEXT [not null]
+  total_amount REAL [not null]
+  description TEXT
+  date TEXT [not null]
+  created_at TEXT [not null, default: `(datetime('now'))`]
+
+  indexes {
+    date [name: 'idx_transactions_date']
+  }
+
+  Note: '''CHECK (type IN ('INCOME', 'EXPENSE', 'TRANSFER'))'''
+}
+
+Table transaction_splits {
+  id TEXT [pk, not null]
+  transaction_id TEXT [not null]
+  account_id TEXT [not null]
+  category_id TEXT [not null]
+  amount REAL [not null]
+  notes TEXT
+
+  indexes {
+    transaction_id [name: 'idx_splits_tx']
+    account_id [name: 'idx_splits_account']
+    category_id [name: 'idx_splits_category']
+  }
+
+  Note: '''category_id referencia income_categories.id o expense_categories.id según transactions.type. No existe FK declarada porque el destino depende del tipo de transacción; la resolución se hace en SqliteTransactionRepository.'''
+}
+
+Table reminders {
+  id TEXT [pk, not null]
+  title TEXT [not null]
+  type TEXT [not null]
+  description TEXT
+  amount REAL
+  account_id TEXT
+  category_id TEXT
+  recurrence TEXT [not null]
+  time TEXT [not null]
+  start_date TEXT [not null]
+  next_run_at TEXT
+  is_archived INTEGER [not null, default: 0]
+  last_notified_at TEXT
+  created_at TEXT [not null, default: `(datetime('now'))`]
+  updated_at TEXT [not null, default: `(datetime('now'))`]
+
+  indexes {
+    (is_archived, next_run_at) [name: 'idx_reminders_due']
+    account_id [name: 'idx_reminders_account']
+    (category_id, type) [name: 'idx_reminders_category']
+  }
+
+  Note: '''Creada por la migración 3 (003_reminders.ts). CHECK: type IN ('INCOME', 'EXPENSE'); recurrence IN ('ONCE', 'DAILY', 'WEEKLY', 'MONTHLY'); amount NULL o > 0 y <= 1000000000000; time HH:mm y start_date YYYY-MM-DD con formato y rango básico; is_archived IN (0, 1); is_archived = 1 OR next_run_at IS NOT NULL OR recurrence = 'ONCE'. next_run_at guarda UTC ISO con milisegundos y Z. category_id referencia income_categories.id o expense_categories.id según type, sin FK declarada; se valida en SqliteReminderRepository. Los recordatorios no forman parte del respaldo en esta fase.'''
+}
+
+Table app_settings {
+  key TEXT [pk, not null]
+  value TEXT [not null]
+
+  Note: '''Creada por la migración 2 (002_app_settings.ts). Ya no se crea de forma perezosa en appSettings.ts ni backup.ts.'''
+}
+
+Table categories_backup_v1 {
+  id TEXT [pk, not null]
+  name TEXT [not null]
+  type TEXT
+  icon TEXT
+  color TEXT
+  is_default INTEGER [not null]
+  created_at TEXT
+  backed_up_at TEXT [not null]
+
+  Note: '''Respaldo creado por migrateCategories.ts antes de migrar la tabla legacy categories. Solo existe en instalaciones que migraron desde versiones anteriores.'''
+}
+
+Ref: fixed_term_deposits.account_id > accounts.id [delete: cascade]
+Ref: transaction_splits.transaction_id > transactions.id [delete: cascade]
+Ref: transaction_splits.account_id > accounts.id [delete: restrict]
+Ref: reminders.account_id > accounts.id [delete: set null]
+
+// La tabla legacy categories y la tabla temporal transaction_splits_migrated
+// se eliminan durante migrateCategories.ts; no forman parte del esquema final.

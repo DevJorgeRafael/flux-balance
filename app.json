@@ -2,8 +2,8 @@
   "expo": {
     "name": "Flux Balance",
     "slug": "flux-balance",
-    "version": "1.6.7",
-    "orientation": "portrait",
+    "version": "2.2.4",
+    "orientation": "default",
     "icon": "./assets/images/logos-app/icon-1024.png",
     "scheme": "fluxbalance",
     "userInterfaceStyle": "automatic",
@@ -14,7 +14,7 @@
     },
     "android": {
       "package": "com.devjorgerafael.flux_balance",
-      "versionCode": 5,
+      "versionCode": 8,
       "allowBackup": false,
       "blockedPermissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
@@ -24,6 +24,7 @@
       ],
       "adaptiveIcon": {
         "backgroundColor": "#1642AF",
+        "backgroundImage": "./assets/images/logos-app/logo-background-1024.png",
         "foregroundImage": "./assets/images/logos-app/logo-foreground-1024.png",
         "monochromeImage": "./assets/images/logos-app/logo-monochrome-1024.png"
       },
@@ -57,6 +58,15 @@
       "expo-status-bar",
       "expo-web-browser",
       "expo-sharing",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notifications/notification-icon-96-bold.png",
+          "color": "#1642AF",
+          "defaultChannel": "reminders",
+          "enableRemoteNotifications": false
+        }
+      ],
       "./plugins/withReleaseSigning"
     ],
     "extra": {

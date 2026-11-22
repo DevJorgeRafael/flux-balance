@@ -1,7 +1,14 @@
 import React, { useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { Coins, Languages, Moon, Sun, TrendingDown, TrendingUp } from 'lucide-react-native';
+import Bell from 'lucide-react-native/icons/bell';
+import Coins from 'lucide-react-native/icons/coins';
+import Languages from 'lucide-react-native/icons/languages';
+import Moon from 'lucide-react-native/icons/moon';
+import Plus from 'lucide-react-native/icons/plus';
+import Sun from 'lucide-react-native/icons/sun';
+import TrendingDown from 'lucide-react-native/icons/trending-down';
+import TrendingUp from 'lucide-react-native/icons/trending-up';
 import { useColors, useInsets, useThemeMode } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { BottomFade } from '@/components/ui/BottomFade';
@@ -13,6 +20,7 @@ import { SettingsRow } from '@/components/settings/SettingsRow';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useDashboard } from '@/context/DashboardContext';
+import { useReminderOverview } from '@/hooks/useReminderOverview';
 import { TAB_BAR_CONTENT_GAP, TAB_BAR_CONTENT_OFFSET } from '@/components/navigation/tabBarLayout';
 
 export default function SettingsScreen() {
@@ -22,6 +30,8 @@ export default function SettingsScreen() {
   const { language, languagePreference, t } = useTranslation();
   const { currency } = useCurrency();
   const { handleRefresh } = useDashboard();
+  const { reminders } = useReminderOverview();
+  const activeReminderCount = reminders.length;
 
   useFocusEffect(
     useCallback(() => {
@@ -64,6 +74,23 @@ export default function SettingsScreen() {
                 params: { type: 'EXPENSE' },
               })
             }
+          />
+        </Card>
+
+        <SectionLabel>{t('reminders')}</SectionLabel>
+        <Card style={styles.card}>
+          <SettingsRow
+            icon={Bell}
+            label={t('manageReminders')}
+            value={activeReminderCount > 0 ? String(activeReminderCount) : undefined}
+            showChevron
+            onPress={() => router.push('/reminders')}
+          />
+          <SettingsRow
+            icon={Plus}
+            label={t('newReminder')}
+            isLast
+            onPress={() => router.push('/reminders/form')}
           />
         </Card>
 
