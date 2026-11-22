@@ -7,6 +7,7 @@ import Languages from 'lucide-react-native/icons/languages';
 import Moon from 'lucide-react-native/icons/moon';
 import Plus from 'lucide-react-native/icons/plus';
 import Sun from 'lucide-react-native/icons/sun';
+import Target from 'lucide-react-native/icons/target';
 import TrendingDown from 'lucide-react-native/icons/trending-down';
 import TrendingUp from 'lucide-react-native/icons/trending-up';
 import { useColors, useInsets, useThemeMode } from '@/components/ui/theme';
@@ -91,6 +92,17 @@ export default function SettingsScreen() {
             label={t('newReminder')}
             isLast
             onPress={() => router.push('/reminders/form')}
+          />
+        </Card>
+
+        <SectionLabel>{t('budgets')}</SectionLabel>
+        <Card style={styles.card}>
+          <SettingsRow
+            icon={Target}
+            label={t('budgets')}
+            showChevron
+            isLast
+            onPress={() => router.push('/settings/budgets')}
           />
         </Card>
 

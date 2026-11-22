@@ -196,15 +196,16 @@ function createLegacyDatabase() {
   return { raw, db };
 }
 
-test('instalación nueva termina en user_version 3 y crea todas las tablas', async () => {
+test('instalación nueva termina en user_version 4 y crea todas las tablas', async () => {
   const { raw, db } = createDatabase();
 
   await runMigrations(db);
 
-  assert.equal(userVersion(raw), 3);
+  assert.equal(userVersion(raw), 4);
   assert.deepEqual(tableNames(raw), [
     'accounts',
     'app_settings',
+    'budgets',
     'expense_categories',
     'fixed_term_deposits',
     'income_categories',
@@ -251,7 +252,7 @@ test('base en versión 0 con esquema actual y filas migra sin perder datos', asy
 
   await runMigrations(db);
 
-  assert.equal(userVersion(raw), 3);
+  assert.equal(userVersion(raw), 4);
   assert.equal(count(raw, 'accounts'), 1);
   assert.equal(count(raw, 'transactions'), 1);
   assert.equal(count(raw, 'transaction_splits'), 1);
@@ -281,7 +282,7 @@ test('base con tabla legacy categories crea el respaldo y migra las categorías'
 
   await runMigrations(db);
 
-  assert.equal(userVersion(raw), 3);
+  assert.equal(userVersion(raw), 4);
   assert.equal(tableExists(raw, 'categories'), false);
   assert.equal(tableExists(raw, 'categories_backup_v1'), true);
   assert.equal(count(raw, 'categories_backup_v1'), 3);
@@ -321,10 +322,10 @@ test('base con tabla legacy categories crea el respaldo y migra las categorías'
 test('una migración que falla después de un CREATE TABLE no avanza la versión ni deja la tabla', async () => {
   const { raw, db } = createDatabase();
   await runMigrations(db);
-  assert.equal(userVersion(raw), 3);
+  assert.equal(userVersion(raw), 4);
 
   const failingMigration = {
-    version: 4,
+    version: 5,
     name: 'falla_despues_de_crear',
     up: async (txn) => {
       await txn.execAsync(
@@ -339,7 +340,7 @@ test('una migración que falla después de un CREATE TABLE no avanza la versión
     /fallo intencional/
   );
 
-  assert.equal(userVersion(raw), 3);
+  assert.equal(userVersion(raw), 4);
   assert.equal(tableExists(raw, 'migracion_fallida'), false);
 });
 
@@ -397,7 +398,7 @@ test('foreign_key_check advierte por consola y no bloquea el arranque con filas 
     console.warn = originalWarn;
   }
 
-  assert.equal(userVersion(raw), 3);
+  assert.equal(userVersion(raw), 4);
   assert.equal(count(raw, 'transaction_splits'), 1);
   assert.equal(warnings.length, 1);
   assert.match(warnings[0], /1 fila\(s\) inválida\(s\)/);
