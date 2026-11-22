@@ -77,8 +77,37 @@ function migrateV0ToV1(backup: UnknownRecord): UnknownRecord {
   };
 }
 
+function migrateV1ToV2(backup: UnknownRecord): UnknownRecord {
+  const reminders = Array.isArray(backup.reminders)
+    ? backup.reminders.map((value) => {
+        if (!isRecord(value)) return value;
+        return {
+          ...value,
+          description: value.description ?? null,
+          amount: value.amount ?? null,
+          accountId: value.accountId ?? null,
+          categoryId: value.categoryId ?? null,
+          nextRunAt: value.nextRunAt ?? null,
+          lastNotifiedAt: value.lastNotifiedAt ?? null,
+        };
+      })
+    : [];
+
+  const preferences = isRecord(backup.preferences)
+    ? backup.preferences
+    : { theme: 'system', language: 'system' };
+
+  return {
+    ...backup,
+    schemaVersion: 2,
+    reminders,
+    preferences,
+  };
+}
+
 const MIGRATIONS: Record<number, BackupMigration> = {
   0: migrateV0ToV1,
+  1: migrateV1ToV2,
 };
 
 export function migrateBackup(raw: unknown): BackupMigrationResult {

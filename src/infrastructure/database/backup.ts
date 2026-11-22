@@ -1,10 +1,15 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
+import {
+  parseLanguagePreference,
+  parseThemePreference,
+} from '../../core/preferences/preferences';
 import type {
   BackupAccount,
   BackupCategory,
   BackupData,
   BackupFile,
   BackupFixedTermDeposit,
+  BackupReminder,
   BackupTransaction,
   BackupTransactionSplit,
 } from '../../core/models/backup';
@@ -66,6 +71,29 @@ interface SplitRow {
   notes: string | null;
 }
 
+interface ReminderRow {
+  id: string;
+  title: string;
+  type: BackupReminder['type'];
+  description: string | null;
+  amount: number | null;
+  account_id: string | null;
+  category_id: string | null;
+  recurrence: BackupReminder['recurrence'];
+  time: string;
+  start_date: string;
+  next_run_at: string | null;
+  is_archived: number;
+  last_notified_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface SettingRow {
+  key: string;
+  value: string;
+}
+
 interface ForeignKeyViolation {
   table: string;
   rowid: number;
@@ -111,10 +139,30 @@ function mapSplit(row: SplitRow): BackupTransactionSplit {
   };
 }
 
+function mapReminder(row: ReminderRow): BackupReminder {
+  return {
+    id: row.id,
+    title: row.title,
+    type: row.type,
+    description: row.description,
+    amount: row.amount,
+    accountId: row.account_id,
+    categoryId: row.category_id,
+    recurrence: row.recurrence,
+    time: row.time,
+    startDate: row.start_date,
+    nextRunAt: row.next_run_at,
+    isArchived: row.is_archived === 1,
+    lastNotifiedAt: row.last_notified_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 export async function buildBackupFromDatabase(
   db: BackupDatabase
 ): Promise<BackupData> {
-  const [accountRows, depositRows, incomeRows, expenseRows, transactionRows, splitRows] =
+  const [accountRows, depositRows, incomeRows, expenseRows, transactionRows, splitRows, reminderRows, settingRows] =
     await Promise.all([
       db.getAllAsync<AccountRow>(
         'SELECT * FROM accounts ORDER BY created_at ASC, id ASC'
@@ -134,6 +182,10 @@ export async function buildBackupFromDatabase(
       db.getAllAsync<SplitRow>(
         'SELECT * FROM transaction_splits ORDER BY transaction_id ASC, id ASC'
       ),
+      db.getAllAsync<ReminderRow>(
+        'SELECT * FROM reminders ORDER BY created_at ASC, id ASC'
+      ),
+      db.getAllAsync<SettingRow>('SELECT key, value FROM app_settings'),
     ]);
 
   const depositsByAccount = new Map<string, BackupFixedTermDeposit[]>();
@@ -163,6 +215,8 @@ export async function buildBackupFromDatabase(
     fixedTermDeposits: depositsByAccount.get(row.id) ?? [],
   }));
 
+  const settings = new Map(settingRows.map((row) => [row.key, row.value]));
+
   return {
     accounts,
     incomeCategories: incomeRows.map((row) => mapCategory(row, 'INCOME')),
@@ -176,6 +230,11 @@ export async function buildBackupFromDatabase(
       createdAt: row.created_at,
       splits: splitsByTransaction.get(row.id) ?? [],
     })),
+    reminders: reminderRows.map(mapReminder),
+    preferences: {
+      theme: parseThemePreference(settings.get('themePreference')),
+      language: parseLanguagePreference(settings.get('languagePreference')),
+    },
   };
 }
 
@@ -185,7 +244,7 @@ export async function importBackupIntoDatabase(
 ): Promise<void> {
   await db.withExclusiveTransactionAsync(async (txn) => {
     await txn.execAsync(`
-      UPDATE reminders SET account_id = NULL, category_id = NULL;
+      DELETE FROM reminders;
       DELETE FROM transaction_splits;
       DELETE FROM transactions;
       DELETE FROM fixed_term_deposits;
@@ -298,9 +357,44 @@ export async function importBackupIntoDatabase(
       }
     }
 
+    for (const reminder of backup.reminders) {
+      await txn.runAsync(
+        `INSERT INTO reminders
+           (id, title, type, description, amount, account_id, category_id,
+            recurrence, time, start_date, next_run_at, is_archived,
+            last_notified_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          reminder.id,
+          reminder.title,
+          reminder.type,
+          reminder.description,
+          reminder.amount,
+          reminder.accountId,
+          reminder.categoryId,
+          reminder.recurrence,
+          reminder.time,
+          reminder.startDate,
+          reminder.nextRunAt,
+          reminder.isArchived ? 1 : 0,
+          reminder.lastNotifiedAt,
+          reminder.createdAt,
+          reminder.updatedAt,
+        ]
+      );
+    }
+
     await txn.runAsync(
       'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
       ['currency', backup.currency]
+    );
+    await txn.runAsync(
+      'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+      ['themePreference', backup.preferences.theme]
+    );
+    await txn.runAsync(
+      'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+      ['languagePreference', backup.preferences.language]
     );
 
     const violations = await txn.getAllAsync<ForeignKeyViolation>(
