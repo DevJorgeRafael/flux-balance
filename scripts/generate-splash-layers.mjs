@@ -19,7 +19,7 @@ const SLOT = { x: 455.5, y: 409 };
 const BACK_LINE_PATH =
   'M 330 357 C 380 350 430 341 480 344 C 530 347 580 355 630 372';
 const BACK_LINE_WIDTH = 29;
-const OUTLINE_SMOOTH = { left: 250, right: 660, bottom: 230, degree: 6 };
+const OUTLINE_SMOOTH = { left: 200, innerLeft: 250, right: 660, bottom: 230, degree: 6 };
 
 function polynomialFit(values, left, right, degree) {
   const size = degree + 1;
@@ -64,7 +64,7 @@ function polynomialFit(values, left, right, degree) {
 }
 
 function smoothTopOutline(rgba, width, height) {
-  const { left, right, bottom, degree } = OUTLINE_SMOOTH;
+  const { left, innerLeft, right, bottom, degree } = OUTLINE_SMOOTH;
   const lastX = Math.min(right, width - 1);
   const lastY = Math.min(bottom, height - 1);
   const alphaAt = (x, y) => rgba[(y * width + x) * 4 + 3];
@@ -91,18 +91,33 @@ function smoothTopOutline(rgba, width, height) {
   }
 
   const topCurve = polynomialFit(outer, left, lastX, degree);
-  const bottomCurve = polynomialFit(inner, left, lastX, degree);
+  const bottomCurve = polynomialFit(inner, innerLeft, lastX, degree);
   const smoothed = Buffer.from(rgba);
   for (let x = left; x <= lastX; x += 1) {
     if (outer[x] < 0) continue;
     const top = topCurve(x);
-    const bottomEdge = bottomCurve(x);
     const from = Math.max(0, Math.floor(top) - 4);
-    const to = Math.min(height - 1, Math.ceil(bottomEdge) + 4);
 
+    if (x < innerLeft) {
+      const to = Math.min(height - 1, Math.ceil(top) + 4);
+      for (let y = from; y <= to; y += 1) {
+        smoothed[(y * width + x) * 4 + 3] = Math.max(
+          0,
+          Math.min(255, Math.round(255 * (0.5 + 0.5 * Math.tanh((y - top) / 0.5))))
+        );
+      }
+      for (let y = to + 1; y < height; y += 1) {
+        if (alphaAt(x, y) > 0) break;
+        smoothed[(y * width + x) * 4 + 3] = 255;
+      }
+      continue;
+    }
+
+    const bottomEdge = bottomCurve(x);
+    const to = Math.min(height - 1, Math.ceil(bottomEdge) + 4);
     for (let y = from; y <= to; y += 1) {
-      const topAlpha = 255 * (0.5 + 0.5 * Math.tanh((y - top) / 0.9));
-      const bottomAlpha = 255 * (0.5 + 0.5 * Math.tanh((bottomEdge - y) / 0.9));
+      const topAlpha = 255 * (0.5 + 0.5 * Math.tanh((y - top) / 0.5));
+      const bottomAlpha = 255 * (0.5 + 0.5 * Math.tanh((bottomEdge - y) / 0.5));
       smoothed[(y * width + x) * 4 + 3] = Math.max(
         0,
         Math.min(255, Math.round(Math.min(topAlpha, bottomAlpha)))
