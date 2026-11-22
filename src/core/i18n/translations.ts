@@ -1,6 +1,7 @@
 import { alertTranslations } from './alert-translations';
 import { anticipationTranslations } from './anticipation-translations';
 import { backupExcelTranslations } from './backup-excel-translations';
+import { categoryRulesTranslations } from './category-rules-translations';
 import { dataTransferTranslations } from './data-transfer-translations';
 import { homeTranslations } from './home-translations';
 import { movementTranslations } from './movement-translations';
@@ -16,7 +17,7 @@ export type Language = 'es' | 'en';
 export const translations = {
   es: {
     ...alertTranslations.es, ...anticipationTranslations.es, ...movementTranslations.es, ...transactionTranslations.es,
-    ...dataTransferTranslations.es, ...backupExcelTranslations.es, ...transferTranslations.es,
+    ...dataTransferTranslations.es, ...backupExcelTranslations.es, ...transferTranslations.es, ...categoryRulesTranslations.es,
     ...validationTranslations.es, ...startupTranslations.es, ...statsTranslations.es, ...homeTranslations.es,
     ...reminderTranslations.es,
     home: 'Inicio',
@@ -232,7 +233,7 @@ export const translations = {
   },
   en: {
     ...alertTranslations.en, ...anticipationTranslations.en, ...movementTranslations.en, ...transactionTranslations.en,
-    ...dataTransferTranslations.en, ...backupExcelTranslations.en, ...transferTranslations.en,
+    ...dataTransferTranslations.en, ...backupExcelTranslations.en, ...transferTranslations.en, ...categoryRulesTranslations.en,
     ...validationTranslations.en, ...startupTranslations.en, ...statsTranslations.en, ...homeTranslations.en,
     ...reminderTranslations.en,
     home: 'Home',

@@ -124,12 +124,12 @@ function insertReminder(raw, overrides = {}) {
     );
 }
 
-test('una instalación nueva termina en user_version 4 con la tabla reminders', async () => {
+test('una instalación nueva termina en user_version 5 con la tabla reminders', async () => {
   const { raw, db } = createDatabase();
 
   await runMigrations(db);
 
-  assert.equal(userVersion(raw), 4);
+  assert.equal(userVersion(raw), 5);
   assert.equal(tableExists(raw, 'reminders'), true);
   assert.deepEqual(indexNames(raw, 'reminders'), [
     'idx_reminders_account',
@@ -166,7 +166,7 @@ test('una base en user_version 2 migra a 3 sin perder datos', async () => {
 
   await runMigrations(db);
 
-  assert.equal(userVersion(raw), 4);
+  assert.equal(userVersion(raw), 5);
   assert.equal(tableExists(raw, 'reminders'), true);
   assert.equal(
     raw.prepare('SELECT name FROM accounts WHERE id = ?').get('acc-1').name,
