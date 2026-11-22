@@ -19,6 +19,111 @@ const SLOT = { x: 455.5, y: 409 };
 const BACK_LINE_PATH =
   'M 330 357 C 380 350 430 341 480 344 C 530 347 580 355 630 372';
 const BACK_LINE_WIDTH = 29;
+const OUTLINE_SMOOTH = { left: 200, right: 660, bottom: 230, window: 24 };
+
+function quadraticFit(values, center, left, right, window) {
+  let n = 0;
+  let sumU = 0;
+  let sumU2 = 0;
+  let sumU3 = 0;
+  let sumU4 = 0;
+  let sumY = 0;
+  let sumUY = 0;
+  let sumU2Y = 0;
+
+  for (let offset = -window; offset <= window; offset += 1) {
+    const x = center + offset;
+    if (x < left || x > right || values[x] < 0) continue;
+    const y = values[x];
+    const u2 = offset * offset;
+    n += 1;
+    sumU += offset;
+    sumU2 += u2;
+    sumU3 += u2 * offset;
+    sumU4 += u2 * u2;
+    sumY += y;
+    sumUY += offset * y;
+    sumU2Y += u2 * y;
+  }
+
+  const matrix = [
+    [n, sumU, sumU2],
+    [sumU, sumU2, sumU3],
+    [sumU2, sumU3, sumU4],
+  ];
+  const result = [sumY, sumUY, sumU2Y];
+
+  for (let column = 0; column < 3; column += 1) {
+    let pivot = column;
+    for (let row = column + 1; row < 3; row += 1) {
+      if (Math.abs(matrix[row][column]) > Math.abs(matrix[pivot][column])) pivot = row;
+    }
+    [matrix[column], matrix[pivot]] = [matrix[pivot], matrix[column]];
+    [result[column], result[pivot]] = [result[pivot], result[column]];
+
+    const divisor = matrix[column][column];
+    if (divisor === 0) continue;
+    for (let c = column; c < 3; c += 1) matrix[column][c] /= divisor;
+    result[column] /= divisor;
+
+    for (let row = 0; row < 3; row += 1) {
+      if (row === column) continue;
+      const factor = matrix[row][column];
+      for (let c = column; c < 3; c += 1) matrix[row][c] -= factor * matrix[column][c];
+      result[row] -= factor * result[column];
+    }
+  }
+
+  return result[0];
+}
+
+function smoothTopOutline(rgba, width, height) {
+  const { left, right, bottom, window } = OUTLINE_SMOOTH;
+  const lastX = Math.min(right, width - 1);
+  const lastY = Math.min(bottom, height - 1);
+  const alphaAt = (x, y) => rgba[(y * width + x) * 4 + 3];
+  const outer = new Int16Array(width).fill(-1);
+  const inner = new Int16Array(width).fill(-1);
+
+  for (let x = left; x <= lastX; x += 1) {
+    let first = -1;
+    for (let y = 0; y < lastY; y += 1) {
+      if (alphaAt(x, y) >= 128) {
+        first = y;
+        break;
+      }
+    }
+    if (first < 0) continue;
+
+    let last = first;
+    for (let y = first + 1; y < lastY; y += 1) {
+      if (alphaAt(x, y) >= 128) last = y;
+      else if (y - last > 2) break;
+    }
+    outer[x] = first;
+    inner[x] = last;
+  }
+
+  const smoothed = Buffer.from(rgba);
+  for (let x = left; x <= lastX; x += 1) {
+    if (outer[x] < 0) continue;
+    const top = quadraticFit(outer, x, left, lastX, window);
+    const bottomEdge = quadraticFit(inner, x, left, lastX, window);
+    const from = Math.max(0, Math.floor(top) - 4);
+    const to = Math.min(height - 1, Math.ceil(bottomEdge) + 4);
+
+    for (let y = from; y <= to; y += 1) {
+      const topAlpha = 255 * (0.5 + 0.5 * Math.tanh((y - top) / 0.9));
+      const bottomAlpha = 255 * (0.5 + 0.5 * Math.tanh((bottomEdge - y) / 0.9));
+      smoothed[(y * width + x) * 4 + 3] = Math.max(
+        0,
+        Math.min(255, Math.round(Math.min(topAlpha, bottomAlpha)))
+      );
+    }
+  }
+
+  return smoothed;
+}
 
 const { data, info } = await sharp(sourcePath)
   .ensureAlpha()
@@ -98,8 +203,17 @@ const bodyCrop = {
 
 await mkdir(assetsDir, { recursive: true });
 
-await sharp(bodyPatched)
+const bodyRaw = await sharp(bodyPatched)
   .extract(bodyCrop)
+  .ensureAlpha()
+  .raw()
+  .toBuffer({ resolveWithObject: true });
+
+const smoothedBody = smoothTopOutline(bodyRaw.data, bodyRaw.info.width, bodyRaw.info.height);
+
+await sharp(smoothedBody, {
+  raw: { width: bodyRaw.info.width, height: bodyRaw.info.height, channels: 4 },
+})
   .png({ compressionLevel: 9 })
   .toFile(bodyPath);
 
