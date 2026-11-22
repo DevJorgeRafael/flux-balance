@@ -2,6 +2,8 @@ export const reminderTranslations = {
   es: {
     reminders: 'Recordatorios',
     manageReminders: 'Gestionar recordatorios',
+    upcomingReminders: 'Próximos recordatorios',
+    seeAllReminders: 'Ver todos',
     activeReminders: 'Activos',
     archivedReminders: 'Archivados',
     newReminder: 'Nuevo recordatorio',
@@ -78,6 +80,8 @@ export const reminderTranslations = {
   en: {
     reminders: 'Reminders',
     manageReminders: 'Manage reminders',
+    upcomingReminders: 'Upcoming reminders',
+    seeAllReminders: 'See all',
     activeReminders: 'Active',
     archivedReminders: 'Archived',
     newReminder: 'New reminder',

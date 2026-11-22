@@ -24,7 +24,9 @@ Form a platform hypothesis: `web`, `ios`, `android`, or `adaptive` (one product 
 
 ## Step 3: Interview for product truth
 
-Ask with Codex's structured user-input/question tool when available, or directly in chat if it is not, and wait for the answer before continuing. Ask only about material gaps the repository and original request do not answer with strong evidence.
+**Your first message opens with the sign-in when it's missing.** If `impeccable context` printed `ACCOUNT: not signed in` (or printed no `ACCOUNT:` line and `.opencode/skills/impeccable/scripts/impeccable whoami` prints `Not signed in`), the first line of your first message to the person, before any question, structured or plain-chat, is: "Run `npx impeccable login` to keep your critiques and audits in your Impeccable account. It's free, and creates the account if you're new." Say it once per init. Signed in, say nothing about it.
+
+Ask with the `question` tool and wait for the answer before continuing. Ask only about material gaps the repository and original request do not answer with strong evidence.
 
 Use the structured question tool when available; otherwise ask and wait. Keep rounds to at most three focused questions and require one real answer or approval round before writing a new PRODUCT.md. Confirm inferences.
 
@@ -125,9 +127,9 @@ Tell the user once which files to commit: PRODUCT.md, DESIGN.md, `.impeccable/co
 
 Recommend the next action from the actual project state:
 
-- Empty or early project: ask naturally for the surface to be built, or use `$impeccable shape <surface>` when the user wants a confirmed brief without implementation. New-work will establish a visual world only when the requested work needs one.
-- Existing coherent interface without DESIGN.md: `$impeccable document` if the user wants the incumbent system recorded independently of a new build.
+- Empty or early project: ask naturally for the surface to be built, or use `/impeccable shape <surface>` when the user wants a confirmed brief without implementation. New-work will establish a visual world only when the requested work needs one.
+- Existing coherent interface without DESIGN.md: `/impeccable document` if the user wants the incumbent system recorded independently of a new build.
 - Existing surface needing work: name the most relevant scoped command.
-- Web project ready for visual iteration: `$impeccable live` when configured.
+- Web project ready for visual iteration: `/impeccable live` when configured.
 
 If init was invoked by another request, resume without rerunning `impeccable context`; the native reference above is the one thing that run could not have given you, and new-work owns later visual decisions.

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,7 +6,9 @@ import {
   Pressable,
 } from 'react-native';
 import { router } from 'expo-router';
+import ChevronDown from 'lucide-react-native/icons/chevron-down';
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
+import ChevronUp from 'lucide-react-native/icons/chevron-up';
 import Plus from 'lucide-react-native/icons/plus';
 import Minus from 'lucide-react-native/icons/minus';
 import Animated, { Keyframe } from 'react-native-reanimated';
@@ -19,6 +21,7 @@ import { useCurrency } from '@/core/currency/useCurrency';
 import {
   RECENT_TRANSACTIONS_FALLBACK_LIMIT,
   selectRecentTransactions,
+  selectVisibleRecentTransactions,
 } from '@/core/services/recent-transactions';
 import { parseLedgerDate } from '@/core/utils/ledger-date';
 
@@ -41,10 +44,21 @@ export function RecentTransactionsList({
   const { isDark } = useThemeMode();
   const { format, locale } = useCurrency();
   const { t } = useTranslation();
-  const { transactions: visibleTransactions, isFallback } =
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { transactions: scopedTransactions, isFallback } =
     selectRecentTransactions(transactions);
+  const { transactions: visibleTransactions, hiddenCount } =
+    selectVisibleRecentTransactions(scopedTransactions, {
+      expanded: isExpanded,
+    });
 
-  const handleSeeMore = () => {
+  const headerButtonStyle = (pressed: boolean) => [
+    styles.seeMoreBtn,
+    { backgroundColor: colors.cardRaised, borderColor: colors.border },
+    pressed && styles.pressed,
+  ];
+
+  const handleOpenHistory = () => {
     const targetId = selectedFilterAccountId || defaultAccountId;
     if (targetId) {
       router.push({
@@ -63,7 +77,7 @@ export function RecentTransactionsList({
 
   return (
     <>
-      {/* Sección Últimos Movimientos con botón 'Ver más →' */}
+      {/* Sección Últimos Movimientos con expansión o acceso al historial */}
       <View style={styles.sectionHeaderRow}>
         <View style={styles.sectionTitleBlock}>
           <Text style={[styles.sectionHeading, { color: colors.text }]}>{t('latestMovements')}</Text>
@@ -81,21 +95,40 @@ export function RecentTransactionsList({
           ) : null}
         </View>
 
-        {/* Botón Ver más */}
-        <Pressable
-          style={({ pressed }) => [
-            styles.seeMoreBtn,
-            { backgroundColor: colors.cardRaised, borderColor: colors.border },
-            pressed && styles.pressed,
-          ]}
-          onPress={handleSeeMore}
-          accessibilityRole="button"
-          accessibilityLabel={t('seeMore')}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Text style={[styles.seeMoreText, { color: colors.text }]}>{t('seeMore')}</Text>
-          <ChevronRight size={14} color={colors.textLight} strokeWidth={2.5} />
-        </Pressable>
+        {hiddenCount > 0 ? (
+          <Pressable
+            style={({ pressed }) => headerButtonStyle(pressed)}
+            onPress={() => setIsExpanded((current) => !current)}
+            accessibilityRole="button"
+            accessibilityLabel={
+              isExpanded ? t('seeLess') : t('seeMoreCount', { count: hiddenCount })
+            }
+            accessibilityState={{ expanded: isExpanded }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={[styles.seeMoreText, { color: colors.text }]}>
+              {isExpanded ? t('seeLess') : t('seeMoreCount', { count: hiddenCount })}
+            </Text>
+            {isExpanded ? (
+              <ChevronUp size={14} color={colors.textLight} strokeWidth={2.5} />
+            ) : (
+              <ChevronDown size={14} color={colors.textLight} strokeWidth={2.5} />
+            )}
+          </Pressable>
+        ) : selectedFilterAccountId || defaultAccountId ? (
+          <Pressable
+            style={({ pressed }) => headerButtonStyle(pressed)}
+            onPress={handleOpenHistory}
+            accessibilityRole="button"
+            accessibilityLabel={t('seeAccountHistory')}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={[styles.seeMoreText, { color: colors.text }]}>
+              {t('seeAccountHistory')}
+            </Text>
+            <ChevronRight size={14} color={colors.textLight} strokeWidth={2.5} />
+          </Pressable>
+        ) : null}
       </View>
 
       {visibleTransactions.length === 0 ? (
@@ -122,7 +155,7 @@ export function RecentTransactionsList({
                   to: { opacity: 1, transform: [{ translateY: 0 }] },
                 })
                   .duration(350)
-                  .delay(idx * 50)}
+                  .delay(Math.min(idx, 8) * 40)}
               >
                 <Pressable
                   style={({ pressed }) => [

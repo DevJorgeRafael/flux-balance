@@ -13,7 +13,7 @@ import { REMINDER_RECURRENCE_LABELS } from './reminderLabels';
 
 interface ReminderListRowProps {
   reminder: Reminder;
-  onPress: () => void;
+  onPress?: () => void;
   onDelete?: () => void;
 }
 
@@ -113,9 +113,9 @@ export function ReminderListRow({
         >
           <Trash size={18} color={colors.errorText} strokeWidth={2.2} />
         </Pressable>
-      ) : (
+      ) : onPress ? (
         <ChevronRight size={17} color={colors.textLight} strokeWidth={2.4} />
-      )}
+      ) : null}
     </Card>
   );
 }

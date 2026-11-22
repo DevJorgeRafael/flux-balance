@@ -5,6 +5,7 @@ import Bell from 'lucide-react-native/icons/bell';
 import Coins from 'lucide-react-native/icons/coins';
 import Languages from 'lucide-react-native/icons/languages';
 import Moon from 'lucide-react-native/icons/moon';
+import Plus from 'lucide-react-native/icons/plus';
 import Sun from 'lucide-react-native/icons/sun';
 import TrendingDown from 'lucide-react-native/icons/trending-down';
 import TrendingUp from 'lucide-react-native/icons/trending-up';
@@ -19,6 +20,7 @@ import { SettingsRow } from '@/components/settings/SettingsRow';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useDashboard } from '@/context/DashboardContext';
+import { useReminderOverview } from '@/hooks/useReminderOverview';
 import { TAB_BAR_CONTENT_GAP, TAB_BAR_CONTENT_OFFSET } from '@/components/navigation/tabBarLayout';
 
 export default function SettingsScreen() {
@@ -28,6 +30,8 @@ export default function SettingsScreen() {
   const { language, languagePreference, t } = useTranslation();
   const { currency } = useCurrency();
   const { handleRefresh } = useDashboard();
+  const { reminders } = useReminderOverview();
+  const activeReminderCount = reminders.length;
 
   useFocusEffect(
     useCallback(() => {
@@ -78,9 +82,15 @@ export default function SettingsScreen() {
           <SettingsRow
             icon={Bell}
             label={t('manageReminders')}
+            value={activeReminderCount > 0 ? String(activeReminderCount) : undefined}
             showChevron
-            isLast
             onPress={() => router.push('/reminders')}
+          />
+          <SettingsRow
+            icon={Plus}
+            label={t('newReminder')}
+            isLast
+            onPress={() => router.push('/reminders/form')}
           />
         </Card>
 

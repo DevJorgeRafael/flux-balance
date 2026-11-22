@@ -2,6 +2,18 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.2.4] - 2026-11-21
+
+### Añadido
+
+- Los próximos recordatorios aparecen en el inicio con creación rápida.
+- Ajustes muestra los recordatorios activos y acceso directo a crear uno.
+
+### Mejorado
+
+- El inicio muestra 5 movimientos y permite expandirlos en la misma pantalla.
+- “Ver historial” aparece solo cuando no quedan movimientos por expandir.
+
 ## [2.2.3] - 2026-11-21
 
 ### Añadido
