@@ -6,6 +6,7 @@ export interface TransactionFormValues {
   amount: string;
   description: string;
   accountId: string;
+  destinationAccountId: string;
   categoryId: string;
 }
 

@@ -2,6 +2,14 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.3.0] - 2026-11-21
+
+### Añadido
+
+- Transferencias reales entre cuentas: descuentan del origen, abonan en el destino y no contaminan las estadísticas.
+- Ajuste manual de saldo en el detalle de cuenta, registrado como un movimiento.
+- Los respaldos conservan las transferencias con sus dos cuentas.
+
 ## [2.2.5] - 2026-11-21
 
 ### Añadido

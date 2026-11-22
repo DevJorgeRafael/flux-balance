@@ -45,6 +45,7 @@ const EMPTY_VALUES: TransactionFormValues = {
   amount: '',
   description: '',
   accountId: '',
+  destinationAccountId: '',
   categoryId: '',
 };
 
@@ -103,6 +104,7 @@ export default function EditTransactionScreen() {
           amount: format(loaded.totalAmount, { showCurrency: false }),
           description: loaded.description ?? '',
           accountId: loaded.splits[0]?.accountId ?? '',
+          destinationAccountId: '',
           categoryId: loaded.splits[0]?.categoryId ?? '',
         });
       })
@@ -156,7 +158,7 @@ export default function EditTransactionScreen() {
     : null;
 
   const updateField = (
-    field: 'amount' | 'description' | 'accountId' | 'categoryId',
+    field: 'amount' | 'description' | 'accountId' | 'destinationAccountId' | 'categoryId',
     value: string
   ) => {
     setValues((current) => ({ ...current, [field]: value }));

@@ -374,7 +374,9 @@ export function parseMovementRows(
 
     const totalAmount = first.noSplit
       ? first.amount
-      : splits.reduce((total, split) => total + split.amount, 0);
+      : first.type === 'TRANSFER'
+        ? (splits[0]?.amount ?? 0)
+        : splits.reduce((total, split) => total + split.amount, 0);
     if (!isValidBackupAmount(totalAmount)) {
       addRowError(errors, table, first.row, 'invalidAmount', 'amount', {
         path: 'amount',

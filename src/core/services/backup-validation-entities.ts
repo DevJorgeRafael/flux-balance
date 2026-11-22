@@ -343,9 +343,13 @@ function validateTransaction(
     splitAmountsValid
   ) {
     const tolerance = 0.5 * 10 ** -currencyDecimals + 1e-9;
-    if (Math.abs(splitTotal - totalAmount) > tolerance) {
+    if (type === 'TRANSFER' && splits.length !== 2) {
+      addError(errors, 'invalidValue', `${path}.splits`);
+    }
+    const expectedSplitTotal = type === 'TRANSFER' ? totalAmount * 2 : totalAmount;
+    if (Math.abs(splitTotal - expectedSplitTotal) > tolerance) {
       addError(errors, 'invalidSplitTotal', `${path}.splits`, {
-        expected: totalAmount,
+        expected: expectedSplitTotal,
         actual: splitTotal,
       });
     }

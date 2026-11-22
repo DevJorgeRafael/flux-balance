@@ -7,6 +7,7 @@ import { reminderTranslations } from './reminder-translations';
 import { startupTranslations } from './startup-translations';
 import { statsTranslations } from './stats-translations';
 import { transactionTranslations } from './transaction-translations';
+import { transferTranslations } from './transfer-translations';
 import { validationTranslations } from './validation-translations';
 
 export type Language = 'es' | 'en';
@@ -14,8 +15,7 @@ export type Language = 'es' | 'en';
 export const translations = {
   es: {
     ...alertTranslations.es, ...movementTranslations.es, ...transactionTranslations.es,
-    ...dataTransferTranslations.es,
-    ...backupExcelTranslations.es,
+    ...dataTransferTranslations.es, ...backupExcelTranslations.es, ...transferTranslations.es,
     ...validationTranslations.es,
     ...startupTranslations.es, ...statsTranslations.es, ...homeTranslations.es,
     ...reminderTranslations.es,
@@ -232,8 +232,7 @@ export const translations = {
   },
   en: {
     ...alertTranslations.en, ...movementTranslations.en, ...transactionTranslations.en,
-    ...dataTransferTranslations.en,
-    ...backupExcelTranslations.en,
+    ...dataTransferTranslations.en, ...backupExcelTranslations.en, ...transferTranslations.en,
     ...validationTranslations.en,
     ...startupTranslations.en, ...statsTranslations.en, ...homeTranslations.en,
     ...reminderTranslations.en,
