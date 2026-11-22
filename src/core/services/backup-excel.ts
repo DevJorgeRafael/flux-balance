@@ -6,11 +6,13 @@ import {
   ACCOUNT_COLUMNS,
   CATEGORY_COLUMNS,
   MOVEMENT_COLUMNS,
+  REMINDER_COLUMNS,
   formatAccountType,
   formatBoolean,
   formatCategoryType,
   formatDepositStatus,
   formatDepositType,
+  formatRecurrence,
   formatTransactionType,
   getHeaders,
   getSheetName,
@@ -291,6 +293,65 @@ function buildMovementRows(
   return { rows, dateCells };
 }
 
+function buildReminderRows(
+  backup: BackupFile,
+  language: ExcelLanguage
+): { rows: unknown[][]; dateCells: DateCell[] } {
+  const rows: unknown[][] = [];
+  const dateCells: DateCell[] = [];
+  const accountsById = new Map(
+    backup.accounts.map((account) => [account.id, account])
+  );
+  const categoriesById = new Map(
+    [...backup.incomeCategories, ...backup.expenseCategories].map(
+      (category) => [category.id, category]
+    )
+  );
+
+  for (const reminder of backup.reminders) {
+    const rowIndex = rows.length;
+    const startSerial = isoToExcelSerial(reminder.startDate);
+    const account = reminder.accountId
+      ? accountsById.get(reminder.accountId)
+      : undefined;
+    const category = reminder.categoryId
+      ? categoriesById.get(reminder.categoryId)
+      : undefined;
+
+    rows.push([
+      reminder.title,
+      formatTransactionType(reminder.type, language),
+      account?.name ?? null,
+      category?.name ?? null,
+      startSerial,
+      reminder.time,
+      formatRecurrence(reminder.recurrence, language),
+      reminder.amount,
+      formatBoolean(reminder.isArchived, language),
+      JSON.stringify({
+        id: reminder.id,
+        description: reminder.description,
+        amount: reminder.amount,
+        accountId: reminder.accountId,
+        categoryId: reminder.categoryId,
+        recurrence: reminder.recurrence,
+        time: reminder.time,
+        startDate: reminder.startDate,
+        nextRunAt: reminder.nextRunAt,
+        isArchived: reminder.isArchived,
+        lastNotifiedAt: reminder.lastNotifiedAt,
+        createdAt: reminder.createdAt,
+        updatedAt: reminder.updatedAt,
+      }),
+    ]);
+    if (startSerial !== null) {
+      dateCells.push({ rowIndex, columnIndex: 4, format: 'yyyy-mm-dd' });
+    }
+  }
+
+  return { rows, dateCells };
+}
+
 function buildWorkbook(
   backup: BackupFile,
   language: ExcelLanguage
@@ -321,6 +382,15 @@ function buildWorkbook(
     language,
     movements.rows,
     movements.dateCells
+  );
+  const reminders = buildReminderRows(backup, language);
+  appendSheet(
+    workbook,
+    getSheetName('reminders', language),
+    REMINDER_COLUMNS,
+    language,
+    reminders.rows,
+    reminders.dateCells
   );
   workbook.Props = {
     Title: 'Flux Balance',
@@ -362,6 +432,8 @@ export function createExcelTemplateBytes(
       incomeCategories: [],
       expenseCategories: [],
       transactions: [],
+      reminders: [],
+      preferences: { theme: 'system', language: 'system' },
     },
     { appVersion, exportedAt: now, currency }
   );

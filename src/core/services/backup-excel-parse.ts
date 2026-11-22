@@ -14,13 +14,17 @@ import {
   ACCOUNT_COLUMNS,
   CATEGORY_COLUMNS,
   MOVEMENT_COLUMNS,
+  REMINDER_COLUMNS,
   type ExcelLanguage,
 } from './backup-excel-format';
 import { parseMovementRows } from './backup-excel-movements';
+import { parseReminderRows } from './backup-excel-reminders';
 import {
   addExcelError,
   getFileMeta,
+  hasExcelSheet,
   readExcelTables,
+  readSheetTable,
   type ExcelSheetTable,
 } from './backup-excel-rows';
 import {
@@ -117,6 +121,16 @@ export function parseExcelWorkbook(
     movements: MOVEMENT_COLUMNS,
   });
   const errors = tables.errors;
+  const remindersTable = hasExcelSheet(workbook, 'reminders', options.language)
+    ? readSheetTable(
+        workbook,
+        'reminders',
+        REMINDER_COLUMNS,
+        options.language,
+        errors
+      )
+    : null;
+  const reminders = parseReminderRows(remindersTable, errors, now);
 
   const parsedAccounts = parseAccountRows(
     tables.accounts,
@@ -160,6 +174,8 @@ export function parseExcelWorkbook(
       incomeCategories: parsedCategories.incomeCategories,
       expenseCategories: parsedCategories.expenseCategories,
       transactions,
+      reminders,
+      preferences: { theme: 'system', language: 'system' },
     },
     metadata
   );

@@ -2,6 +2,18 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.2.5] - 2026-11-21
+
+### Añadido
+
+- Los respaldos JSON y Excel incluyen los recordatorios con sus vínculos de cuenta y categoría.
+- Los respaldos conservan las preferencias de tema e idioma.
+- El resumen de importación muestra cuántos recordatorios contiene el respaldo.
+
+### Mejorado
+
+- Los respaldos de versiones anteriores se migran automáticamente al formato v2.
+
 ## [2.2.4] - 2026-11-21
 
 ### Añadido

@@ -16,8 +16,9 @@ const TIMESTAMP = '2026-01-02T10:00:00.000Z';
 
 const NEGATIVE_BALANCE_BACKUP = {
   format: 'flux-balance-backup',
-  schemaVersion: 1,
+  schemaVersion: 2,
   appVersion: '1.6.7',
+  reminders: [], preferences: { theme: 'system', language: 'system' },
   exportedAt: '2026-11-04T22:54:18.199Z',
   currency: 'USD',
   accounts: [
@@ -151,10 +152,18 @@ function createDatabase({ failOn, foreignKeys = true } = {}) {
 function createBackupFixture() {
   return {
     format: 'flux-balance-backup',
-    schemaVersion: 1,
+    schemaVersion: 2,
     appVersion: '1.5.5',
     exportedAt: TIMESTAMP,
     currency: 'EUR',
+    reminders: [{
+      id: 'rem-1', title: 'Internet', type: 'EXPENSE', description: null,
+      amount: 40, accountId: 'acc-1', categoryId: 'cat-exp-1',
+      recurrence: 'MONTHLY', time: '09:00', startDate: '2026-02-01',
+      nextRunAt: '2026-02-01T09:00:00.000Z', isArchived: false,
+      lastNotifiedAt: null, createdAt: TIMESTAMP, updatedAt: TIMESTAMP,
+    }],
+    preferences: { theme: 'dark', language: 'es' },
     accounts: [
       {
         id: 'acc-1',
@@ -295,39 +304,36 @@ test('exporta y valida una cuenta con balance negativo', async () => {
   );
 });
 
-test('la importación conserva recordatorios y limpia sus referencias', async () => {
+test('la importación restaura recordatorios y conserva sus referencias', async () => {
   const { raw, db } = createDatabase();
-  raw
-    .prepare(
-      `INSERT INTO accounts (id, name, type, balance, currency)
-       VALUES ('acc-old', 'Cuenta vieja', 'CHECKING', 0, 'USD')`
-    )
-    .run();
-  raw
-    .prepare(
-      `INSERT INTO expense_categories (id, name)
-       VALUES ('cat-old', 'Categoría vieja')`
-    )
-    .run();
-  raw
-    .prepare(
-      `INSERT INTO reminders
-         (id, title, type, account_id, category_id, recurrence, time,
-          start_date, next_run_at)
-       VALUES ('rem-1', 'Internet', 'EXPENSE', 'acc-old', 'cat-old',
-               'MONTHLY', '09:00', '2026-02-01',
-               '2026-02-01T09:00:00.000Z')`
-    )
-    .run();
+  raw.prepare(
+    `INSERT INTO accounts (id, name, type, balance, currency)
+     VALUES ('acc-old', 'Cuenta vieja', 'CHECKING', 0, 'USD')`
+  ).run();
+  raw.prepare(
+    `INSERT INTO expense_categories (id, name) VALUES ('cat-old', 'Categoría vieja')`
+  ).run();
+  raw.prepare(
+    `INSERT INTO reminders
+       (id, title, type, account_id, category_id, recurrence, time, start_date, next_run_at)
+     VALUES ('rem-1', 'Internet', 'EXPENSE', 'acc-old', 'cat-old',
+             'MONTHLY', '09:00', '2026-02-01', '2026-02-01T09:00:00.000Z')`
+  ).run();
 
   const parsed = parseBackupText(JSON.stringify(createBackupFixture()));
   assert.equal(parsed.ok, true);
 
   await importBackupIntoDatabase(db, parsed.backup);
 
+  const restored = raw
+    .prepare('SELECT id, account_id, category_id, next_run_at FROM reminders')
+    .get();
   assert.deepEqual(
-    { ...raw.prepare('SELECT account_id, category_id FROM reminders').get() },
-    { account_id: null, category_id: null }
+    { ...restored },
+    {
+      id: 'rem-1', account_id: 'acc-1', category_id: 'cat-exp-1',
+      next_run_at: '2026-02-01T09:00:00.000Z',
+    }
   );
 });
 
@@ -381,6 +387,7 @@ test('exportar, reiniciar e importar conserva todos los datos', async () => {
   assert.equal(count(raw, 'transaction_splits'), 2);
   assert.equal(readSetting(raw, 'currency'), 'EUR');
   assert.equal(readSetting(raw, 'themePreference'), 'dark');
+  assert.equal(readSetting(raw, 'languagePreference'), 'es'); assert.equal(count(raw, 'reminders'), 1);
 });
 
 test('revierte el reemplazo completo si falla una inserción', async () => {

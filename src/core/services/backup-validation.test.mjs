@@ -13,10 +13,12 @@ const TIMESTAMP = '2026-01-02T10:00:00.000Z';
 function createValidBackup() {
   return {
     format: 'flux-balance-backup',
-    schemaVersion: 1,
+    schemaVersion: 2,
     appVersion: '1.5.5',
     exportedAt: TIMESTAMP,
     currency: 'EUR',
+    reminders: [],
+    preferences: { theme: 'system', language: 'system' },
     accounts: [
       {
         id: 'acc-1',
@@ -109,10 +111,11 @@ test('acepta un respaldo válido y devuelve el resumen', () => {
     incomeCategories: 1,
     expenseCategories: 1,
     transactions: 1,
+    reminders: 0,
     exportedAt: TIMESTAMP,
     currency: 'EUR',
     appVersion: '1.5.5',
-    schemaVersion: 1,
+    schemaVersion: 2,
   });
   assert.equal(result.backup.accounts[0].fixedTermDeposits.length, 1);
   assert.equal(result.backup.transactions[0].splits.length, 1);
@@ -136,12 +139,12 @@ test('rechaza un JSON con formato incorrecto', () => {
 
 test('rechaza un respaldo de una versión futura', () => {
   const backup = createValidBackup();
-  backup.schemaVersion = 2;
+  backup.schemaVersion = 3;
 
   const error = firstError(validateBackup(backup));
 
   assert.equal(error.code, 'futureSchemaVersion');
-  assert.deepEqual(error.params, { version: 2, supported: 1 });
+  assert.deepEqual(error.params, { version: 3, supported: 2 });
 });
 
 test('rechaza un respaldo con un campo obligatorio faltante', () => {
@@ -317,7 +320,7 @@ test('rechaza ids duplicados', () => {
   assert.deepEqual(error.params, { id: 'acc-1' });
 });
 
-test('migra un respaldo de la versión 0 a la versión 1', () => {
+test('migra un respaldo de la versión 0 a la versión 2', () => {
   const backup = createValidBackup();
   backup.schemaVersion = 0;
   delete backup.accounts[0].annualRate;
@@ -338,7 +341,12 @@ test('migra un respaldo de la versión 0 a la versión 1', () => {
   const result = validateBackup(backup);
 
   assert.equal(result.ok, true);
-  assert.equal(result.backup.schemaVersion, 1);
+  assert.equal(result.backup.schemaVersion, 2);
+  assert.deepEqual(result.backup.reminders, []);
+  assert.deepEqual(result.backup.preferences, {
+    theme: 'system',
+    language: 'system',
+  });
   assert.equal(result.backup.accounts[0].annualRate, null);
   assert.equal(result.backup.accounts[0].isArchived, false);
   assert.deepEqual(result.backup.accounts[0].fixedTermDeposits, []);
@@ -362,9 +370,119 @@ test('serializa el respaldo con salto de línea y detecta datos', () => {
       incomeCategories: [],
       expenseCategories: [],
       transactions: [],
+      reminders: [],
+      preferences: { theme: 'system', language: 'system' },
     }),
     false
   );
+});
+
+test('migra un respaldo de la versión 1 a la versión 2', () => {
+  const backup = createValidBackup();
+  backup.schemaVersion = 1;
+  delete backup.reminders;
+  delete backup.preferences;
+
+  const result = validateBackup(backup);
+
+  assert.equal(result.ok, true);
+  assert.equal(result.backup.schemaVersion, 2);
+  assert.deepEqual(result.backup.reminders, []);
+  assert.deepEqual(result.backup.preferences, {
+    theme: 'system',
+    language: 'system',
+  });
+});
+
+test('acepta recordatorios con sus vínculos y los cuenta en el resumen', () => {
+  const backup = createValidBackup();
+  backup.reminders.push({
+    id: 'rem-2',
+    title: 'Alquiler',
+    type: 'EXPENSE',
+    description: null,
+    amount: 900,
+    accountId: 'acc-1',
+    categoryId: 'cat-exp-1',
+    recurrence: 'MONTHLY',
+    time: '09:00',
+    startDate: '2026-02-01',
+    nextRunAt: '2026-02-01T09:00:00.000Z',
+    isArchived: false,
+    lastNotifiedAt: null,
+    createdAt: TIMESTAMP,
+    updatedAt: TIMESTAMP,
+  });
+
+  const result = validateBackup(backup);
+
+  assert.equal(result.ok, true);
+  assert.equal(result.preview.reminders, 1);
+  assert.equal(result.backup.reminders[0].accountId, 'acc-1');
+});
+
+test('rechaza un recordatorio con una hora inválida', () => {
+  const backup = createValidBackup();
+  backup.reminders.push({
+    ...backup.reminders[0] ?? {
+      id: 'rem-3',
+      title: 'Prueba',
+      type: 'EXPENSE',
+      description: null,
+      amount: 1,
+      accountId: null,
+      categoryId: null,
+      recurrence: 'ONCE',
+      startDate: '2026-02-01',
+      nextRunAt: null,
+      isArchived: true,
+      lastNotifiedAt: null,
+      createdAt: TIMESTAMP,
+      updatedAt: TIMESTAMP,
+    },
+    time: '25:00',
+  });
+
+  const error = firstError(validateBackup(backup));
+
+  assert.equal(error.code, 'invalidValue');
+  assert.equal(error.path, 'reminders[0].time');
+});
+
+test('rechaza un recordatorio que referencia una cuenta inexistente', () => {
+  const backup = createValidBackup();
+  backup.reminders.push({
+    id: 'rem-4',
+    title: 'Prueba',
+    type: 'EXPENSE',
+    description: null,
+    amount: 1,
+    accountId: 'missing-account',
+    categoryId: null,
+    recurrence: 'ONCE',
+    time: '09:00',
+    startDate: '2026-02-01',
+    nextRunAt: null,
+    isArchived: true,
+    lastNotifiedAt: null,
+    createdAt: TIMESTAMP,
+    updatedAt: TIMESTAMP,
+  });
+
+  const error = firstError(validateBackup(backup));
+
+  assert.equal(error.code, 'unknownAccount');
+  assert.equal(error.path, 'reminders[0].accountId');
+});
+
+test('rechaza preferencias inválidas', () => {
+  const backup = createValidBackup();
+  backup.preferences.theme = 'neon';
+
+  const error = firstError(validateBackup(backup));
+
+  assert.equal(error.code, 'invalidValue');
+  assert.equal(error.path, 'preferences.theme');
 });
 
 test('genera el nombre de archivo de exportación estable', () => {

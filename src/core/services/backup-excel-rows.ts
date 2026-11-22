@@ -101,6 +101,14 @@ function findSheetName(
   return null;
 }
 
+export function hasExcelSheet(
+  workbook: WorkBook,
+  key: ExcelSheetKey,
+  language: ExcelLanguage
+): boolean {
+  return findSheetName(workbook, key, language) !== null;
+}
+
 export function addExcelError(
   errors: BackupValidationError[],
   code: BackupValidationErrorCode,

@@ -34,7 +34,7 @@ Flux Balance usa SQLite (expo-sqlite). Las migraciones son funciones SQL version
 
 ## Limitaciones conocidas
 
-- Los recordatorios no se incluyen en el respaldo JSON/Excel en esta fase. Al importar un respaldo, las referencias `account_id` y `category_id` de los recordatorios existentes se limpian, pero los recordatorios se conservan.
+- El formato de respaldo v2 incluye recordatorios (con sus referencias a cuenta y categoría) y preferencias de tema e idioma, tanto en JSON como en Excel. Los respaldos v0/v1 se migran a v2 al importarlos: los recordatorios y preferencias ausentes se inicializan vacíos.
 - `category_id` no tiene FK porque apunta a `income_categories` o `expense_categories` según `type`. La validación y la limpieza al borrar categorías se hacen en el repositorio y en `categoryManagement.ts`.
 
 ## Estructura

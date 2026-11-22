@@ -1,9 +1,17 @@
 import type { AccountType, FixedTermDeposit } from './account';
 import type { CategoryType } from './category';
+import type {
+  LanguagePreference,
+  ThemePreference,
+} from '../preferences/preferences';
+import type {
+  ReminderRecurrence,
+  ReminderType,
+} from './reminder';
 import type { TransactionType } from './transaction';
 
 export const BACKUP_FORMAT = 'flux-balance-backup';
-export const BACKUP_SCHEMA_VERSION = 1;
+export const BACKUP_SCHEMA_VERSION = 2;
 
 export interface BackupFixedTermDeposit {
   id: string;
@@ -60,11 +68,36 @@ export interface BackupTransaction {
   splits: BackupTransactionSplit[];
 }
 
+export interface BackupReminder {
+  id: string;
+  title: string;
+  type: ReminderType;
+  description: string | null;
+  amount: number | null;
+  accountId: string | null;
+  categoryId: string | null;
+  recurrence: ReminderRecurrence;
+  time: string;
+  startDate: string;
+  nextRunAt: string | null;
+  isArchived: boolean;
+  lastNotifiedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BackupPreferences {
+  theme: ThemePreference;
+  language: LanguagePreference;
+}
+
 export interface BackupData {
   accounts: BackupAccount[];
   incomeCategories: BackupCategory[];
   expenseCategories: BackupCategory[];
   transactions: BackupTransaction[];
+  reminders: BackupReminder[];
+  preferences: BackupPreferences;
 }
 
 export interface BackupFile extends BackupData {
@@ -80,6 +113,7 @@ export interface BackupPreview {
   incomeCategories: number;
   expenseCategories: number;
   transactions: number;
+  reminders: number;
   exportedAt: string;
   currency: string;
   appVersion: string;

@@ -253,6 +253,10 @@ export function ImportBackupModal({
                       value={String(preview?.transactions ?? 0)}
                     />
                     <SummaryRow
+                      label={t('backupSummaryReminders')}
+                      value={String(preview?.reminders ?? 0)}
+                    />
+                    <SummaryRow
                       label={t('backupSummaryExportedAt')}
                       value={exportedAt}
                     />
