@@ -2,6 +2,18 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.4.1] - 2026-11-21
+
+### Añadido
+
+- Metas de ahorro con importe objetivo, fecha límite y cuenta opcional.
+- Simulador de ahorro con interés compuesto y cálculo de la aportación necesaria.
+- Tarjeta de progreso de la meta en el inicio.
+
+### Mejorado
+
+- El botón destructivo de las confirmaciones usa un rojo más sobrio en tema oscuro, con contraste AA.
+
 ## [2.4.0] - 2026-11-21
 
 ### Añadido

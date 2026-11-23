@@ -6,6 +6,7 @@
 // reminders se crea en 003_reminders.ts (migración 3).
 // budgets se crea en 004_budgets.ts (migración 4).
 // category_rules se crea en 005_category_rules.ts (migración 5).
+// goals se crea en 006_goals.ts (migración 6).
 // categories_backup_v1 lo crea migrateCategories.ts durante la migración 1.
 
 Table accounts {
@@ -160,6 +161,22 @@ Table category_rules {
   }
 
   Note: '''Creada por la migración 5 (005_category_rules.ts). CHECK: type IN ('INCOME', 'EXPENSE'); hits >= 1. category_id referencia income_categories.id o expense_categories.id según type, sin FK declarada; la lógica vive en category-rules.ts y SqliteCategoryRuleRepository.'''
+}
+
+Table goals {
+  id TEXT [pk, not null]
+  name TEXT [not null]
+  target_amount REAL [not null]
+  deadline TEXT [not null]
+  account_id TEXT
+  created_at TEXT [not null]
+  updated_at TEXT [not null]
+
+  indexes {
+    deadline [name: 'idx_goals_deadline']
+  }
+
+  Note: '''Creada por la migración 6 (006_goals.ts). CHECK: length(trim(name)) BETWEEN 1 AND 80; target_amount > 0; length(deadline) = 10 (YYYY-MM-DD). account_id referencia accounts.id con ON DELETE SET NULL.'''
 }
 
 Table app_settings {
