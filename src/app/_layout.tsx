@@ -20,8 +20,8 @@ import {
 } from '@/components/ui/theme';
 import { initDatabase } from '@/infrastructure/database/db';
 import { DashboardProvider } from '@/context/DashboardContext';
-import { HomeCardsProvider } from '@/context/HomeCardsContext';
 import { SplashTransition } from '@/components/splash/SplashTransition';
+import { useHomeCardsStore } from '@/store/homeCardsStore';
 import { SPLASH_NATIVE_FADE_MS } from '@/components/splash/splashTiming';
 import {
   TranslationProvider,
@@ -33,10 +33,12 @@ import { runStartup } from '@/core/services/startup';
 import {
   DEFAULT_PREFERENCES,
   loadStoredPreferences,
+  saveHomeCardPreference,
   saveThemePreference,
   type StoredPreferences,
 } from '@/core/preferences/preferencesStorage';
-import type { ThemePreference } from '@/core/preferences/preferences';
+import { HOME_CARD_KEYS } from '@/core/preferences/preferences';
+import { useThemePreferenceStore } from '@/store/themePreferenceStore';
 
 const STARTUP_TIMEOUT_MS = 8000;
 
@@ -128,33 +130,41 @@ function RootNavigator({
   startupReady: boolean;
 }) {
   const insets = useSafeAreaInsets();
-  const [themePreference, setThemePreference] = useState<ThemePreference>(
-    preferences.themePreference
-  );
-  const [startupThemePreference, setStartupThemePreference] = useState<ThemePreference>(
-    preferences.themePreference
-  );
-  const [homeCardVisibility, setHomeCardVisibility] = useState(preferences.homeCardVisibility);
-  const [startupHomeCardVisibility, setStartupHomeCardVisibility] = useState(
-    preferences.homeCardVisibility
-  );
+  const themePreference = useThemePreferenceStore((state) => state.preference);
+  const setThemePreference = useThemePreferenceStore((state) => state.setPreference);
 
-  if (preferences.themePreference !== startupThemePreference) {
-    setStartupThemePreference(preferences.themePreference);
+  useEffect(() => {
     setThemePreference(preferences.themePreference);
-  }
+  }, [preferences.themePreference, setThemePreference]);
 
-  if (preferences.homeCardVisibility !== startupHomeCardVisibility) {
-    setStartupHomeCardVisibility(preferences.homeCardVisibility);
-    setHomeCardVisibility(preferences.homeCardVisibility);
-  }
+  useEffect(() => {
+    useHomeCardsStore.getState().hydrate(preferences.homeCardVisibility);
+  }, [preferences.homeCardVisibility]);
 
-  const handleModeChange = useCallback((mode: ThemeMode) => {
-    setThemePreference(mode);
-    void saveThemePreference(mode).catch((error) => {
-      console.error('Error saving theme preference:', error);
+  useEffect(() => {
+    let previous = useHomeCardsStore.getState().visibility;
+    return useHomeCardsStore.subscribe((state) => {
+      const next = state.visibility;
+      for (const key of HOME_CARD_KEYS) {
+        if (next[key] !== previous[key]) {
+          void saveHomeCardPreference(key, next[key]).catch((error) => {
+            console.error('Error saving home card preference:', error);
+          });
+        }
+      }
+      previous = next;
     });
   }, []);
+
+  const handleModeChange = useCallback(
+    (mode: ThemeMode) => {
+      setThemePreference(mode);
+      void saveThemePreference(mode).catch((error) => {
+        console.error('Error saving theme preference:', error);
+      });
+    },
+    [setThemePreference]
+  );
 
   return (
     <TranslationProvider initialPreference={preferences.languagePreference}>
@@ -164,9 +174,7 @@ function RootNavigator({
           mode={themePreference}
           onModeChange={handleModeChange}
         >
-          <HomeCardsProvider initialVisibility={homeCardVisibility}>
-            <RootWithTheme startupReady={startupReady} />
-          </HomeCardsProvider>
+          <RootWithTheme startupReady={startupReady} />
         </LocalizedUIProvider>
       </CurrencyProvider>
     </TranslationProvider>

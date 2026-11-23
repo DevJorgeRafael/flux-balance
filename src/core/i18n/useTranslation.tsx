@@ -1,4 +1,10 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+} from 'react';
 import { useLocales } from 'expo-localization';
 import {
   DEFAULT_LANGUAGE_PREFERENCE,
@@ -6,6 +12,7 @@ import {
   type LanguagePreference,
 } from '@/core/preferences/preferences';
 import { saveLanguagePreference } from '@/core/preferences/preferencesStorage';
+import { useLanguagePreferenceStore } from '@/store/languagePreferenceStore';
 import { Language, TranslationKey, translations } from './translations';
 
 type TranslationParams = Record<string, string | number>;
@@ -40,23 +47,21 @@ export function TranslationProvider({
   initialPreference = DEFAULT_LANGUAGE_PREFERENCE,
 }: TranslationProviderProps) {
   const locales = useLocales();
-  const [languagePreference, setLanguagePreferenceState] =
-    useState<LanguagePreference>(initialPreference);
-  const [startupPreference, setStartupPreference] = useState(initialPreference);
+  const languagePreference = useLanguagePreferenceStore((state) => state.preference);
+  const setPreference = useLanguagePreferenceStore((state) => state.setPreference);
 
-  if (initialPreference !== startupPreference) {
-    setStartupPreference(initialPreference);
-    setLanguagePreferenceState(initialPreference);
-  }
+  useEffect(() => {
+    setPreference(initialPreference);
+  }, [initialPreference, setPreference]);
 
   const language = resolveLanguage(languagePreference, locales[0]?.languageCode);
 
   const setLanguagePreference = useCallback((nextPreference: LanguagePreference) => {
-    setLanguagePreferenceState(nextPreference);
+    setPreference(nextPreference);
     void saveLanguagePreference(nextPreference).catch((error) => {
       console.error('Error saving language preference:', error);
     });
-  }, []);
+  }, [setPreference]);
 
   const setLanguage = useCallback(
     (nextLanguage: Language) => setLanguagePreference(nextLanguage),

@@ -4,7 +4,6 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState,
 } from 'react';
 import {
   CURRENCIES,
@@ -17,6 +16,7 @@ import {
 import { useTranslation } from '../i18n/useTranslation';
 import { formatMoney, HIDDEN_AMOUNT, type FormatMoneyOptions } from '../utils/money';
 import { getAppSetting, setAppSetting } from '@/infrastructure/database/appSettings';
+import { useCurrencyStore } from '@/store/currencyStore';
 
 const CURRENCY_SETTING_KEY = 'currency';
 
@@ -46,18 +46,14 @@ export async function loadStoredCurrency(): Promise<string> {
 }
 
 export function CurrencyProvider({ children, initialCurrency }: CurrencyProviderProps) {
-  const [currency, setCurrencyState] = useState<string>(() =>
-    resolveCurrencyCode(initialCurrency)
-  );
-  const [startupCurrency, setStartupCurrency] = useState(initialCurrency);
-
-  if (initialCurrency !== undefined && initialCurrency !== startupCurrency) {
-    setStartupCurrency(initialCurrency);
-    setCurrencyState(resolveCurrencyCode(initialCurrency));
-  }
+  const currency = useCurrencyStore((state) => state.code);
+  const setCurrencyCode = useCurrencyStore((state) => state.setCode);
 
   useEffect(() => {
-    if (initialCurrency !== undefined) return;
+    if (initialCurrency !== undefined) {
+      setCurrencyCode(resolveCurrencyCode(initialCurrency));
+      return;
+    }
 
     let cancelled = false;
 
@@ -65,7 +61,7 @@ export function CurrencyProvider({ children, initialCurrency }: CurrencyProvider
       .then((savedCurrency) => {
         if (cancelled) return;
         if (isSupportedCurrency(savedCurrency)) {
-          setCurrencyState(resolveCurrencyCode(savedCurrency));
+          setCurrencyCode(resolveCurrencyCode(savedCurrency));
         }
       })
       .catch((error) => {
@@ -75,15 +71,18 @@ export function CurrencyProvider({ children, initialCurrency }: CurrencyProvider
     return () => {
       cancelled = true;
     };
-  }, [initialCurrency]);
+  }, [initialCurrency, setCurrencyCode]);
 
-  const setCurrency = useCallback((code: string) => {
-    const nextCurrency = resolveCurrencyCode(code);
-    setCurrencyState(nextCurrency);
-    void setAppSetting(CURRENCY_SETTING_KEY, nextCurrency).catch((error) => {
-      console.error('Error saving currency preference:', error);
-    });
-  }, []);
+  const setCurrency = useCallback(
+    (code: string) => {
+      const nextCurrency = resolveCurrencyCode(code);
+      setCurrencyCode(nextCurrency);
+      void setAppSetting(CURRENCY_SETTING_KEY, nextCurrency).catch((error) => {
+        console.error('Error saving currency preference:', error);
+      });
+    },
+    [setCurrencyCode]
+  );
 
   const value = useMemo<CurrencyContextValue>(
     () => ({ currency, setCurrency }),

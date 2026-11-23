@@ -8,7 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useReduceMotion } from '@/components/ui/theme';
-import { useSplashTransition } from '@/context/SplashTransitionContext';
+import { useSplashTransition } from '@/store/splashTransitionStore';
 
 const ENTER_DURATION = 500;
 const REDUCED_DURATION = 200;

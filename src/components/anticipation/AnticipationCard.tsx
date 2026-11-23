@@ -9,7 +9,7 @@ import Wallet from 'lucide-react-native/icons/wallet';
 import { Card } from '@/components/ui/Card';
 import { spacing, useColors } from '@/components/ui/theme';
 import { useDashboard } from '@/context/DashboardContext';
-import { useHomeCards } from '@/context/HomeCardsContext';
+import { useHomeCards } from '@/store/homeCardsStore';
 import { useCurrency } from '@/core/currency/useCurrency';
 import type { TranslationKey } from '@/core/i18n/translations';
 import { useTranslation } from '@/core/i18n/useTranslation';
