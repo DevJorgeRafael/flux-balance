@@ -2,6 +2,20 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.4.4] - 2026-11-23
+
+### Añadido
+
+- Filtro por fecha en el historial de movimientos de cada cuenta: permite elegir un solo día o un rango con el DatePicker, sin fechas futuras. El filtro comparte fila con los filtros Todos/Ingresos/Gastos.
+
+### Cambiado
+
+- «Ver más» del inicio muestra como máximo 10 movimientos adicionales por vez, sin ocultar el acceso al historial de la cuenta.
+
+### Corregido
+
+- Eliminado el botón «Ajustar saldo» que aparecía en el detalle de cuenta fuera de contexto.
+
 ## [2.4.3] - 2026-11-23
 
 ### Añadido

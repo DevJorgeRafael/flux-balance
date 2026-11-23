@@ -2,6 +2,7 @@ import type { Transaction } from '@/core/models/transaction';
 import { parseLedgerDate } from '@/core/utils/ledger-date';
 
 export const RECENT_TRANSACTIONS_VISIBLE_LIMIT = 5;
+export const RECENT_TRANSACTIONS_EXPANDED_LIMIT = 10;
 export const RECENT_TRANSACTIONS_FALLBACK_LIMIT =
   RECENT_TRANSACTIONS_VISIBLE_LIMIT;
 
@@ -23,6 +24,7 @@ export interface VisibleRecentTransactions {
 export interface SelectVisibleRecentTransactionsOptions {
   expanded?: boolean;
   limit?: number;
+  expandedLimit?: number;
 }
 
 interface DatedTransaction {
@@ -87,15 +89,18 @@ export function selectVisibleRecentTransactions(
   {
     expanded = false,
     limit = RECENT_TRANSACTIONS_VISIBLE_LIMIT,
+    expandedLimit = RECENT_TRANSACTIONS_EXPANDED_LIMIT,
   }: SelectVisibleRecentTransactionsOptions = {}
 ): VisibleRecentTransactions {
   const safeLimit =
     Number.isInteger(limit) && limit >= 0
       ? limit
       : RECENT_TRANSACTIONS_VISIBLE_LIMIT;
-  const visible = expanded
-    ? transactions.slice()
-    : transactions.slice(0, safeLimit);
+  const safeExpandedLimit =
+    Number.isInteger(expandedLimit) && expandedLimit >= 0
+      ? expandedLimit
+      : RECENT_TRANSACTIONS_EXPANDED_LIMIT;
+  const visible = transactions.slice(0, expanded ? safeExpandedLimit : safeLimit);
 
   return {
     transactions: visible,

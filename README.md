@@ -1,6 +1,6 @@
 # Flux Balance
 
-Versión actual: **v2.4.3**.
+Versión actual: **v2.4.4**.
 
 Offline-first personal finance app built with Expo, React Native, and local SQLite.
 
