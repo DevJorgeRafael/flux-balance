@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import Plus from 'lucide-react-native/icons/plus';
 import { ReminderListRow } from '@/components/reminders/ReminderListRow';
+import { IconButton } from '@/components/ui/atoms/IconButton';
 import { radius, spacing, useColors } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { selectUpcomingReminders } from '@/core/services/reminder-upcoming';
@@ -32,28 +33,12 @@ export function UpcomingRemindersCard() {
         >
           {t('upcomingReminders')}
         </Text>
-        <Pressable
+        <IconButton
+          icon={<Plus size={20} color={colors.onPrimary} strokeWidth={2.6} />}
           onPress={() => router.push('/reminders/form')}
-          accessibilityRole="button"
           accessibilityLabel={t('newReminder')}
-          hitSlop={6}
-          style={({ pressed }) => [
-            styles.addButton,
-            {
-              backgroundColor: colors.cardRaised,
-              borderColor: colors.border,
-            },
-            pressed && styles.pressed,
-          ]}
-        >
-          <Plus size={16} color={colors.primaryText} strokeWidth={2.6} />
-          <Text
-            style={[styles.addButtonText, { color: colors.primaryText }]}
-            numberOfLines={1}
-          >
-            {t('newReminder')}
-          </Text>
-        </Pressable>
+          style={[styles.addButton, { backgroundColor: colors.primary }]}
+        />
       </View>
 
       <View style={styles.rows}>
@@ -96,17 +81,9 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   addButton: {
-    minHeight: 44,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
+    width: 40,
+    height: 40,
     borderRadius: radius.full,
-    borderWidth: 1,
-  },
-  addButtonText: {
-    fontSize: 12,
-    fontWeight: '800',
   },
   rows: {
     gap: spacing.md,

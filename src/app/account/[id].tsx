@@ -19,7 +19,6 @@ import {
 import { Account } from '@/core/models/account';
 import { Transaction } from '@/core/models/transaction';
 import { AccountDetailHero } from '@/components/accounts/AccountDetailHero';
-import { BalanceAdjustmentModal } from '@/components/accounts/BalanceAdjustmentModal';
 import { AccountProjectionCard } from '@/components/accounts/AccountProjectionCard';
 import { AccountTransactionsList } from '@/components/accounts/AccountTransactionsList';
 
@@ -37,7 +36,6 @@ export default function AccountDetailScreen() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(() => Boolean(id));
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isAdjusting, setIsAdjusting] = useState(false);
 
   const loadAccountData = useCallback(async () => {
     if (!id) return;
@@ -144,33 +142,11 @@ export default function AccountDetailScreen() {
         {/* Hero & Métricas */}
         <AccountDetailHero account={account} totalIn={totalIn} totalOut={totalOut} />
 
-        <Pressable
-          style={({ pressed }) => [
-            styles.adjustButton,
-            { backgroundColor: colors.surface, borderColor: colors.border },
-            pressed && styles.pressed,
-          ]}
-          onPress={() => setIsAdjusting(true)}
-          accessibilityRole="button"
-          accessibilityLabel={t('adjustBalance')}
-        >
-          <Text style={[styles.adjustButtonText, { color: colors.primaryText }]}>
-            {t('adjustBalance')}
-          </Text>
-        </Pressable>
-
         <AccountProjectionCard account={account} />
 
         {/* Historial de Movimientos */}
         <AccountTransactionsList transactions={transactions} />
       </ScrollView>
-
-      <BalanceAdjustmentModal
-        visible={isAdjusting}
-        account={account}
-        onClose={() => setIsAdjusting(false)}
-        onAdjusted={() => void loadAccountData()}
-      />
     </View>
   );
 }
@@ -229,17 +205,5 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.85,
-  },
-  adjustButton: {
-    minHeight: 44,
-    borderWidth: 1,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 12,
-  },
-  adjustButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
   },
 });

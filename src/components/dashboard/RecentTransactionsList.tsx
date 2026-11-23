@@ -19,6 +19,7 @@ import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useCurrency } from '@/core/currency/useCurrency';
 import {
+  RECENT_TRANSACTIONS_EXPANDED_LIMIT,
   RECENT_TRANSACTIONS_FALLBACK_LIMIT,
   selectRecentTransactions,
   selectVisibleRecentTransactions,
@@ -51,6 +52,7 @@ export function RecentTransactionsList({
     selectVisibleRecentTransactions(scopedTransactions, {
       expanded: isExpanded,
     });
+  const nextBatchCount = Math.min(hiddenCount, RECENT_TRANSACTIONS_EXPANDED_LIMIT);
 
   const headerButtonStyle = (pressed: boolean) => [
     styles.seeMoreBtn,
@@ -93,6 +95,21 @@ export function RecentTransactionsList({
               })}
             </Text>
           ) : null}
+
+          {selectedFilterAccountId || defaultAccountId ? (
+            <Pressable
+              onPress={handleOpenHistory}
+              accessibilityRole="link"
+              accessibilityLabel={t('seeAccountHistory')}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+              style={({ pressed }) => [styles.historyLink, pressed && styles.pressed]}
+            >
+              <Text style={[styles.historyLinkText, { color: colors.primaryText }]}>
+                {t('seeAccountHistory')}
+              </Text>
+              <ChevronRight size={13} color={colors.primaryText} strokeWidth={2.5} />
+            </Pressable>
+          ) : null}
         </View>
 
         {hiddenCount > 0 ? (
@@ -101,32 +118,19 @@ export function RecentTransactionsList({
             onPress={() => setIsExpanded((current) => !current)}
             accessibilityRole="button"
             accessibilityLabel={
-              isExpanded ? t('seeLess') : t('seeMoreCount', { count: hiddenCount })
+              isExpanded ? t('seeLess') : t('seeMoreCount', { count: nextBatchCount })
             }
             accessibilityState={{ expanded: isExpanded }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Text style={[styles.seeMoreText, { color: colors.text }]}>
-              {isExpanded ? t('seeLess') : t('seeMoreCount', { count: hiddenCount })}
+              {isExpanded ? t('seeLess') : t('seeMoreCount', { count: nextBatchCount })}
             </Text>
             {isExpanded ? (
               <ChevronUp size={14} color={colors.textLight} strokeWidth={2.5} />
             ) : (
               <ChevronDown size={14} color={colors.textLight} strokeWidth={2.5} />
             )}
-          </Pressable>
-        ) : selectedFilterAccountId || defaultAccountId ? (
-          <Pressable
-            style={({ pressed }) => headerButtonStyle(pressed)}
-            onPress={handleOpenHistory}
-            accessibilityRole="button"
-            accessibilityLabel={t('seeAccountHistory')}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Text style={[styles.seeMoreText, { color: colors.text }]}>
-              {t('seeAccountHistory')}
-            </Text>
-            <ChevronRight size={14} color={colors.textLight} strokeWidth={2.5} />
           </Pressable>
         ) : null}
       </View>
@@ -218,7 +222,7 @@ export function RecentTransactionsList({
 const styles = StyleSheet.create({
   sectionHeaderRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     marginBottom: spacing.lg,
   },
@@ -240,6 +244,17 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     marginTop: 2,
+  },
+  historyLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 2,
+    marginTop: 4,
+  },
+  historyLinkText: {
+    fontSize: 12,
+    fontWeight: '700',
   },
   seeMoreBtn: {
     flexDirection: 'row',
