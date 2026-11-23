@@ -4,6 +4,7 @@ import { migration as appSettings } from './002_app_settings';
 import { migration as reminders } from './003_reminders';
 import { migration as budgets } from './004_budgets';
 import { migration as categoryRules } from './005_category_rules';
+import { migration as goals } from './006_goals';
 
 export const MIGRATIONS: readonly Migration[] = [
   baseline,
@@ -11,4 +12,5 @@ export const MIGRATIONS: readonly Migration[] = [
   reminders,
   budgets,
   categoryRules,
+  goals,
 ];

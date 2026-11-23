@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import Trash from 'lucide-react-native/icons/trash';
-import { appAlert } from '@/components/ui/alert/appAlert';
+import { appConfirm } from '@/components/ui/alert/appAlert';
 import { Card } from '@/components/ui/Card';
 import { IconButton } from '@/components/ui/atoms/IconButton';
 import { SectionLabel } from '@/components/settings/SectionLabel';
@@ -35,22 +35,18 @@ export default function CategoryRulesScreen() {
     }, [reload])
   );
 
-  const handleDelete = (rule: CategoryRule) => {
-    void appAlert({
-      type: 'warning',
+  const handleDelete = async (rule: CategoryRule) => {
+    const confirmed = await appConfirm({
       title: t('deleteRule'),
       message: rule.keyword,
-      buttons: [
-        { text: t('cancel') },
-        {
-          text: t('delete'),
-          onPress: async () => {
-            await repository.delete(rule.id);
-            reload();
-          },
-        },
-      ],
+      confirmText: t('delete'),
+      cancelText: t('cancel'),
+      destructive: true,
     });
+    if (!confirmed) return;
+
+    await repository.delete(rule.id);
+    reload();
   };
 
   return (

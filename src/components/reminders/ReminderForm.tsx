@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { appAlert } from '@/components/ui/alert/appAlert';
+import { appAlert, appConfirm } from '@/components/ui/alert/appAlert';
 import { Button } from '@/components/ui/atoms/Button';
 import { useColors, useInsets } from '@/components/ui/theme';
 import { getCurrencyDecimals } from '@/core/constants/currencies';
@@ -164,21 +164,14 @@ export function ReminderForm() {
     }));
   };
 
-  const showPermissionAlert = () => {
-    void appAlert({
-      type: 'warning',
+  const showPermissionAlert = async () => {
+    const confirmed = await appConfirm({
       title: t('reminderNotificationsDisabledTitle'),
       message: t('reminderNotificationsDisabledMessage'),
-      buttons: [
-        { text: t('notNow'), style: 'cancel' },
-        {
-          text: t('openSettings'),
-          onPress: () => {
-            void Linking.openSettings();
-          },
-        },
-      ],
+      confirmText: t('openSettings'),
+      cancelText: t('notNow'),
     });
+    if (confirmed) void Linking.openSettings();
   };
 
   const showSaveError = (error: unknown) => {

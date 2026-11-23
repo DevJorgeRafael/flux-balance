@@ -4,7 +4,7 @@ import { router, useFocusEffect } from 'expo-router';
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import Pencil from 'lucide-react-native/icons/pencil';
 import Trash from 'lucide-react-native/icons/trash';
-import { appAlert } from '@/components/ui/alert/appAlert';
+import { appAlert, appConfirm } from '@/components/ui/alert/appAlert';
 import { Button } from '@/components/ui/atoms/Button';
 import { IconButton } from '@/components/ui/atoms/IconButton';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
@@ -99,22 +99,18 @@ export default function BudgetsScreen() {
     }
   };
 
-  const handleDelete = (budget: Budget) => {
-    void appAlert({
-      type: 'warning',
+  const handleDelete = async (budget: Budget) => {
+    const confirmed = await appConfirm({
       title: t('deleteBudget'),
       message: categories.find((category) => category.id === budget.categoryId)?.name ?? '',
-      buttons: [
-        { text: t('cancel') },
-        {
-          text: t('delete'),
-          onPress: async () => {
-            await repository.delete(budget.id);
-            reload();
-          },
-        },
-      ],
+      confirmText: t('delete'),
+      cancelText: t('cancel'),
+      destructive: true,
     });
+    if (!confirmed) return;
+
+    await repository.delete(budget.id);
+    reload();
   };
 
   return (
@@ -242,14 +238,13 @@ export default function BudgetsScreen() {
             {t('budgetLimit')} ({currency})
           </Text>
           <TextInput
-            style={[
-              styles.amountInput,
-              {
-                color: colors.text,
-                backgroundColor: colors.inputBackground,
-                borderColor: colors.border,
-              },
-            ]}
+    style={[
+      styles.amountInput,
+      {
+        color: colors.text,
+        backgroundColor: colors.inputBackground,
+      },
+    ]}
             keyboardType="decimal-pad"
             value={amount}
             onChangeText={setAmount}
@@ -303,12 +298,17 @@ const styles = StyleSheet.create({
   rowLabel: { fontSize: 14, fontWeight: '700' },
   rowValue: { fontSize: 12 },
   form: { gap: spacing.md, paddingBottom: spacing.lg },
-  formLabel: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase' },
+  formLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
   amountInput: {
-    borderWidth: 1,
-    borderRadius: 14,
+    minHeight: 52,
+    borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 12,
     fontSize: 20,
     fontWeight: '700',
   },

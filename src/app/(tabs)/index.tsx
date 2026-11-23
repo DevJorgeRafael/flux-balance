@@ -20,6 +20,7 @@ import { AccountCarousel } from '@/components/dashboard/AccountCarousel';
 import { RecentTransactionsList } from '@/components/dashboard/RecentTransactionsList';
 import { UpcomingRemindersCard } from '@/components/reminders/UpcomingRemindersCard';
 import { AnticipationCard } from '@/components/anticipation/AnticipationCard';
+import { GoalProgressCard } from '@/components/goals/GoalProgressCard';
 import { HomeReveal } from '@/components/dashboard/HomeReveal';
 import { BottomFade } from '@/components/ui/BottomFade';
 import { useDashboard } from '@/context/DashboardContext';
@@ -117,6 +118,7 @@ export default function DashboardScreen() {
 
               <UpcomingRemindersCard />
               <AnticipationCard />
+              <GoalProgressCard />
             </HomeReveal>
           </View>
         </View>
