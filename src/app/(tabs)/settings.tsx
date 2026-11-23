@@ -79,6 +79,23 @@ export default function SettingsScreen() {
           />
         </Card>
 
+        <SectionLabel>{t('reminders')}</SectionLabel>
+        <Card style={styles.card}>
+          <SettingsRow
+            icon={Bell}
+            label={t('manageReminders')}
+            value={activeReminderCount > 0 ? String(activeReminderCount) : undefined}
+            showChevron
+            onPress={() => router.push('/reminders')}
+          />
+          <SettingsRow
+            icon={Plus}
+            label={t('newReminder')}
+            isLast
+            onPress={() => router.push('/reminders/form')}
+          />
+        </Card>
+
         <SectionLabel>{t('categories')}</SectionLabel>
         <Card style={styles.card}>
           <SettingsRow
@@ -103,23 +120,6 @@ export default function SettingsScreen() {
                 params: { type: 'EXPENSE' },
               })
             }
-          />
-        </Card>
-
-        <SectionLabel>{t('reminders')}</SectionLabel>
-        <Card style={styles.card}>
-          <SettingsRow
-            icon={Bell}
-            label={t('manageReminders')}
-            value={activeReminderCount > 0 ? String(activeReminderCount) : undefined}
-            showChevron
-            onPress={() => router.push('/reminders')}
-          />
-          <SettingsRow
-            icon={Plus}
-            label={t('newReminder')}
-            isLast
-            onPress={() => router.push('/reminders/form')}
           />
         </Card>
 

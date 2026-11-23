@@ -6,7 +6,7 @@ Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
 ### Cambiado
 
-- Ajustes reordenados: Sistema aparece primero, Categorías y Recordatorios mantienen su orden, y Presupuestos, Cerebro local, Metas y Simulador de ahorro se agrupan en Planeación.
+- Ajustes reordenados: Sistema aparece primero, seguido de Recordatorios y Categorías; Presupuestos, Cerebro local, Metas y Simulador de ahorro se agrupan en Planificación.
 - Datos y Modo desarrollador se mantienen juntos y por encima de Acerca de.
 
 ## [2.4.1] - 2026-11-21
