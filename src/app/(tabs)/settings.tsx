@@ -7,6 +7,7 @@ import Languages from 'lucide-react-native/icons/languages';
 import Moon from 'lucide-react-native/icons/moon';
 import Plus from 'lucide-react-native/icons/plus';
 import Sun from 'lucide-react-native/icons/sun';
+import SlidersHorizontal from 'lucide-react-native/icons/sliders-horizontal';
 import Target from 'lucide-react-native/icons/target';
 import Brain from 'lucide-react-native/icons/brain';
 import Calculator from 'lucide-react-native/icons/calculator';
@@ -74,8 +75,14 @@ export default function SettingsScreen() {
             label={t('language')}
             value={languagePreference === 'system' ? t('system') : language.toUpperCase()}
             showChevron
-            isLast
             onPress={() => router.push('/settings/language')}
+          />
+          <SettingsRow
+            icon={SlidersHorizontal}
+            label={t('customizeHome')}
+            showChevron
+            isLast
+            onPress={() => router.push('/settings/home')}
           />
         </Card>
 

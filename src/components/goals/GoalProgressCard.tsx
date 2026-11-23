@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { spacing, useColors } from '@/components/ui/theme';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useDashboard } from '@/context/DashboardContext';
+import { useHomeCards } from '@/context/HomeCardsContext';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import type { Goal } from '@/core/models/goal';
 import { getGoalProgress } from '@/core/services/financial-twin';
@@ -19,6 +20,7 @@ export function GoalProgressCard() {
   const { format } = useCurrency();
   const { accounts } = useDashboard();
   const [goal, setGoal] = useState<Goal | null>(null);
+  const { isVisible } = useHomeCards();
 
   useFocusEffect(
     useCallback(() => {
@@ -35,7 +37,7 @@ export function GoalProgressCard() {
     }, [])
   );
 
-  if (!goal) return null;
+  if (!isVisible('goals') || !goal) return null;
 
   const account = accounts.find((item) => item.id === goal.accountId);
   const progress = getGoalProgress({
