@@ -1,5 +1,6 @@
 export const financialTwinTranslations = {
   es: {
+    planning: 'Planificación',
     goals: 'Metas',
     goalsIntro: 'Define un objetivo y la fecha en que quieres alcanzarlo.',
     newGoal: 'Nueva meta',
@@ -29,6 +30,7 @@ export const financialTwinTranslations = {
     simulatorRequired: 'Cuota necesaria para tu meta',
   },
   en: {
+    planning: 'Planning',
     goals: 'Goals',
     goalsIntro: 'Set a target and the date you want to reach it.',
     newGoal: 'New goal',
