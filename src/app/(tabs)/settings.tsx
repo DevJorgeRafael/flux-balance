@@ -53,6 +53,32 @@ export default function SettingsScreen() {
       >
         <Text style={[styles.title, { color: colors.text }]}>{t('settings')}</Text>
 
+        <SectionLabel>{t('system')}</SectionLabel>
+        <Card style={styles.card}>
+          <SettingsRow
+            icon={Coins}
+            label={t('currency')}
+            value={currency}
+            showChevron
+            onPress={() => router.push('/settings/currency')}
+          />
+          <SettingsRow
+            icon={isDark ? Moon : Sun}
+            label={t('theme')}
+            value={mode === 'system' ? t('system') : t(mode)}
+            showChevron
+            onPress={() => router.push('/settings/theme')}
+          />
+          <SettingsRow
+            icon={Languages}
+            label={t('language')}
+            value={languagePreference === 'system' ? t('system') : language.toUpperCase()}
+            showChevron
+            isLast
+            onPress={() => router.push('/settings/language')}
+          />
+        </Card>
+
         <SectionLabel>{t('categories')}</SectionLabel>
         <Card style={styles.card}>
           <SettingsRow
@@ -97,30 +123,20 @@ export default function SettingsScreen() {
           />
         </Card>
 
-        <SectionLabel>{t('budgets')}</SectionLabel>
+        <SectionLabel>{t('planning')}</SectionLabel>
         <Card style={styles.card}>
           <SettingsRow
             icon={Target}
             label={t('budgets')}
             showChevron
-            isLast
             onPress={() => router.push('/settings/budgets')}
           />
-        </Card>
-
-        <SectionLabel>{t('categoryRules')}</SectionLabel>
-        <Card style={styles.card}>
           <SettingsRow
             icon={Brain}
             label={t('categoryRules')}
             showChevron
-            isLast
             onPress={() => router.push('/settings/category-rules')}
           />
-        </Card>
-
-        <SectionLabel>{t('goals')}</SectionLabel>
-        <Card style={styles.card}>
           <SettingsRow
             icon={Target}
             label={t('goals')}
@@ -133,32 +149,6 @@ export default function SettingsScreen() {
             showChevron
             isLast
             onPress={() => router.push('/settings/simulator')}
-          />
-        </Card>
-
-        <SectionLabel>{t('system')}</SectionLabel>
-        <Card style={styles.card}>
-          <SettingsRow
-            icon={Coins}
-            label={t('currency')}
-            value={currency}
-            showChevron
-            onPress={() => router.push('/settings/currency')}
-          />
-          <SettingsRow
-            icon={isDark ? Moon : Sun}
-            label={t('theme')}
-            value={mode === 'system' ? t('system') : t(mode)}
-            showChevron
-            onPress={() => router.push('/settings/theme')}
-          />
-          <SettingsRow
-            icon={Languages}
-            label={t('language')}
-            value={languagePreference === 'system' ? t('system') : language.toUpperCase()}
-            showChevron
-            isLast
-            onPress={() => router.push('/settings/language')}
           />
         </Card>
 
