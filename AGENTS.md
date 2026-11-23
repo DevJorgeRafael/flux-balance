@@ -1,5 +1,7 @@
 Expo SDK 58 · React Native 0.88 · React 19 · TypeScript strict · npm. Offline-first app: all state lives in local SQLite (`expo-sqlite`); there is no backend or API layer.
 
+Before building or changing UI, read `DESIGN.md`.
+
 ## Expo SDK changes
 
 Expo ships breaking changes every release. Before writing code that touches Expo/EAS/React Native APIs, check the `expo` major in `package.json` and read `https://docs.expo.dev/versions/v58.0.0/`; use https://docs.expo.dev/llms.txt to find the right page instead of answering from memory. Router docs: https://docs.expo.dev/router/introduction.md

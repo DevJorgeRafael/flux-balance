@@ -5,11 +5,9 @@ import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import { Button } from '@/components/ui/atoms/Button';
 import { IconButton } from '@/components/ui/atoms/IconButton';
 import { Card } from '@/components/ui/Card';
-import { SectionLabel } from '@/components/settings/SectionLabel';
 import { spacing, useColors, useInsets } from '@/components/ui/theme';
 import { getCurrencyDecimals } from '@/core/constants/currencies';
 import { useCurrency } from '@/core/currency/useCurrency';
-import type { TranslationKey } from '@/core/i18n/translations';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { simulateSavings } from '@/core/services/financial-twin';
 import { parseAmountInput } from '@/core/utils/money';
@@ -51,27 +49,6 @@ export default function SimulatorScreen() {
     );
   };
 
-  const field = (
-    value: string,
-    onChange: (value: string) => void,
-    key: TranslationKey
-  ) => (
-    <TextInput
-      style={[
-        styles.input,
-        {
-          color: colors.text,
-          backgroundColor: colors.inputBackground,
-        },
-      ]}
-      keyboardType="decimal-pad"
-      value={value}
-      onChangeText={onChange}
-      placeholder={t(key)}
-      placeholderTextColor={colors.textLight}
-    />
-  );
-
   return (
     <View
       style={[
@@ -102,25 +79,30 @@ export default function SimulatorScreen() {
           {t('simulatorIntro')}
         </Text>
 
-        <SectionLabel>{t('simulator')}</SectionLabel>
-        <Card style={styles.card}>
-          <Text style={[styles.label, { color: colors.textLight }]}>
-            {t('simulatorInitial')} ({currency})
-          </Text>
-          {field(initial, setInitial, 'simulatorInitial')}
-          <Text style={[styles.label, { color: colors.textLight }]}>
-            {t('simulatorMonthly')} ({currency})
-          </Text>
-          {field(monthly, setMonthly, 'simulatorMonthly')}
-          <Text style={[styles.label, { color: colors.textLight }]}>
-            {t('simulatorRate')}
-          </Text>
-          {field(rate, setRate, 'simulatorRate')}
-          <Text style={[styles.label, { color: colors.textLight }]}>
-            {t('simulatorMonths')}
-          </Text>
-          {field(months, setMonths, 'simulatorMonths')}
-        </Card>
+        <FormField
+          label={`${t('simulatorInitial')} (${currency})`}
+          value={initial}
+          onChange={setInitial}
+          placeholder="0"
+        />
+        <FormField
+          label={`${t('simulatorMonthly')} (${currency})`}
+          value={monthly}
+          onChange={setMonthly}
+          placeholder="100"
+        />
+        <FormField
+          label={t('simulatorRate')}
+          value={rate}
+          onChange={setRate}
+          placeholder="5"
+        />
+        <FormField
+          label={t('simulatorMonths')}
+          value={months}
+          onChange={setMonths}
+          placeholder="12"
+        />
 
         <Button title={t('simulatorCalculate')} onPress={handleCalculate} />
 
@@ -144,6 +126,36 @@ export default function SimulatorScreen() {
           </Card>
         ) : null}
       </ScrollView>
+    </View>
+  );
+}
+
+function FormField({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+}) {
+  const colors = useColors();
+  return (
+    <View style={styles.fieldGroup}>
+      <Text style={[styles.label, { color: colors.textLight }]}>{label}</Text>
+      <TextInput
+        style={[
+          styles.input,
+          { color: colors.text, backgroundColor: colors.inputBackground },
+        ]}
+        keyboardType="decimal-pad"
+        value={value}
+        onChangeText={onChange}
+        placeholder={placeholder}
+        placeholderTextColor={colors.textLight}
+      />
     </View>
   );
 }
@@ -176,7 +188,7 @@ const styles = StyleSheet.create({
   headerSpacer: { width: 40 },
   content: { padding: spacing.lg, gap: spacing.md },
   intro: { fontSize: 13 },
-  card: { padding: spacing.md, gap: spacing.sm },
+  fieldGroup: { gap: spacing.sm },
   label: {
     fontSize: 12,
     fontWeight: '700',
