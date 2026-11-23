@@ -3,6 +3,7 @@ import { anticipationTranslations } from './anticipation-translations';
 import { backupExcelTranslations } from './backup-excel-translations';
 import { categoryRulesTranslations } from './category-rules-translations';
 import { dataTransferTranslations } from './data-transfer-translations';
+import { financialTwinTranslations } from './financial-twin-translations';
 import { homeTranslations } from './home-translations';
 import { movementTranslations } from './movement-translations';
 import { reminderTranslations } from './reminder-translations';
@@ -17,7 +18,7 @@ export type Language = 'es' | 'en';
 export const translations = {
   es: {
     ...alertTranslations.es, ...anticipationTranslations.es, ...movementTranslations.es, ...transactionTranslations.es,
-    ...dataTransferTranslations.es, ...backupExcelTranslations.es, ...transferTranslations.es, ...categoryRulesTranslations.es,
+    ...dataTransferTranslations.es, ...backupExcelTranslations.es, ...transferTranslations.es, ...categoryRulesTranslations.es, ...financialTwinTranslations.es,
     ...validationTranslations.es, ...startupTranslations.es, ...statsTranslations.es, ...homeTranslations.es,
     ...reminderTranslations.es,
     home: 'Inicio',
@@ -233,7 +234,7 @@ export const translations = {
   },
   en: {
     ...alertTranslations.en, ...anticipationTranslations.en, ...movementTranslations.en, ...transactionTranslations.en,
-    ...dataTransferTranslations.en, ...backupExcelTranslations.en, ...transferTranslations.en, ...categoryRulesTranslations.en,
+    ...dataTransferTranslations.en, ...backupExcelTranslations.en, ...transferTranslations.en, ...categoryRulesTranslations.en, ...financialTwinTranslations.en,
     ...validationTranslations.en, ...startupTranslations.en, ...statsTranslations.en, ...homeTranslations.en,
     ...reminderTranslations.en,
     home: 'Home',

@@ -9,6 +9,7 @@ import Plus from 'lucide-react-native/icons/plus';
 import Sun from 'lucide-react-native/icons/sun';
 import Target from 'lucide-react-native/icons/target';
 import Brain from 'lucide-react-native/icons/brain';
+import Calculator from 'lucide-react-native/icons/calculator';
 import TrendingDown from 'lucide-react-native/icons/trending-down';
 import TrendingUp from 'lucide-react-native/icons/trending-up';
 import { useColors, useInsets, useThemeMode } from '@/components/ui/theme';
@@ -115,6 +116,23 @@ export default function SettingsScreen() {
             showChevron
             isLast
             onPress={() => router.push('/settings/category-rules')}
+          />
+        </Card>
+
+        <SectionLabel>{t('goals')}</SectionLabel>
+        <Card style={styles.card}>
+          <SettingsRow
+            icon={Target}
+            label={t('goals')}
+            showChevron
+            onPress={() => router.push('/settings/goals')}
+          />
+          <SettingsRow
+            icon={Calculator}
+            label={t('simulator')}
+            showChevron
+            isLast
+            onPress={() => router.push('/settings/simulator')}
           />
         </Card>
 
