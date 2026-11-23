@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/theme';
 import { initDatabase } from '@/infrastructure/database/db';
 import { DashboardProvider } from '@/context/DashboardContext';
+import { HomeCardsProvider } from '@/context/HomeCardsContext';
 import { SplashTransition } from '@/components/splash/SplashTransition';
 import { SPLASH_NATIVE_FADE_MS } from '@/components/splash/splashTiming';
 import {
@@ -133,10 +134,19 @@ function RootNavigator({
   const [startupThemePreference, setStartupThemePreference] = useState<ThemePreference>(
     preferences.themePreference
   );
+  const [homeCardVisibility, setHomeCardVisibility] = useState(preferences.homeCardVisibility);
+  const [startupHomeCardVisibility, setStartupHomeCardVisibility] = useState(
+    preferences.homeCardVisibility
+  );
 
   if (preferences.themePreference !== startupThemePreference) {
     setStartupThemePreference(preferences.themePreference);
     setThemePreference(preferences.themePreference);
+  }
+
+  if (preferences.homeCardVisibility !== startupHomeCardVisibility) {
+    setStartupHomeCardVisibility(preferences.homeCardVisibility);
+    setHomeCardVisibility(preferences.homeCardVisibility);
   }
 
   const handleModeChange = useCallback((mode: ThemeMode) => {
@@ -154,7 +164,9 @@ function RootNavigator({
           mode={themePreference}
           onModeChange={handleModeChange}
         >
-          <RootWithTheme startupReady={startupReady} />
+          <HomeCardsProvider initialVisibility={homeCardVisibility}>
+            <RootWithTheme startupReady={startupReady} />
+          </HomeCardsProvider>
         </LocalizedUIProvider>
       </CurrencyProvider>
     </TranslationProvider>

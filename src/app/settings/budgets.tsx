@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { router, useFocusEffect } from 'expo-router';
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import Pencil from 'lucide-react-native/icons/pencil';
+import Settings from 'lucide-react-native/icons/settings';
 import Trash from 'lucide-react-native/icons/trash';
 import { appAlert, appConfirm } from '@/components/ui/alert/appAlert';
 import { Button } from '@/components/ui/atoms/Button';
@@ -137,7 +138,24 @@ export default function BudgetsScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
           {t('budgets')}
         </Text>
-        <View style={styles.headerSpacer} />
+        <Pressable
+          onPress={() =>
+            router.push({
+              pathname: '/settings/home',
+              params: { focus: 'anticipations' },
+            })
+          }
+          accessibilityRole="button"
+          accessibilityLabel={t('customizeHome')}
+          hitSlop={8}
+          style={({ pressed }) => [
+            styles.backButton,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+            pressed && styles.pressed,
+          ]}
+        >
+          <Settings size={20} color={colors.text} strokeWidth={2.5} />
+        </Pressable>
       </View>
 
       <ScrollView
@@ -286,7 +304,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     textAlign: 'center',
   },
-  headerSpacer: { width: 40 },
   pressed: { opacity: 0.7 },
   content: { padding: spacing.lg, gap: spacing.md },
   title: { fontSize: 22, fontWeight: '800' },

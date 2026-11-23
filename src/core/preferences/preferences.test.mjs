@@ -2,10 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  DEFAULT_HOME_CARD_VISIBILITY,
   DEFAULT_LANGUAGE_PREFERENCE,
   DEFAULT_THEME_PREFERENCE,
+  HOME_CARD_PREFERENCE_KEYS,
   LANGUAGE_PREFERENCE_KEY,
   THEME_PREFERENCE_KEY,
+  parseHomeCardVisibility,
   parseLanguagePreference,
   parseThemePreference,
   resolveLanguage,
@@ -92,4 +95,24 @@ test('resolveLanguage explícito ignora el idioma del dispositivo', () => {
 test('resolveLanguage con una preferencia inválida se comporta como system', () => {
   assert.equal(resolveLanguage('fr', 'es-ES'), 'es');
   assert.equal(resolveLanguage('fr', 'de-DE'), 'en');
+});
+
+test('las tarjetas del inicio son visibles por defecto', () => {
+  assert.deepEqual(DEFAULT_HOME_CARD_VISIBILITY, {
+    anticipations: true,
+    goals: true,
+    upcomingReminders: true,
+  });
+  assert.equal(HOME_CARD_PREFERENCE_KEYS.anticipations, 'homeCardAnticipations');
+  assert.equal(HOME_CARD_PREFERENCE_KEYS.goals, 'homeCardGoals');
+  assert.equal(HOME_CARD_PREFERENCE_KEYS.upcomingReminders, 'homeCardUpcomingReminders');
+});
+
+test('parseHomeCardVisibility interpreta los valores guardados', () => {
+  assert.equal(parseHomeCardVisibility('1'), true);
+  assert.equal(parseHomeCardVisibility('true'), true);
+  assert.equal(parseHomeCardVisibility('0'), false);
+  assert.equal(parseHomeCardVisibility(' false '), false);
+  assert.equal(parseHomeCardVisibility(null), true);
+  assert.equal(parseHomeCardVisibility('otro'), true);
 });

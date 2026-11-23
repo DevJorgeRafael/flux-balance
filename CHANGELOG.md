@@ -2,6 +2,13 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.4.3] - 2026-11-23
+
+### Añadido
+
+- «Personalizar inicio» en Ajustes: permite ocultar o volver a mostrar las tarjetas de anticipaciones, progreso de metas y próximos recordatorios.
+- Acceso directo a la nueva pantalla desde los engranajes de Presupuestos y Metas. La preferencia se guarda en el dispositivo y se conserva en el respaldo.
+
 ## [2.4.2] - 2026-11-23
 
 ### Cambiado

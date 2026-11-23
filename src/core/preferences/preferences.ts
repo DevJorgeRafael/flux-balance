@@ -4,6 +4,25 @@ export type ResolvedTheme = 'light' | 'dark';
 export type ResolvedLanguage = 'es' | 'en';
 
 export type SystemColorScheme = 'light' | 'dark' | null | undefined;
+export type HomeCardKey = 'anticipations' | 'goals' | 'upcomingReminders';
+
+export const HOME_CARD_KEYS: readonly HomeCardKey[] = [
+  'anticipations',
+  'goals',
+  'upcomingReminders',
+];
+
+export const HOME_CARD_PREFERENCE_KEYS: Record<HomeCardKey, string> = {
+  anticipations: 'homeCardAnticipations',
+  goals: 'homeCardGoals',
+  upcomingReminders: 'homeCardUpcomingReminders',
+};
+
+export const DEFAULT_HOME_CARD_VISIBILITY: Record<HomeCardKey, boolean> = {
+  anticipations: true,
+  goals: true,
+  upcomingReminders: true,
+};
 
 export const THEME_PREFERENCE_KEY = 'themePreference';
 export const LANGUAGE_PREFERENCE_KEY = 'languagePreference';
@@ -30,6 +49,17 @@ export function parseLanguagePreference(value: string | null | undefined): Langu
   return (LANGUAGE_PREFERENCES as readonly string[]).includes(normalized)
     ? (normalized as LanguagePreference)
     : DEFAULT_LANGUAGE_PREFERENCE;
+}
+
+export function parseHomeCardVisibility(value: string | null | undefined): boolean {
+  const normalized = normalize(value);
+  if (normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off') {
+    return false;
+  }
+  if (normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on') {
+    return true;
+  }
+  return true;
 }
 
 export function resolveThemeMode(

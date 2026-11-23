@@ -9,6 +9,7 @@ import Wallet from 'lucide-react-native/icons/wallet';
 import { Card } from '@/components/ui/Card';
 import { spacing, useColors } from '@/components/ui/theme';
 import { useDashboard } from '@/context/DashboardContext';
+import { useHomeCards } from '@/context/HomeCardsContext';
 import { useCurrency } from '@/core/currency/useCurrency';
 import type { TranslationKey } from '@/core/i18n/translations';
 import { useTranslation } from '@/core/i18n/useTranslation';
@@ -36,8 +37,9 @@ export function AnticipationCard() {
   const { format } = useCurrency();
   const { categories, accounts } = useDashboard();
   const { events, isLoading } = useAnticipation();
+  const { isVisible } = useHomeCards();
 
-  if (isLoading || events.length === 0) return null;
+  if (!isVisible('anticipations') || isLoading || events.length === 0) return null;
 
   return (
     <View style={styles.section}>

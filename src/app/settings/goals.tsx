@@ -12,6 +12,7 @@ import { router, useFocusEffect } from 'expo-router';
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import CalendarDays from 'lucide-react-native/icons/calendar-days';
 import Pencil from 'lucide-react-native/icons/pencil';
+import Settings from 'lucide-react-native/icons/settings';
 import Trash from 'lucide-react-native/icons/trash';
 import { appAlert, appConfirm } from '@/components/ui/alert/appAlert';
 import { Button } from '@/components/ui/atoms/Button';
@@ -156,7 +157,16 @@ export default function GoalsScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
           {t('goals')}
         </Text>
-        <View style={styles.headerSpacer} />
+        <IconButton
+          icon={<Settings size={20} color={colors.text} strokeWidth={2.5} />}
+          accessibilityLabel={t('customizeHome')}
+          onPress={() =>
+            router.push({
+              pathname: '/settings/home',
+              params: { focus: 'goals' },
+            })
+          }
+        />
       </View>
 
       <ScrollView
@@ -376,7 +386,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     textAlign: 'center',
   },
-  headerSpacer: { width: 40 },
   content: { padding: spacing.lg, gap: spacing.md },
   intro: { fontSize: 13 },
   simulatorLink: {
