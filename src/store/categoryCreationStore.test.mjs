@@ -67,6 +67,27 @@ test('un resultado de una petición anterior se descarta', () => {
   assert.deepEqual(store().consumeResult(), newItem);
 });
 
+test('requestCategory deja una navegación pendiente y se consume una vez', () => {
+  assert.equal(store().pendingType, null);
+
+  store().requestCategory('EXPENSE');
+  assert.equal(store().pendingType, 'EXPENSE');
+  assert.equal(store().consumePendingType(), 'EXPENSE');
+  assert.equal(store().consumePendingType(), null);
+  assert.equal(store().pendingType, null);
+});
+
+test('el token de reapertura se reinicia y se incrementa al publicar', () => {
+  store().notifyPickerReopen();
+  assert.equal(store().pickerReopenToken, 1);
+
+  store().requestCategory('EXPENSE');
+  assert.equal(store().pickerReopenToken, 0);
+
+  store().notifyPickerReopen();
+  assert.equal(store().pickerReopenToken, 1);
+});
+
 test('clear reinicia todo el handoff', () => {
   store().requestCategory('INCOME');
   store().setResult(category('cat_inc_nueva', 'INCOME'));
@@ -76,4 +97,5 @@ test('clear reinicia todo el handoff', () => {
   assert.equal(store().type, null);
   assert.equal(store().result, null);
   assert.equal(store().resultRequestId, null);
+  assert.equal(store().pickerReopenToken, 0);
 });

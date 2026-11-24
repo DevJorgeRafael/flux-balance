@@ -21,6 +21,7 @@ import {
 import { initDatabase } from '@/infrastructure/database/db';
 import { DashboardProvider } from '@/context/DashboardContext';
 import { SplashTransition } from '@/components/splash/SplashTransition';
+import { CategoryCreationNavigator } from '@/components/navigation/CategoryCreationNavigator';
 import { useHomeCardsStore } from '@/store/homeCardsStore';
 import { SPLASH_NATIVE_FADE_MS } from '@/components/splash/splashTiming';
 import { useTranslation } from '@/core/i18n/useTranslation';
@@ -223,6 +224,7 @@ function RootWithTheme({ startupReady }: { startupReady: boolean }) {
                   edges={['left', 'right']}
                   style={{ flex: 1, backgroundColor: colors.background }}
                 >
+                  <CategoryCreationNavigator />
                   <Stack
                     screenOptions={{
                       headerShown: false,

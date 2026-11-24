@@ -43,7 +43,7 @@ export function CategoryColorGrid({
                 style={({ pressed }) => [
                   styles.cell,
                   { backgroundColor: color },
-                  isSelected && [styles.selectedCell, { borderColor: colors.text }],
+                  isSelected && { borderColor: colors.text },
                   pressed && styles.pressed,
                 ]}
               >
@@ -74,11 +74,10 @@ const styles = StyleSheet.create({
     flex: 1,
     aspectRatio: 1,
     borderRadius: 9,
+    borderWidth: 2.5,
+    borderColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  selectedCell: {
-    borderWidth: 2.5,
   },
   checkBadge: {
     width: 20,

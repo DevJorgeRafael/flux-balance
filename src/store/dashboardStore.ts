@@ -26,6 +26,8 @@ const EMPTY_TOTALS: MonthlyTotals = {
   netSavings: 0,
 };
 
+const MODAL_RESTORE_DELAY_MS = 400;
+
 interface DashboardState {
   accounts: Account[];
   categories: Category[];
@@ -41,6 +43,7 @@ interface DashboardState {
   isTransactionModalMounted: boolean;
   transactionType: TransactionType;
   transactionPrefill: TransactionPrefill | null;
+  transactionHiddenForCategory: boolean;
 
   loadData: () => Promise<void>;
   reloadTransactions: () => Promise<void>;
@@ -53,6 +56,8 @@ interface DashboardState {
   toggleBalanceVisibility: () => void;
   openTransactionModal: (type?: TransactionType, prefill?: TransactionPrefill) => void;
   closeTransactionModal: () => void;
+  hideTransactionModalForCategory: (type: TransactionType) => void;
+  restoreTransactionModalAfterCategory: (type?: TransactionType) => void;
   openAccountModal: () => void;
   closeAccountModal: () => void;
 }
@@ -72,6 +77,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   isTransactionModalMounted: false,
   transactionType: 'EXPENSE',
   transactionPrefill: null,
+  transactionHiddenForCategory: false,
 
   loadData: async () => {
     try {
@@ -157,6 +163,31 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
   closeTransactionModal: () =>
     set({ isTransactionModalVisible: false, transactionPrefill: null }),
+
+  hideTransactionModalForCategory: (type) =>
+    set({
+      isTransactionModalVisible: false,
+      transactionPrefill: null,
+      transactionType: type,
+      transactionHiddenForCategory: true,
+    }),
+
+  restoreTransactionModalAfterCategory: (type) => {
+    const { transactionHiddenForCategory, transactionType } = get();
+    if (!transactionHiddenForCategory) return;
+
+    const restoredType = type ?? transactionType;
+    set({ transactionHiddenForCategory: false });
+
+    setTimeout(() => {
+      set({
+        isTransactionModalMounted: true,
+        isTransactionModalVisible: true,
+        transactionType: restoredType,
+        transactionPrefill: null,
+      });
+    }, MODAL_RESTORE_DELAY_MS);
+  },
 
   openAccountModal: () =>
     set({ isAccountModalMounted: true, isAccountModalVisible: true }),

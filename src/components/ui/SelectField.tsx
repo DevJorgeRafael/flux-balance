@@ -36,6 +36,8 @@ interface SelectFieldProps {
   searchable?: boolean;
   searchPlaceholder?: string;
   noResultsLabel?: string;
+  footer?: (close: () => void) => React.ReactElement;
+  openSignal?: number;
 }
 
 const SEARCH_THRESHOLD = 8;
@@ -53,11 +55,20 @@ export function SelectField({
   searchable = false,
   searchPlaceholder,
   noResultsLabel,
+  footer,
+  openSignal,
 }: SelectFieldProps) {
   const colors = useColors();
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const signal = openSignal ?? 0;
+  const [previousSignal, setPreviousSignal] = useState(signal);
+
+  if (signal !== previousSignal) {
+    setPreviousSignal(signal);
+    if (signal > 0) setIsOpen(true);
+  }
 
   const selectedOption = options.find((option) => option.id === selectedId);
   const hasSelection = selectedOption !== undefined;
@@ -190,6 +201,7 @@ export function SelectField({
               showsVerticalScrollIndicator={false}
               style={styles.list}
               contentContainerStyle={styles.listContent}
+              ListFooterComponent={footer ? footer(closeSheet) : undefined}
               ListEmptyComponent={
                 noResultsLabel ? (
                   <View style={styles.emptyState}>

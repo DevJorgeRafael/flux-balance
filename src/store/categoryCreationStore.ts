@@ -6,7 +6,11 @@ export interface CategoryCreationState {
   type: CategoryType | null;
   result: Category | null;
   resultRequestId: number | null;
+  pickerReopenToken: number;
+  pendingType: CategoryType | null;
   requestCategory: (type: CategoryType) => void;
+  consumePendingType: () => CategoryType | null;
+  notifyPickerReopen: () => void;
   setResult: (category: Category) => void;
   consumeResult: () => Category | null;
   clear: () => void;
@@ -17,6 +21,8 @@ export const useCategoryCreationStore = create<CategoryCreationState>((set, get)
   type: null,
   result: null,
   resultRequestId: null,
+  pickerReopenToken: 0,
+  pendingType: null,
 
   requestCategory: (type) =>
     set((state) => ({
@@ -24,7 +30,18 @@ export const useCategoryCreationStore = create<CategoryCreationState>((set, get)
       type,
       result: null,
       resultRequestId: null,
+      pickerReopenToken: 0,
+      pendingType: type,
     })),
+
+  consumePendingType: () => {
+    const pendingType = get().pendingType;
+    if (pendingType) set({ pendingType: null });
+    return pendingType;
+  },
+
+  notifyPickerReopen: () =>
+    set((state) => ({ pickerReopenToken: state.pickerReopenToken + 1 })),
 
   setResult: (category) =>
     set((state) =>
@@ -40,5 +57,13 @@ export const useCategoryCreationStore = create<CategoryCreationState>((set, get)
     return result;
   },
 
-  clear: () => set({ requestId: 0, type: null, result: null, resultRequestId: null }),
+  clear: () =>
+    set({
+      requestId: 0,
+      type: null,
+      result: null,
+      resultRequestId: null,
+      pickerReopenToken: 0,
+      pendingType: null,
+    }),
 }));
