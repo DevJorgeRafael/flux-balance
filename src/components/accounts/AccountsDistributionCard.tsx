@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { useColors } from '@/components/ui/theme';
+import { useColors, withAlpha } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import type { AccountDistributionSegment } from '@/core/services/account-distribution';
@@ -8,6 +8,8 @@ import type { AccountDistributionSegment } from '@/core/services/account-distrib
 interface AccountsDistributionCardProps {
   segments: AccountDistributionSegment[];
 }
+
+const SEGMENT_OPACITIES = [1, 0.72, 0.52, 0.36, 0.24];
 
 export function AccountsDistributionCard({ segments }: AccountsDistributionCardProps) {
   const colors = useColors();
@@ -17,19 +19,35 @@ export function AccountsDistributionCard({ segments }: AccountsDistributionCardP
     <Card style={styles.card}>
       <Text style={[styles.title, { color: colors.text }]}>{t('distribution')}</Text>
 
-      <View style={[styles.bar, { backgroundColor: colors.surfaceMuted }]}>
-        {segments.map((segment) => (
+      <View style={[styles.bar, { backgroundColor: colors.controlTrack }]}>
+        {segments.map((segment, index) => (
           <View
             key={segment.id}
-            style={{ flex: segment.amount, backgroundColor: segment.color }}
+            style={{
+              flex: segment.amount,
+              backgroundColor: withAlpha(
+                colors.primary,
+                SEGMENT_OPACITIES[index] ?? 0.2
+              ),
+            }}
           />
         ))}
       </View>
 
       <View style={styles.legend}>
-        {segments.map((segment) => (
+        {segments.map((segment, index) => (
           <View key={segment.id} style={styles.legendRow}>
-            <View style={[styles.dot, { backgroundColor: segment.color }]} />
+            <View
+              style={[
+                styles.dot,
+                {
+                  backgroundColor: withAlpha(
+                    colors.primary,
+                    SEGMENT_OPACITIES[index] ?? 0.2
+                  ),
+                },
+              ]}
+            />
             <Text
               style={[styles.legendName, { color: colors.text }]}
               numberOfLines={1}

@@ -1,11 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Calendar from 'lucide-react-native/icons/calendar';
 import CreditCard from 'lucide-react-native/icons/credit-card';
-import TrendingUp from 'lucide-react-native/icons/trending-up';
-import Zap from 'lucide-react-native/icons/zap';
-import type { LucideIcon } from 'lucide-react-native';
-import type { Account, AccountType, FixedTermDeposit } from '@/core/models/account';
+import type { Account, FixedTermDeposit } from '@/core/models/account';
 import { calculateDailyProjection } from '@/core/services/interest-calculator';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useColors } from '@/components/ui/theme';
@@ -102,28 +98,6 @@ export function AccountRowCard({
   const { format } = useCurrency();
   const { t } = useTranslation();
 
-  const visuals: Record<
-    AccountType,
-    { Icon: LucideIcon; background: string; foreground: string }
-  > = {
-    CHECKING: {
-      Icon: CreditCard,
-      background: colors.primarySoft,
-      foreground: colors.primaryText,
-    },
-    FLEXIBLE_SAVINGS: {
-      Icon: Zap,
-      background: colors.successSoft,
-      foreground: colors.successText,
-    },
-    FIXED_TERM: {
-      Icon: Calendar,
-      background: colors.warningSoft,
-      foreground: colors.warningText,
-    },
-  };
-
-  const { Icon, background, foreground } = visuals[account.type];
   const movementLabel =
     movementCount === 1
       ? t('movementsThisMonthOne')
@@ -142,8 +116,8 @@ export function AccountRowCard({
     >
       <Card style={styles.card}>
         <View style={styles.mainRow}>
-          <View style={[styles.iconCircle, { backgroundColor: background }]}>
-            <Icon size={18} color={foreground} strokeWidth={2.2} />
+          <View style={[styles.iconCircle, { backgroundColor: colors.primarySoft }]}>
+            <CreditCard size={18} color={colors.primaryText} strokeWidth={2.2} />
           </View>
 
           <View style={styles.copy}>
@@ -171,45 +145,37 @@ export function AccountRowCard({
 
         {flexibleYield !== null && (
           <View
-            style={[
-              styles.performanceStrip,
-              styles.flexibleStrip,
-              { backgroundColor: colors.successSoft },
-            ]}
+            style={[styles.performanceStrip, { backgroundColor: colors.surfaceMuted }]}
           >
-            <TrendingUp size={13} color={colors.successText} strokeWidth={2.4} />
             <Text
-              style={[styles.performanceText, { color: colors.successText }]}
+              style={[styles.performanceText, { color: colors.primaryText }]}
               numberOfLines={1}
             >
-              {format(flexibleYield, { showSign: isBalanceVisible, hidden: !isBalanceVisible })}
+              {`${t('estimated')}: ${format(flexibleYield, {
+                showSign: isBalanceVisible,
+                hidden: !isBalanceVisible,
+              })}`}
             </Text>
-            <View style={[styles.estimatedTag, { backgroundColor: colors.surface }]}>
-              <Text style={[styles.estimatedText, { color: colors.successText }]}>
-                {t('estimated')}
-              </Text>
-            </View>
           </View>
         )}
 
         {fixedTimeline && (
-          <View style={[styles.performanceStrip, { backgroundColor: colors.warningSoft }]}>
-            <View style={styles.fixedHeaderRow}>
-              <Calendar size={13} color={colors.warningText} strokeWidth={2.4} />
-              <Text
-                style={[styles.performanceText, { color: colors.warningText }]}
-                numberOfLines={1}
-              >
-                {fixedTimeline.daysLeft === 1
-                  ? t('maturesInDaysOne')
-                  : t('maturesInDaysMany', { days: fixedTimeline.daysLeft })}
-              </Text>
-            </View>
-            <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
+          <View
+            style={[styles.performanceStrip, { backgroundColor: colors.surfaceMuted }]}
+          >
+            <Text
+              style={[styles.performanceText, { color: colors.primaryText }]}
+              numberOfLines={1}
+            >
+              {fixedTimeline.daysLeft === 1
+                ? t('maturesInDaysOne')
+                : t('maturesInDaysMany', { days: fixedTimeline.daysLeft })}
+            </Text>
+            <View style={[styles.progressTrack, { backgroundColor: colors.controlTrack }]}>
               <View
                 style={[
                   styles.progressFill,
-                  { width: progressWidth, backgroundColor: colors.warningText },
+                  { width: progressWidth, backgroundColor: colors.primary },
                 ]}
               />
             </View>
@@ -267,35 +233,15 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginTop: 12,
   },
-  flexibleStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
   performanceText: {
     fontSize: 12,
     fontWeight: '800',
-  },
-  estimatedTag: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 999,
-    marginLeft: 'auto',
-  },
-  estimatedText: {
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  fixedHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 8,
   },
   progressTrack: {
     height: 4,
     borderRadius: 2,
     overflow: 'hidden',
+    marginTop: 8,
   },
   progressFill: {
     height: '100%',
