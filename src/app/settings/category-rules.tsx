@@ -6,6 +6,7 @@ import Trash from 'lucide-react-native/icons/trash';
 import { appConfirm } from '@/components/ui/alert/appAlert';
 import { Card } from '@/components/ui/Card';
 import { IconButton } from '@/components/ui/atoms/IconButton';
+import { HelpButton } from '@/components/ui/HelpButton';
 import { SectionLabel } from '@/components/settings/SectionLabel';
 import { spacing, useColors, useInsets } from '@/components/ui/theme';
 import { useDashboard } from '@/context/DashboardContext';
@@ -75,9 +76,15 @@ export default function CategoryRulesScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.intro, { color: colors.textLight }]}>
-          {t('categoryRulesIntro')}
-        </Text>
+        <View style={styles.introRow}>
+          <Text style={[styles.intro, { color: colors.textLight }]}>
+            {t('categoryRulesIntro')}
+          </Text>
+          <HelpButton
+            title={t('helpLocalBrainTitle')}
+            message={t('helpLocalBrainMessage')}
+          />
+        </View>
 
         <SectionLabel>{t('categoryRules')}</SectionLabel>
         <Card style={styles.card}>
@@ -138,7 +145,8 @@ const styles = StyleSheet.create({
   },
   headerSpacer: { width: 40 },
   content: { padding: spacing.lg, gap: spacing.md },
-  intro: { fontSize: 13 },
+  intro: { fontSize: 13, flex: 1 },
+  introRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.xs },
   card: { paddingHorizontal: spacing.md },
   empty: { fontSize: 13, paddingVertical: spacing.md },
   row: {

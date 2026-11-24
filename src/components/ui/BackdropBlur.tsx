@@ -41,7 +41,12 @@ export function BackdropBlur({ visible, onPress, blurTarget }: BackdropBlurProps
         pointerEvents="none"
         style={[StyleSheet.absoluteFill, { backgroundColor: colors.backdropVeil }]}
       />
-      <Pressable style={StyleSheet.absoluteFill} onPress={onPress} />
+      <Pressable
+        style={StyleSheet.absoluteFill}
+        onPress={onPress}
+        accessible={false}
+        accessibilityElementsHidden
+      />
     </Animated.View>
   );
 }

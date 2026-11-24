@@ -4,6 +4,7 @@ export const movementTranslations = {
     showBalance: 'Mostrar balance',
     allMovements: 'Todos',
     seeMoreCount: 'Ver {{count}} más',
+    moreMovements: 'Ver más movimientos',
     seeLess: 'Ver menos',
     seeAccountHistory: 'Ver historial',
     movementCountOne: '1 movimiento',
@@ -11,7 +12,7 @@ export const movementTranslations = {
     noFilteredMovements: 'No se encontraron movimientos con el filtro seleccionado.',
     noDateRangeMovements: 'No hay movimientos en el rango de fechas seleccionado.',
     filterByDate: 'Filtrar por fecha',
-    clearDateFilter: 'Quitar filtro de fecha',
+    clearDateFilter: 'Limpiar filtro',
     dateRangeTitle: 'Rango de fechas',
     dateRangeHint:
       'Toca un día para ver solo ese día. Toca dos fechas para elegir un rango.',
@@ -28,6 +29,7 @@ export const movementTranslations = {
     showBalance: 'Show balance',
     allMovements: 'All',
     seeMoreCount: 'See {{count}} more',
+    moreMovements: 'Show more movements',
     seeLess: 'See less',
     seeAccountHistory: 'View history',
     movementCountOne: '1 movement',
@@ -35,7 +37,7 @@ export const movementTranslations = {
     noFilteredMovements: 'No movements found with the selected filter.',
     noDateRangeMovements: 'No movements in the selected date range.',
     filterByDate: 'Filter by date',
-    clearDateFilter: 'Clear date filter',
+    clearDateFilter: 'Clear filter',
     dateRangeTitle: 'Date range',
     dateRangeHint:
       'Tap one day to see only that day. Tap two dates to choose a range.',

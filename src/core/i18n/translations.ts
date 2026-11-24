@@ -4,7 +4,7 @@ import { backupExcelTranslations } from './backup-excel-translations';
 import { categoryRulesTranslations } from './category-rules-translations';
 import { dataTransferTranslations } from './data-transfer-translations';
 import { financialTwinTranslations } from './financial-twin-translations';
-import { homeTranslations } from './home-translations';
+import { helpTranslations } from './help-translations'; import { homeTranslations } from './home-translations';
 import { movementTranslations } from './movement-translations';
 import { reminderTranslations } from './reminder-translations';
 import { startupTranslations } from './startup-translations';
@@ -20,7 +20,7 @@ export const translations = {
     ...alertTranslations.es, ...anticipationTranslations.es, ...movementTranslations.es, ...transactionTranslations.es,
     ...dataTransferTranslations.es, ...backupExcelTranslations.es, ...transferTranslations.es, ...categoryRulesTranslations.es, ...financialTwinTranslations.es,
     ...validationTranslations.es, ...startupTranslations.es, ...statsTranslations.es, ...homeTranslations.es,
-    ...reminderTranslations.es,
+    ...reminderTranslations.es, ...helpTranslations.es,
     home: 'Inicio',
     accountsTab: 'Cuentas',
     stats: 'Stats',
@@ -236,7 +236,7 @@ export const translations = {
     ...alertTranslations.en, ...anticipationTranslations.en, ...movementTranslations.en, ...transactionTranslations.en,
     ...dataTransferTranslations.en, ...backupExcelTranslations.en, ...transferTranslations.en, ...categoryRulesTranslations.en, ...financialTwinTranslations.en,
     ...validationTranslations.en, ...startupTranslations.en, ...statsTranslations.en, ...homeTranslations.en,
-    ...reminderTranslations.en,
+    ...reminderTranslations.en, ...helpTranslations.en,
     home: 'Home',
     accountsTab: 'Accounts',
     stats: 'Stats',

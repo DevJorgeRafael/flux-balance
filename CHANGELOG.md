@@ -2,6 +2,18 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.5.4] - 2026-11-23
+
+### Añadido
+
+- El formulario de movimientos conserva un borrador en el dispositivo si se interrumpe o se cierra la app.
+- Ayuda contextual para «anticipaciones», «cerebro local» y la tasa nominal anual.
+
+### Corregido
+
+- Las tarjetas del home vuelven a renderizarse al regresar de Metas o Anticipaciones, sin dejar espacios reservados.
+- El botón «Limpiar filtro» del selector de fechas ya no se parte en dos líneas.
+
 ## [2.5.3] - 2026-11-23
 
 ### Cambiado

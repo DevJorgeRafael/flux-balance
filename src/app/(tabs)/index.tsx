@@ -30,6 +30,7 @@ import { GoalProgressCard } from '@/components/goals/GoalProgressCard';
 import { HomeReveal } from '@/components/dashboard/HomeReveal';
 import { BottomFade } from '@/components/ui/BottomFade';
 import { useDashboard } from '@/context/DashboardContext';
+import { useHomeCards } from '@/store/homeCardsStore';
 import { TAB_BAR_CONTENT_GAP, TAB_BAR_CONTENT_OFFSET } from '@/components/navigation/tabBarLayout';
 
 export default function DashboardScreen() {
@@ -51,6 +52,12 @@ export default function DashboardScreen() {
     handleRefresh,
     openAccountModal,
   } = useDashboard();
+  const { visibility } = useHomeCards();
+  const insightsKey = [
+    visibility.upcomingReminders ? 'r' : '',
+    visibility.anticipations ? 'a' : '',
+    visibility.goals ? 'g' : '',
+  ].join('');
 
   const heroGradient = isDark ? heroGradientDark : heroGradientLight;
   const scrollY = useSharedValue(0);
@@ -131,9 +138,11 @@ export default function DashboardScreen() {
                 defaultAccountId={accounts[0]?.id}
               />
 
-              <UpcomingRemindersCard />
-              <AnticipationCard />
-              <GoalProgressCard />
+              <View key={insightsKey}>
+                <UpcomingRemindersCard />
+                <AnticipationCard />
+                <GoalProgressCard />
+              </View>
             </HomeReveal>
           </View>
         </View>

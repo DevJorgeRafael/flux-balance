@@ -7,7 +7,7 @@ import Plus from 'lucide-react-native/icons/plus';
 import Minus from 'lucide-react-native/icons/minus';
 import X from 'lucide-react-native/icons/x';
 import { Transaction } from '@/core/models/transaction';
-import { useColors } from '@/components/ui/theme';
+import { spacing, useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { DateRangeFilterSheet } from '@/components/accounts/DateRangeFilterSheet';
 import type { DateRange } from '@/components/ui/organisms/DatePicker';
@@ -24,11 +24,14 @@ interface AccountTransactionsListProps {
 
 type FilterType = 'ALL' | 'INCOME' | 'EXPENSE';
 
+const PAGE_SIZE = 20;
+
 export function AccountTransactionsList({ transactions }: AccountTransactionsListProps) {
   const [filterType, setFilterType] = useState<FilterType>('ALL');
   const [dateRange, setDateRange] = useState<DateRange | null>(null);
   const [isDateSheetVisible, setIsDateSheetVisible] = useState(false);
   const [dateSheetKey, setDateSheetKey] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const colors = useColors();
   const { format, locale } = useCurrency();
   const { t } = useTranslation();
@@ -44,6 +47,15 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
   const incomeCount = dateFilteredTransactions.filter((tx) => tx.type === 'INCOME').length;
   const expenseCount = dateFilteredTransactions.filter((tx) => tx.type === 'EXPENSE').length;
   const dateLabel = formatDateRangeLabel(dateRange, locale);
+  const filterKey = `${filterType}|${dateRange?.start.getTime() ?? ''}|${dateRange?.end?.getTime() ?? ''}|${transactions.length}`;
+  const [previousFilterKey, setPreviousFilterKey] = useState(filterKey);
+
+  if (filterKey !== previousFilterKey) {
+    setPreviousFilterKey(filterKey);
+    setVisibleCount(PAGE_SIZE);
+  }
+
+  const pagedTransactions = filteredTransactions.slice(0, visibleCount);
   const filters: { type: FilterType; label: string; count: number }[] = [
     { type: 'ALL', label: t('allMovements'), count: dateFilteredTransactions.length },
     { type: 'INCOME', label: t('income'), count: incomeCount },
@@ -183,7 +195,7 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
         </Card>
       ) : (
         <View style={styles.transactionsList}>
-          {filteredTransactions.map((tx) => {
+          {pagedTransactions.map((tx) => {
             const isIncome = tx.type === 'INCOME';
             const dateFormatted = new Date(tx.date).toLocaleDateString(locale, {
               weekday: 'short',
@@ -238,6 +250,23 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
           })}
         </View>
       )}
+
+      {filteredTransactions.length > visibleCount ? (
+        <Pressable
+          onPress={() => setVisibleCount((count) => count + PAGE_SIZE)}
+          accessibilityRole="button"
+          accessibilityLabel={t('moreMovements')}
+          style={({ pressed }) => [
+            styles.moreButton,
+            { backgroundColor: colors.primarySoft },
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={[styles.moreButtonText, { color: colors.primaryText }]}>
+            {t('moreMovements')}
+          </Text>
+        </Pressable>
+      ) : null}
 
       <DateRangeFilterSheet
         key={dateSheetKey}
@@ -349,6 +378,17 @@ const styles = StyleSheet.create({
   },
   transactionValue: {
     fontSize: 15,
+    fontWeight: '800',
+  },
+  moreButton: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    marginTop: spacing.md,
+  },
+  moreButtonText: {
+    fontSize: 13,
     fontWeight: '800',
   },
   pressed: {

@@ -150,6 +150,12 @@ export function RecentTransactionsList({
               day: 'numeric',
               month: 'short',
             });
+            const title = tx.description || t(isIncome ? 'addIncome' : 'addExpense');
+            const amountLabel = format(isIncome ? tx.totalAmount : -tx.totalAmount, {
+              showSign: isIncome,
+              showCurrency: false,
+              hidden: !isBalanceVisible,
+            });
 
             return (
               <Animated.View
@@ -174,6 +180,7 @@ export function RecentTransactionsList({
                     });
                   }}
                   accessibilityRole="button"
+                  accessibilityLabel={`${title}: ${amountLabel}`}
                 >
                   <View
                     style={[
@@ -190,7 +197,7 @@ export function RecentTransactionsList({
 
                   <View style={styles.transactionDetails}>
                     <Text style={[styles.transactionTitle, { color: colors.text }]} numberOfLines={1}>
-                      {tx.description || t(isIncome ? 'addIncome' : 'addExpense')}
+                      {title}
                     </Text>
                     <Text style={[styles.transactionMeta, { color: colors.textLight }]}>
                       {tx.splits?.[0]?.accountName ?? t('account')} • {dateFormatted}
@@ -203,11 +210,7 @@ export function RecentTransactionsList({
                       { color: isIncome ? colors.successText : colors.text },
                     ]}
                   >
-                    {format(isIncome ? tx.totalAmount : -tx.totalAmount, {
-                      showSign: isIncome,
-                      showCurrency: false,
-                      hidden: !isBalanceVisible,
-                    })}
+                    {amountLabel}
                   </Text>
                 </Pressable>
               </Animated.View>

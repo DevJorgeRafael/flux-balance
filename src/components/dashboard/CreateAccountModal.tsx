@@ -16,6 +16,7 @@ import { appAlert } from '@/components/ui/alert/appAlert';
 import { AccountType } from '@/core/models/account';
 import { useColors, useThemeMode } from '@/components/ui/theme';
 import { Button } from '@/components/ui/atoms/Button';
+import { HelpButton } from '@/components/ui/HelpButton';
 import { Card } from '@/components/ui/Card';
 import { SqliteAccountRepository } from '@/infrastructure/repositories';
 import {
@@ -298,9 +299,15 @@ export function CreateAccountModal({
             {/* Tasa Nominal Anual con fade in */}
             {(accType === 'FLEXIBLE_SAVINGS' || accType === 'FIXED_TERM') && (
               <Animated.View entering={FadeIn.duration(150)}>
-                <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14 }]}>
-                  {t('annualRate')}
-                </Text>
+                <View style={styles.formLabelRow}>
+                  <Text style={[styles.formLabel, { color: colors.textLight, marginTop: 14, flex: 1 }]}>
+                    {t('annualRate')}
+                  </Text>
+                  <HelpButton
+                    title={t('helpTnaTitle')}
+                    message={t('helpTnaMessage')}
+                  />
+                </View>
                 <TextInput
                   style={[
                     styles.formTextInput,
@@ -422,6 +429,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     textTransform: 'uppercase',
     marginBottom: 8,
+  },
+  formLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   formTextInput: {
     borderWidth: 1,
