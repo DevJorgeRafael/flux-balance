@@ -6,6 +6,7 @@ import { useSplashTransitionStore } from './splashTransitionStore.ts';
 import { useThemePreferenceStore } from './themePreferenceStore.ts';
 import { useLanguagePreferenceStore } from './languagePreferenceStore.ts';
 import { useCurrencyStore } from './currencyStore.ts';
+import { useAlertStore } from './alertStore.ts';
 
 test.beforeEach(() => {
   useHomeCardsStore.getState().hydrate({
@@ -21,6 +22,13 @@ test.beforeEach(() => {
   useThemePreferenceStore.getState().setPreference('system');
   useLanguagePreferenceStore.getState().setPreference('system');
   useCurrencyStore.setState({ code: 'USD' });
+  useAlertStore.setState({
+    visible: false,
+    title: '',
+    type: 'info',
+    buttons: [],
+    resolver: null,
+  });
 });
 
 test('homeCards actualiza una sola tarjeta', () => {
@@ -40,6 +48,30 @@ test('splash publica el estado derivado', () => {
   });
   assert.equal(useSplashTransitionStore.getState().revealDelay, 120);
   assert.equal(useSplashTransitionStore.getState().isRevealing, false);
+});
+
+test('alert resuelve al pulsar su botón', async () => {
+  const promise = useAlertStore.getState().show({ title: 'Aviso' });
+  assert.equal(useAlertStore.getState().visible, true);
+
+  useAlertStore.getState().buttons[0]?.onPress?.();
+  await promise;
+
+  assert.equal(useAlertStore.getState().visible, false);
+});
+
+test('confirm devuelve true o false según el botón', async () => {
+  const confirmed = useAlertStore
+    .getState()
+    .confirm({ title: '¿Borrar?', confirmText: 'Sí', cancelText: 'No' });
+  useAlertStore.getState().buttons[1]?.onPress?.();
+  assert.equal(await confirmed, true);
+
+  const cancelled = useAlertStore
+    .getState()
+    .confirm({ title: '¿Borrar?', confirmText: 'Sí', cancelText: 'No' });
+  useAlertStore.getState().buttons[0]?.onPress?.();
+  assert.equal(await cancelled, false);
 });
 
 test('theme, idioma y moneda guardan su preferencia', () => {
