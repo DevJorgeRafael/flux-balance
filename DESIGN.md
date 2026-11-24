@@ -12,6 +12,10 @@ Reglas de UI extraídas de correcciones del usuario. Antes de construir o cambia
   Why: los bordes repetidos y las sombras múltiples hacían que el home pareciera generado y desordenado.
   <!-- 2026-11-23: aprobado en el pulido de "Próximos recordatorios", "Anticipaciones" y "Metas" -->
 
+- **Las listas largas se paginan en bloques de 20 con «Ver más movimientos».**
+  Why: renderizar cientos de filas de una vez castiga el scroll en Android.
+  <!-- 2026-11-23: aprobado en la evaluación crítica (rendimiento) -->
+
 - **Todas las Cards usan `colors.surface`, igual que la barra inferior.** La elevación se expresa con sombra, nunca con un fondo más claro.
   Why: en dark la cuenta seleccionada y las cards quedaban más claras que la navegación y rompían la paleta.
   <!-- 2026-11-23: "el color de las cards es igual al del seleccionada y diferente al del bottom navigationbar eso también hay que corregir" -->
@@ -65,6 +69,10 @@ Reglas de UI extraídas de correcciones del usuario. Antes de construir o cambia
 - **Las acciones principales de una sección llevan nombre; el icono solo acompaña.** El patrón es `Ver todos ›`, `Ver presupuestos ›`, `Nuevo`.
   Why: un botón con solo `+` obliga a adivinar; nombrarlo hace la interfaz predecible y profesional.
   <!-- 2026-11-23: aprobado en el pulido del home -->
+
+- **El texto respeta el escalado del sistema, las filas interactivas llevan etiqueta y los backdrops son invisibles al lector de pantalla.**
+  Why: la accesibilidad no puede depender de que el usuario adivine qué anuncia cada control.
+  <!-- 2026-11-23: aprobado en la evaluación crítica (accesibilidad) -->
 
 - **Las confirmaciones usan `appConfirm`. Está prohibido usar `appAlert` con botones de cancelar/confirmar.**
   Why: en Android `appAlert` con dos botones cae al diálogo nativo del sistema, que no sigue el tema de la app.

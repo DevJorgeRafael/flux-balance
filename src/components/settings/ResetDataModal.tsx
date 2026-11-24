@@ -154,7 +154,12 @@ export function ResetDataModal({ visible, onClose, onConfirm }: ResetDataModalPr
           },
         ]}
       >
-        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={handleClose}
+          accessible={false}
+          accessibilityElementsHidden
+        />
 
         <View style={styles.dialogWrapper} pointerEvents="box-none">
           <ScrollView
