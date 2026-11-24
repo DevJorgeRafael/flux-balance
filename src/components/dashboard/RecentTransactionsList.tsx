@@ -185,13 +185,13 @@ export function RecentTransactionsList({
                   <View
                     style={[
                       styles.transactionIconContainer,
-                      { backgroundColor: isIncome ? colors.successSoft : colors.errorSoft },
+                      { backgroundColor: colors.primarySoft },
                     ]}
                   >
                     {isIncome ? (
-                      <Plus size={16} color={colors.successText} strokeWidth={2.5} />
+                      <Plus size={16} color={colors.primaryText} strokeWidth={2.5} />
                     ) : (
-                      <Minus size={16} color={colors.errorText} strokeWidth={2.5} />
+                      <Minus size={16} color={colors.primaryText} strokeWidth={2.5} />
                     )}
                   </View>
 
@@ -296,9 +296,9 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
   },
   transactionIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },

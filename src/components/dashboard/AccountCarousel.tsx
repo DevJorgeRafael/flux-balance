@@ -123,26 +123,9 @@ export function AccountCarousel({
                 hidden: !isBalanceVisible,
               })}`}
               accessibilityState={{ selected: selectedFilterAccountId === null }}
-            >
-                <View style={styles.accountCardHeader}>
-                  <Text
-                    style={[styles.accountTypeHeader, { color: colors.textLight }]}
-                    numberOfLines={1}
-                  >
-                    {t('allAccounts').toUpperCase()}
-                  </Text>
-
-                  {selectedFilterAccountId === null && (
-                    <View style={[styles.tnaBadge, { backgroundColor: colors.primarySoft }]}>
-                      <Text style={[styles.tnaBadgeText, { color: colors.primaryText }]}>
-                        {t('active')}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-
+              >
                 <View style={styles.accountCardTitleRow}>
-                  <Layers size={16} color={colors.text} />
+                  <Layers size={16} color={colors.primaryText} />
                   <Text
                     style={[styles.accountCardTitle, { color: colors.text, marginBottom: 0 }]}
                     numberOfLines={1}
@@ -165,32 +148,6 @@ export function AccountCarousel({
                 >
                   {format(totalBalance, { hidden: !isBalanceVisible })}
                 </Text>
-
-                <View
-                  style={[
-                    styles.filterNoticeBadge,
-                    {
-                      backgroundColor:
-                        selectedFilterAccountId === null
-                          ? colors.primarySoft
-                          : colors.surfaceMuted,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.filterNoticeText,
-                      {
-                        color:
-                          selectedFilterAccountId === null
-                            ? colors.primaryText
-                            : colors.textLight,
-                      },
-                    ]}
-                  >
-                    {selectedFilterAccountId === null ? t('showingAll') : t('tapToShowAll')}
-                  </Text>
-                </View>
             </Card>
           )}
 
@@ -325,30 +282,6 @@ const styles = StyleSheet.create({
     minHeight: ACCOUNT_CARD_HEIGHT,
     padding: spacing.lg,
   },
-  accountCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: spacing.sm,
-  },
-  accountTypeHeader: {
-    flexShrink: 1,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-  },
-  tnaBadge: {
-    flexShrink: 0,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  tnaBadgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-  },
   accountCardTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -364,17 +297,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '900',
     letterSpacing: -0.5,
-    marginBottom: spacing.sm,
-  },
-  filterNoticeBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-  },
-  filterNoticeText: {
-    fontSize: 11,
-    fontWeight: '700',
   },
   addAccountDashedCard: {
     width: 140,
