@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-} from 'react';
+import { useCallback, useMemo } from 'react';
 import { useLocales } from 'expo-localization';
 import {
   DEFAULT_LANGUAGE_PREFERENCE,
@@ -17,18 +11,13 @@ import { Language, TranslationKey, translations } from './translations';
 
 type TranslationParams = Record<string, string | number>;
 
-interface TranslationContextValue {
+export interface TranslationContextValue {
   language: Language;
   languagePreference: LanguagePreference;
   setLanguage: (language: Language) => void;
   setLanguagePreference: (preference: LanguagePreference) => void;
   toggleLanguage: () => void;
   t: (key: TranslationKey, params?: TranslationParams) => string;
-}
-
-interface TranslationProviderProps {
-  children: React.ReactNode;
-  initialPreference?: LanguagePreference;
 }
 
 function formatTranslation(template: string, params?: TranslationParams): string {
@@ -40,28 +29,24 @@ function formatTranslation(template: string, params?: TranslationParams): string
   );
 }
 
-const TranslationContext = createContext<TranslationContextValue | null>(null);
-
-export function TranslationProvider({
-  children,
-  initialPreference = DEFAULT_LANGUAGE_PREFERENCE,
-}: TranslationProviderProps) {
+export function useTranslation(): TranslationContextValue {
   const locales = useLocales();
   const languagePreference = useLanguagePreferenceStore((state) => state.preference);
   const setPreference = useLanguagePreferenceStore((state) => state.setPreference);
+  const language = resolveLanguage(
+    languagePreference,
+    locales[0]?.languageCode ?? DEFAULT_LANGUAGE_PREFERENCE
+  );
 
-  useEffect(() => {
-    setPreference(initialPreference);
-  }, [initialPreference, setPreference]);
-
-  const language = resolveLanguage(languagePreference, locales[0]?.languageCode);
-
-  const setLanguagePreference = useCallback((nextPreference: LanguagePreference) => {
-    setPreference(nextPreference);
-    void saveLanguagePreference(nextPreference).catch((error) => {
-      console.error('Error saving language preference:', error);
-    });
-  }, [setPreference]);
+  const setLanguagePreference = useCallback(
+    (nextPreference: LanguagePreference) => {
+      setPreference(nextPreference);
+      void saveLanguagePreference(nextPreference).catch((error) => {
+        console.error('Error saving language preference:', error);
+      });
+    },
+    [setPreference]
+  );
 
   const setLanguage = useCallback(
     (nextLanguage: Language) => setLanguagePreference(nextLanguage),
@@ -72,25 +57,28 @@ export function TranslationProvider({
     setLanguagePreference(language === 'es' ? 'en' : 'es');
   }, [language, setLanguagePreference]);
 
-  const value = useMemo<TranslationContextValue>(
+  const t = useCallback(
+    (key: TranslationKey, params?: TranslationParams) =>
+      formatTranslation(translations[language][key], params),
+    [language]
+  );
+
+  return useMemo(
     () => ({
       language,
       languagePreference,
       setLanguage,
       setLanguagePreference,
       toggleLanguage,
-      t: (key, params) => formatTranslation(translations[language][key], params),
+      t,
     }),
-    [language, languagePreference, setLanguage, setLanguagePreference, toggleLanguage]
+    [
+      language,
+      languagePreference,
+      setLanguage,
+      setLanguagePreference,
+      toggleLanguage,
+      t,
+    ]
   );
-
-  return <TranslationContext.Provider value={value}>{children}</TranslationContext.Provider>;
-}
-
-export function useTranslation(): TranslationContextValue {
-  const context = useContext(TranslationContext);
-  if (!context) {
-    throw new Error('useTranslation must be used within a TranslationProvider.');
-  }
-  return context;
 }

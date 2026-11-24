@@ -1,15 +1,8 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-} from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   CURRENCIES,
   DEFAULT_CURRENCY_CODE,
   getCurrencyName,
-  isSupportedCurrency,
   resolveCurrencyCode,
   type CurrencyOption,
 } from '../constants/currencies';
@@ -24,18 +17,6 @@ export interface FormatAmountOptions extends FormatMoneyOptions {
   hidden?: boolean;
 }
 
-export interface CurrencyProviderProps {
-  children: React.ReactNode;
-  initialCurrency?: string;
-}
-
-interface CurrencyContextValue {
-  currency: string;
-  setCurrency: (code: string) => void;
-}
-
-const CurrencyContext = createContext<CurrencyContextValue | null>(null);
-
 export async function loadStoredCurrency(): Promise<string> {
   try {
     return resolveCurrencyCode(await getAppSetting(CURRENCY_SETTING_KEY));
@@ -45,33 +26,11 @@ export async function loadStoredCurrency(): Promise<string> {
   }
 }
 
-export function CurrencyProvider({ children, initialCurrency }: CurrencyProviderProps) {
+export function useCurrency() {
   const currency = useCurrencyStore((state) => state.code);
   const setCurrencyCode = useCurrencyStore((state) => state.setCode);
-
-  useEffect(() => {
-    if (initialCurrency !== undefined) {
-      setCurrencyCode(resolveCurrencyCode(initialCurrency));
-      return;
-    }
-
-    let cancelled = false;
-
-    void getAppSetting(CURRENCY_SETTING_KEY)
-      .then((savedCurrency) => {
-        if (cancelled) return;
-        if (isSupportedCurrency(savedCurrency)) {
-          setCurrencyCode(resolveCurrencyCode(savedCurrency));
-        }
-      })
-      .catch((error) => {
-        console.error('Error loading currency preference:', error);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [initialCurrency, setCurrencyCode]);
+  const { language } = useTranslation();
+  const locale = language === 'es' ? 'es-ES' : 'en-US';
 
   const setCurrency = useCallback(
     (code: string) => {
@@ -83,19 +42,6 @@ export function CurrencyProvider({ children, initialCurrency }: CurrencyProvider
     },
     [setCurrencyCode]
   );
-
-  const value = useMemo<CurrencyContextValue>(
-    () => ({ currency, setCurrency }),
-    [currency, setCurrency]
-  );
-
-  return <CurrencyContext.Provider value={value}>{children}</CurrencyContext.Provider>;
-}
-
-export function useCurrency() {
-  const { currency, setCurrency } = useCurrencyContext();
-  const { language } = useTranslation();
-  const locale = language === 'es' ? 'es-ES' : 'en-US';
 
   const format = useCallback(
     (amount: number, options?: FormatAmountOptions) => {
@@ -113,20 +59,15 @@ export function useCurrency() {
     (option) => option.code === currency
   );
 
-  return {
-    currency,
-    currencyOption,
-    currencyName: getCurrencyName(currency, language),
-    setCurrency,
-    locale,
-    format,
-  };
-}
-
-function useCurrencyContext(): CurrencyContextValue {
-  const context = useContext(CurrencyContext);
-  if (!context) {
-    throw new Error('useCurrency must be used within a CurrencyProvider.');
-  }
-  return context;
+  return useMemo(
+    () => ({
+      currency,
+      currencyOption,
+      currencyName: getCurrencyName(currency, language),
+      setCurrency,
+      locale,
+      format,
+    }),
+    [currency, currencyOption, language, setCurrency, locale, format]
+  );
 }

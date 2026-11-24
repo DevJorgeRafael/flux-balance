@@ -23,11 +23,8 @@ import { DashboardProvider } from '@/context/DashboardContext';
 import { SplashTransition } from '@/components/splash/SplashTransition';
 import { useHomeCardsStore } from '@/store/homeCardsStore';
 import { SPLASH_NATIVE_FADE_MS } from '@/components/splash/splashTiming';
-import {
-  TranslationProvider,
-  useTranslation,
-} from '@/core/i18n/useTranslation';
-import { CurrencyProvider, loadStoredCurrency } from '@/core/currency/useCurrency';
+import { useTranslation } from '@/core/i18n/useTranslation';
+import { loadStoredCurrency } from '@/core/currency/useCurrency';
 import { DEFAULT_CURRENCY_CODE } from '@/core/constants/currencies';
 import { runStartup } from '@/core/services/startup';
 import {
@@ -39,6 +36,8 @@ import {
 } from '@/core/preferences/preferencesStorage';
 import { HOME_CARD_KEYS } from '@/core/preferences/preferences';
 import { useThemePreferenceStore } from '@/store/themePreferenceStore';
+import { useLanguagePreferenceStore } from '@/store/languagePreferenceStore';
+import { useCurrencyStore } from '@/store/currencyStore';
 
 const STARTUP_TIMEOUT_MS = 8000;
 
@@ -132,10 +131,22 @@ function RootNavigator({
   const insets = useSafeAreaInsets();
   const themePreference = useThemePreferenceStore((state) => state.preference);
   const setThemePreference = useThemePreferenceStore((state) => state.setPreference);
+  const setLanguagePreference = useLanguagePreferenceStore(
+    (state) => state.setPreference
+  );
+  const setCurrencyCode = useCurrencyStore((state) => state.setCode);
 
   useEffect(() => {
     setThemePreference(preferences.themePreference);
   }, [preferences.themePreference, setThemePreference]);
+
+  useEffect(() => {
+    setLanguagePreference(preferences.languagePreference);
+  }, [preferences.languagePreference, setLanguagePreference]);
+
+  useEffect(() => {
+    setCurrencyCode(preferences.currency);
+  }, [preferences.currency, setCurrencyCode]);
 
   useEffect(() => {
     useHomeCardsStore.getState().hydrate(preferences.homeCardVisibility);
@@ -167,17 +178,13 @@ function RootNavigator({
   );
 
   return (
-    <TranslationProvider initialPreference={preferences.languagePreference}>
-      <CurrencyProvider initialCurrency={preferences.currency}>
-        <LocalizedUIProvider
-          insets={insets}
-          mode={themePreference}
-          onModeChange={handleModeChange}
-        >
-          <RootWithTheme startupReady={startupReady} />
-        </LocalizedUIProvider>
-      </CurrencyProvider>
-    </TranslationProvider>
+    <LocalizedUIProvider
+      insets={insets}
+      mode={themePreference}
+      onModeChange={handleModeChange}
+    >
+      <RootWithTheme startupReady={startupReady} />
+    </LocalizedUIProvider>
   );
 }
 
