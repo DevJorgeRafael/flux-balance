@@ -29,8 +29,8 @@ export function HomeReveal({
 }: HomeRevealProps) {
   const { isRevealing, revealDelay } = useSplashTransition();
   const reduceMotion = useReduceMotion();
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(reduceMotion ? 0 : distance);
+  const opacity = useSharedValue(isRevealing ? 0 : 1);
+  const translateY = useSharedValue(isRevealing && !reduceMotion ? distance : 0);
 
   useEffect(() => {
     if (!isRevealing) return;

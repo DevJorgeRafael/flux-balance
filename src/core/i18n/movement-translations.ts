@@ -12,7 +12,7 @@ export const movementTranslations = {
     noFilteredMovements: 'No se encontraron movimientos con el filtro seleccionado.',
     noDateRangeMovements: 'No hay movimientos en el rango de fechas seleccionado.',
     filterByDate: 'Filtrar por fecha',
-    clearDateFilter: 'Quitar filtro de fecha',
+    clearDateFilter: 'Limpiar filtro',
     dateRangeTitle: 'Rango de fechas',
     dateRangeHint:
       'Toca un día para ver solo ese día. Toca dos fechas para elegir un rango.',
@@ -37,7 +37,7 @@ export const movementTranslations = {
     noFilteredMovements: 'No movements found with the selected filter.',
     noDateRangeMovements: 'No movements in the selected date range.',
     filterByDate: 'Filter by date',
-    clearDateFilter: 'Clear date filter',
+    clearDateFilter: 'Clear filter',
     dateRangeTitle: 'Date range',
     dateRangeHint:
       'Tap one day to see only that day. Tap two dates to choose a range.',
