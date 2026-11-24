@@ -74,6 +74,10 @@ Reglas de UI extraídas de correcciones del usuario. Antes de construir o cambia
   Why: la accesibilidad no puede depender de que el usuario adivine qué anuncia cada control.
   <!-- 2026-11-23: aprobado en la evaluación crítica (accesibilidad) -->
 
+- **Los formularios largos conservan un borrador en `app_settings`; los términos del dominio llevan ayuda contextual.**
+  Why: una interrupción no debe destruir lo escrito y «anticipaciones», «cerebro local» o «TNA» no deben exigir memoria previa.
+  <!-- 2026-11-23: aprobado en la evaluación crítica (borrador y ayuda) -->
+
 - **Las confirmaciones usan `appConfirm`. Está prohibido usar `appAlert` con botones de cancelar/confirmar.**
   Why: en Android `appAlert` con dos botones cae al diálogo nativo del sistema, que no sigue el tema de la app.
   <!-- 2026-11-23: "esto no debe ser el nativo mira los demás componentes" -->

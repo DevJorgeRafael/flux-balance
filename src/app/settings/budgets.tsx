@@ -7,6 +7,7 @@ import Settings from 'lucide-react-native/icons/settings';
 import Trash from 'lucide-react-native/icons/trash';
 import { appAlert, appConfirm } from '@/components/ui/alert/appAlert';
 import { Button } from '@/components/ui/atoms/Button';
+import { HelpButton } from '@/components/ui/HelpButton';
 import { IconButton } from '@/components/ui/atoms/IconButton';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 import { Card } from '@/components/ui/Card';
@@ -160,9 +161,15 @@ export default function BudgetsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.intro, { color: colors.textLight }]}>
-          {t('budgetsIntro')}
-        </Text>
+        <View style={styles.introRow}>
+          <Text style={[styles.intro, { color: colors.textLight }]}>
+            {t('budgetsIntro')}
+          </Text>
+          <HelpButton
+            title={t('helpAnticipationsTitle')}
+            message={t('helpAnticipationsMessage')}
+          />
+        </View>
 
         <SectionLabel>{yearMonth}</SectionLabel>
         <Card style={styles.card}>
@@ -302,7 +309,8 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.7 },
   content: { padding: spacing.lg, gap: spacing.md },
   title: { fontSize: 22, fontWeight: '800' },
-  intro: { fontSize: 13 },
+  intro: { fontSize: 13, flex: 1 },
+  introRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.xs },
   card: { paddingVertical: spacing.sm },
   empty: { fontSize: 13, padding: spacing.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },

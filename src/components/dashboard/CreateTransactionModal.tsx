@@ -6,15 +6,17 @@ import { Button } from '@/components/ui/atoms/Button';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 import { useColors } from '@/components/ui/theme';
 import { TransactionFormFields } from '@/components/transactions/TransactionFormFields';
-import {
-  resolveTransactionFormSelection,
-  type TransactionFormValues,
-} from '@/components/transactions/transactionFormState';
+import { resolveTransactionFormSelection } from '@/components/transactions/transactionFormState';
 import { getCurrencyDecimals } from '@/core/constants/currencies';
 import { MAX_AMOUNT } from '@/core/constants/inputLimits';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { getAmountInputErrorKey } from '@/core/i18n/validationMessages';
+import type { TransactionDraft } from '@/core/services/transactionDraft';
+import {
+  loadTransactionDraft,
+  saveTransactionDraft,
+} from '@/core/services/transactionDraftStorage';
 import { buildTransferDraft, validateTransferInput } from '@/core/services/transfer';
 import {
   buildLearnedRules,
@@ -83,7 +85,7 @@ export function CreateTransactionModal({
       });
   }, [visible]);
 
-  const [formValues, setFormValues] = useState<TransactionFormValues>(() => ({
+  const [formValues, setFormValues] = useState<TransactionDraft>(() => ({
     type: initialType,
     amount: '',
     description: '',
@@ -95,6 +97,24 @@ export function CreateTransactionModal({
   const [appliedPrefill, setAppliedPrefill] = useState<TransactionPrefill | null>(
     null
   );
+  const draftLoadedRef = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadTransactionDraft().then((draft) => {
+      if (cancelled) return;
+      if (draft) setFormValues(draft);
+      draftLoadedRef.current = true;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!draftLoadedRef.current || !visible) return;
+    void saveTransactionDraft(formValues);
+  }, [formValues, visible]);
 
   const updateField = (
     field: 'amount' | 'description' | 'accountId' | 'destinationAccountId' | 'categoryId',

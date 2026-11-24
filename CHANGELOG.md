@@ -2,6 +2,13 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [No publicado]
+
+### Añadido
+
+- El formulario de movimientos conserva un borrador en el dispositivo si se interrumpe o se cierra la app.
+- Ayuda contextual para «anticipaciones», «cerebro local» y la tasa nominal anual.
+
 ## [2.5.3] - 2026-11-23
 
 ### Cambiado
