@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import X from 'lucide-react-native/icons/x';
 import { appAlert } from '@/components/ui/alert/appAlert';
@@ -33,6 +33,7 @@ import {
   SqliteTransactionRepository,
 } from '@/infrastructure/repositories';
 import { applyTransactionPrefill } from './transactionPrefill';
+import { useCategoryCreationStore } from '@/store/categoryCreationStore';
 
 interface CreateTransactionModalProps {
   visible: boolean;
@@ -126,6 +127,20 @@ export function CreateTransactionModal({
     }
     updateField(field, value);
   };
+
+  const applyCreatedCategory = useCallback((categoryId: string) => {
+    categoryTouchedRef.current = true;
+    setFormValues((current) => ({ ...current, categoryId }));
+  }, []);
+
+  useEffect(() => {
+    return useCategoryCreationStore.subscribe((state) => {
+      if (state.result && state.resultRequestId === state.requestId) {
+        const created = useCategoryCreationStore.getState().consumeResult();
+        if (created) applyCreatedCategory(created.id);
+      }
+    });
+  }, [applyCreatedCategory]);
 
   const resetForm = () => {
     setFormValues((current) => ({

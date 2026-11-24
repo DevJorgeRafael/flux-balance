@@ -20,23 +20,25 @@ import {
 } from '@/components/ui/theme';
 import { initDatabase } from '@/infrastructure/database/db';
 import { DashboardProvider } from '@/context/DashboardContext';
-import { HomeCardsProvider } from '@/context/HomeCardsContext';
 import { SplashTransition } from '@/components/splash/SplashTransition';
+import { CategoryCreationNavigator } from '@/components/navigation/CategoryCreationNavigator';
+import { useHomeCardsStore } from '@/store/homeCardsStore';
 import { SPLASH_NATIVE_FADE_MS } from '@/components/splash/splashTiming';
-import {
-  TranslationProvider,
-  useTranslation,
-} from '@/core/i18n/useTranslation';
-import { CurrencyProvider, loadStoredCurrency } from '@/core/currency/useCurrency';
+import { useTranslation } from '@/core/i18n/useTranslation';
+import { loadStoredCurrency } from '@/core/currency/useCurrency';
 import { DEFAULT_CURRENCY_CODE } from '@/core/constants/currencies';
 import { runStartup } from '@/core/services/startup';
 import {
   DEFAULT_PREFERENCES,
   loadStoredPreferences,
+  saveHomeCardPreference,
   saveThemePreference,
   type StoredPreferences,
 } from '@/core/preferences/preferencesStorage';
-import type { ThemePreference } from '@/core/preferences/preferences';
+import { HOME_CARD_KEYS } from '@/core/preferences/preferences';
+import { useThemePreferenceStore } from '@/store/themePreferenceStore';
+import { useLanguagePreferenceStore } from '@/store/languagePreferenceStore';
+import { useCurrencyStore } from '@/store/currencyStore';
 
 const STARTUP_TIMEOUT_MS = 8000;
 
@@ -128,48 +130,62 @@ function RootNavigator({
   startupReady: boolean;
 }) {
   const insets = useSafeAreaInsets();
-  const [themePreference, setThemePreference] = useState<ThemePreference>(
-    preferences.themePreference
+  const themePreference = useThemePreferenceStore((state) => state.preference);
+  const setThemePreference = useThemePreferenceStore((state) => state.setPreference);
+  const setLanguagePreference = useLanguagePreferenceStore(
+    (state) => state.setPreference
   );
-  const [startupThemePreference, setStartupThemePreference] = useState<ThemePreference>(
-    preferences.themePreference
-  );
-  const [homeCardVisibility, setHomeCardVisibility] = useState(preferences.homeCardVisibility);
-  const [startupHomeCardVisibility, setStartupHomeCardVisibility] = useState(
-    preferences.homeCardVisibility
-  );
+  const setCurrencyCode = useCurrencyStore((state) => state.setCode);
 
-  if (preferences.themePreference !== startupThemePreference) {
-    setStartupThemePreference(preferences.themePreference);
+  useEffect(() => {
     setThemePreference(preferences.themePreference);
-  }
+  }, [preferences.themePreference, setThemePreference]);
 
-  if (preferences.homeCardVisibility !== startupHomeCardVisibility) {
-    setStartupHomeCardVisibility(preferences.homeCardVisibility);
-    setHomeCardVisibility(preferences.homeCardVisibility);
-  }
+  useEffect(() => {
+    setLanguagePreference(preferences.languagePreference);
+  }, [preferences.languagePreference, setLanguagePreference]);
 
-  const handleModeChange = useCallback((mode: ThemeMode) => {
-    setThemePreference(mode);
-    void saveThemePreference(mode).catch((error) => {
-      console.error('Error saving theme preference:', error);
+  useEffect(() => {
+    setCurrencyCode(preferences.currency);
+  }, [preferences.currency, setCurrencyCode]);
+
+  useEffect(() => {
+    useHomeCardsStore.getState().hydrate(preferences.homeCardVisibility);
+  }, [preferences.homeCardVisibility]);
+
+  useEffect(() => {
+    let previous = useHomeCardsStore.getState().visibility;
+    return useHomeCardsStore.subscribe((state) => {
+      const next = state.visibility;
+      for (const key of HOME_CARD_KEYS) {
+        if (next[key] !== previous[key]) {
+          void saveHomeCardPreference(key, next[key]).catch((error) => {
+            console.error('Error saving home card preference:', error);
+          });
+        }
+      }
+      previous = next;
     });
   }, []);
 
+  const handleModeChange = useCallback(
+    (mode: ThemeMode) => {
+      setThemePreference(mode);
+      void saveThemePreference(mode).catch((error) => {
+        console.error('Error saving theme preference:', error);
+      });
+    },
+    [setThemePreference]
+  );
+
   return (
-    <TranslationProvider initialPreference={preferences.languagePreference}>
-      <CurrencyProvider initialCurrency={preferences.currency}>
-        <LocalizedUIProvider
-          insets={insets}
-          mode={themePreference}
-          onModeChange={handleModeChange}
-        >
-          <HomeCardsProvider initialVisibility={homeCardVisibility}>
-            <RootWithTheme startupReady={startupReady} />
-          </HomeCardsProvider>
-        </LocalizedUIProvider>
-      </CurrencyProvider>
-    </TranslationProvider>
+    <LocalizedUIProvider
+      insets={insets}
+      mode={themePreference}
+      onModeChange={handleModeChange}
+    >
+      <RootWithTheme startupReady={startupReady} />
+    </LocalizedUIProvider>
   );
 }
 
@@ -208,6 +224,7 @@ function RootWithTheme({ startupReady }: { startupReady: boolean }) {
                   edges={['left', 'right']}
                   style={{ flex: 1, backgroundColor: colors.background }}
                 >
+                  <CategoryCreationNavigator />
                   <Stack
                     screenOptions={{
                       headerShown: false,

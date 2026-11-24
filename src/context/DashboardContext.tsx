@@ -1,25 +1,24 @@
 import React, {
-  createContext,
   lazy,
   Suspense,
   useCallback,
-  useContext,
+  useEffect,
   useMemo,
   useRef,
-  useState,
 } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BlurTargetView } from 'expo-blur';
-import { Account } from '@/core/models/account';
-import { Category } from '@/core/models/category';
-import {
+import { appAlert } from '@/components/ui/alert/appAlert';
+import { useTranslation } from '@/core/i18n/useTranslation';
+import type { Account } from '@/core/models/account';
+import type { Category } from '@/core/models/category';
+import type {
   Transaction,
   TransactionPrefill,
   TransactionType,
 } from '@/core/models/transaction';
-import { MonthlyTotals } from '@/core/repositories/ITransactionRepository';
-import { useAccountFilters } from '@/hooks/useAccountFilters';
-import { useDashboardStats } from '@/hooks/useDashboardStats';
+import type { MonthlyTotals } from '@/core/repositories/ITransactionRepository';
+import { useDashboardStore } from '@/store/dashboardStore';
 
 const CreateAccountModal = lazy(() =>
   import('@/components/dashboard/CreateAccountModal').then((module) => ({
@@ -58,90 +57,102 @@ interface DashboardContextValue {
   openAccountModal: () => void;
 }
 
-const DashboardContext = createContext<DashboardContextValue | null>(null);
+const DashboardContext = React.createContext<DashboardContextValue | null>(null);
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const blurTarget = useRef<React.ComponentRef<typeof View>>(null);
-  const [isAccountModalVisible, setIsAccountModalVisible] = useState(false);
-  const [isAccountModalMounted, setIsAccountModalMounted] = useState(false);
-  const [isTransactionModalVisible, setIsTransactionModalVisible] = useState(false);
-  const [isTransactionModalMounted, setIsTransactionModalMounted] = useState(false);
-  const [transactionType, setTransactionType] = useState<TransactionType>('EXPENSE');
-  const [transactionPrefill, setTransactionPrefill] =
-    useState<TransactionPrefill | null>(null);
-  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+  const { t } = useTranslation();
 
-  const {
-    accounts,
-    categories,
-    monthlyTotals,
-    totalBalance,
-    isLoading,
-    isRefreshing,
-    loadData,
-    handleRefresh,
-    handleSeedDemoData: seedDemoData,
-    handleResetAllData: resetAllData,
-  } = useDashboardStats();
+  const accounts = useDashboardStore((state) => state.accounts);
+  const categories = useDashboardStore((state) => state.categories);
+  const monthlyTotals = useDashboardStore((state) => state.monthlyTotals);
+  const transactions = useDashboardStore((state) => state.transactions);
+  const isLoading = useDashboardStore((state) => state.isLoading);
+  const isRefreshing = useDashboardStore((state) => state.isRefreshing);
+  const isBalanceVisible = useDashboardStore((state) => state.isBalanceVisible);
+  const selectedFilterAccountId = useDashboardStore(
+    (state) => state.selectedFilterAccountId
+  );
+  const isAccountModalVisible = useDashboardStore(
+    (state) => state.isAccountModalVisible
+  );
+  const isAccountModalMounted = useDashboardStore(
+    (state) => state.isAccountModalMounted
+  );
+  const isTransactionModalVisible = useDashboardStore(
+    (state) => state.isTransactionModalVisible
+  );
+  const isTransactionModalMounted = useDashboardStore(
+    (state) => state.isTransactionModalMounted
+  );
+  const transactionType = useDashboardStore((state) => state.transactionType);
+  const transactionPrefill = useDashboardStore((state) => state.transactionPrefill);
 
-  const {
-    selectedFilterAccountId,
-    transactions,
-    selectedAccountName,
-    handleSelectAccountFilter,
-    reloadTransactions,
-  } = useAccountFilters(accounts);
+  const loadData = useDashboardStore((state) => state.loadData);
+  const reloadTransactions = useDashboardStore((state) => state.reloadTransactions);
+  const refreshAll = useDashboardStore((state) => state.refreshAll);
+  const refreshDataAction = useDashboardStore((state) => state.refreshData);
+  const seedDemo = useDashboardStore((state) => state.seedDemo);
+  const resetAll = useDashboardStore((state) => state.resetAll);
+  const onDataImported = useDashboardStore((state) => state.onDataImported);
+  const selectAccountFilter = useDashboardStore(
+    (state) => state.selectAccountFilter
+  );
+  const toggleBalanceVisibility = useDashboardStore(
+    (state) => state.toggleBalanceVisibility
+  );
+  const openTransactionModal = useDashboardStore(
+    (state) => state.openTransactionModal
+  );
+  const closeTransactionModal = useDashboardStore(
+    (state) => state.closeTransactionModal
+  );
+  const openAccountModal = useDashboardStore((state) => state.openAccountModal);
+  const closeAccountModal = useDashboardStore((state) => state.closeAccountModal);
 
-  const handleSeedDemoData = useCallback(async () => {
-    await seedDemoData();
-    await reloadTransactions();
-  }, [reloadTransactions, seedDemoData]);
-
-  const handleResetAllData = useCallback(async () => {
-    await resetAllData();
-    handleSelectAccountFilter(null);
-    await reloadTransactions();
-  }, [handleSelectAccountFilter, reloadTransactions, resetAllData]);
-
-  const handleDataImported = useCallback(async () => {
-    await loadData();
-    handleSelectAccountFilter(null);
-    await reloadTransactions();
-  }, [handleSelectAccountFilter, loadData, reloadTransactions]);
-
-  const handleDataChanged = useCallback(() => {
+  useEffect(() => {
     void loadData();
     void reloadTransactions();
   }, [loadData, reloadTransactions]);
 
-  const handleRefreshAll = useCallback(() => {
-    handleRefresh();
-    void reloadTransactions();
-  }, [handleRefresh, reloadTransactions]);
+  const handleRefresh = useCallback(() => {
+    void refreshAll();
+  }, [refreshAll]);
 
-  const openTransactionModal = useCallback(
-    (type: TransactionType = 'EXPENSE', prefill?: TransactionPrefill) => {
-      setTransactionType(type);
-      setTransactionPrefill(prefill ?? null);
-      setIsTransactionModalMounted(true);
-      setIsTransactionModalVisible(true);
-    },
-    []
-  );
+  const refreshData = useCallback(() => {
+    void refreshDataAction();
+  }, [refreshDataAction]);
 
-  const closeTransactionModal = useCallback(() => {
-    setIsTransactionModalVisible(false);
-    setTransactionPrefill(null);
-  }, []);
+  const handleSeedDemoData = useCallback(async () => {
+    try {
+      const result = await seedDemo();
+      void appAlert({
+        type: 'success',
+        title: t('demoDataLoadedTitle'),
+        message: t('demoDataLoadedMessage', {
+          accounts: result.accounts,
+          transactions: result.transactions,
+        }),
+        buttons: [{ text: t('accept') }],
+      });
+    } catch (error) {
+      console.error('Error seeding demo data:', error);
+      void appAlert({
+        type: 'error',
+        title: t('error'),
+        message: t('demoDataLoadError'),
+        buttons: [{ text: t('accept') }],
+      });
+    }
+  }, [seedDemo, t]);
 
-  const openAccountModal = useCallback(() => {
-    setIsAccountModalMounted(true);
-    setIsAccountModalVisible(true);
-  }, []);
+  const handleResetAllData = useCallback(() => resetAll(), [resetAll]);
+  const handleDataImported = useCallback(() => onDataImported(), [onDataImported]);
 
-  const toggleBalanceVisibility = useCallback(() => {
-    setIsBalanceVisible((visible) => !visible);
-  }, []);
+  const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
+  const selectedAccountName = accounts.find(
+    (account) => account.id === selectedFilterAccountId
+  )?.name;
 
   const value = useMemo<DashboardContextValue>(
     () => ({
@@ -156,9 +167,9 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       selectedFilterAccountId,
       transactions,
       selectedAccountName,
-      handleSelectAccountFilter,
-      handleRefresh: handleRefreshAll,
-      refreshData: handleDataChanged,
+      handleSelectAccountFilter: selectAccountFilter,
+      handleRefresh,
+      refreshData,
       handleSeedDemoData,
       handleResetAllData,
       handleDataImported,
@@ -177,9 +188,9 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       selectedFilterAccountId,
       transactions,
       selectedAccountName,
-      handleSelectAccountFilter,
-      handleRefreshAll,
-      handleDataChanged,
+      selectAccountFilter,
+      handleRefresh,
+      refreshData,
       handleSeedDemoData,
       handleResetAllData,
       handleDataImported,
@@ -205,7 +216,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
               categories={categories}
               blurTarget={blurTarget}
               onClose={closeTransactionModal}
-              onTransactionCreated={handleDataChanged}
+              onTransactionCreated={refreshData}
             />
           </Suspense>
         )}
@@ -215,8 +226,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
             <CreateAccountModal
               visible={isAccountModalVisible}
               blurTarget={blurTarget}
-              onClose={() => setIsAccountModalVisible(false)}
-              onAccountCreated={handleDataChanged}
+              onClose={closeAccountModal}
+              onAccountCreated={refreshData}
             />
           </Suspense>
         )}
@@ -226,7 +237,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useDashboard(): DashboardContextValue {
-  const context = useContext(DashboardContext);
+  const context = React.useContext(DashboardContext);
   if (!context) {
     throw new Error('useDashboard must be used within a DashboardProvider.');
   }

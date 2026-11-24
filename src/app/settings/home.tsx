@@ -14,7 +14,7 @@ import TriangleAlert from 'lucide-react-native/icons/triangle-alert';
 import type { LucideIcon } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { spacing, useColors, useInsets, useThemeMode } from '@/components/ui/theme';
-import { useHomeCards } from '@/context/HomeCardsContext';
+import { useHomeCards } from '@/store/homeCardsStore';
 import type { TranslationKey } from '@/core/i18n/translations';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import type { HomeCardKey } from '@/core/preferences/preferences';

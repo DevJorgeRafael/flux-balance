@@ -1,40 +1,21 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   CURRENCIES,
   DEFAULT_CURRENCY_CODE,
   getCurrencyName,
-  isSupportedCurrency,
   resolveCurrencyCode,
   type CurrencyOption,
 } from '../constants/currencies';
 import { useTranslation } from '../i18n/useTranslation';
 import { formatMoney, HIDDEN_AMOUNT, type FormatMoneyOptions } from '../utils/money';
 import { getAppSetting, setAppSetting } from '@/infrastructure/database/appSettings';
+import { useCurrencyStore } from '@/store/currencyStore';
 
 const CURRENCY_SETTING_KEY = 'currency';
 
 export interface FormatAmountOptions extends FormatMoneyOptions {
   hidden?: boolean;
 }
-
-export interface CurrencyProviderProps {
-  children: React.ReactNode;
-  initialCurrency?: string;
-}
-
-interface CurrencyContextValue {
-  currency: string;
-  setCurrency: (code: string) => void;
-}
-
-const CurrencyContext = createContext<CurrencyContextValue | null>(null);
 
 export async function loadStoredCurrency(): Promise<string> {
   try {
@@ -45,58 +26,22 @@ export async function loadStoredCurrency(): Promise<string> {
   }
 }
 
-export function CurrencyProvider({ children, initialCurrency }: CurrencyProviderProps) {
-  const [currency, setCurrencyState] = useState<string>(() =>
-    resolveCurrencyCode(initialCurrency)
-  );
-  const [startupCurrency, setStartupCurrency] = useState(initialCurrency);
-
-  if (initialCurrency !== undefined && initialCurrency !== startupCurrency) {
-    setStartupCurrency(initialCurrency);
-    setCurrencyState(resolveCurrencyCode(initialCurrency));
-  }
-
-  useEffect(() => {
-    if (initialCurrency !== undefined) return;
-
-    let cancelled = false;
-
-    void getAppSetting(CURRENCY_SETTING_KEY)
-      .then((savedCurrency) => {
-        if (cancelled) return;
-        if (isSupportedCurrency(savedCurrency)) {
-          setCurrencyState(resolveCurrencyCode(savedCurrency));
-        }
-      })
-      .catch((error) => {
-        console.error('Error loading currency preference:', error);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [initialCurrency]);
-
-  const setCurrency = useCallback((code: string) => {
-    const nextCurrency = resolveCurrencyCode(code);
-    setCurrencyState(nextCurrency);
-    void setAppSetting(CURRENCY_SETTING_KEY, nextCurrency).catch((error) => {
-      console.error('Error saving currency preference:', error);
-    });
-  }, []);
-
-  const value = useMemo<CurrencyContextValue>(
-    () => ({ currency, setCurrency }),
-    [currency, setCurrency]
-  );
-
-  return <CurrencyContext.Provider value={value}>{children}</CurrencyContext.Provider>;
-}
-
 export function useCurrency() {
-  const { currency, setCurrency } = useCurrencyContext();
+  const currency = useCurrencyStore((state) => state.code);
+  const setCurrencyCode = useCurrencyStore((state) => state.setCode);
   const { language } = useTranslation();
   const locale = language === 'es' ? 'es-ES' : 'en-US';
+
+  const setCurrency = useCallback(
+    (code: string) => {
+      const nextCurrency = resolveCurrencyCode(code);
+      setCurrencyCode(nextCurrency);
+      void setAppSetting(CURRENCY_SETTING_KEY, nextCurrency).catch((error) => {
+        console.error('Error saving currency preference:', error);
+      });
+    },
+    [setCurrencyCode]
+  );
 
   const format = useCallback(
     (amount: number, options?: FormatAmountOptions) => {
@@ -114,20 +59,15 @@ export function useCurrency() {
     (option) => option.code === currency
   );
 
-  return {
-    currency,
-    currencyOption,
-    currencyName: getCurrencyName(currency, language),
-    setCurrency,
-    locale,
-    format,
-  };
-}
-
-function useCurrencyContext(): CurrencyContextValue {
-  const context = useContext(CurrencyContext);
-  if (!context) {
-    throw new Error('useCurrency must be used within a CurrencyProvider.');
-  }
-  return context;
+  return useMemo(
+    () => ({
+      currency,
+      currencyOption,
+      currencyName: getCurrencyName(currency, language),
+      setCurrency,
+      locale,
+      format,
+    }),
+    [currency, currencyOption, language, setCurrency, locale, format]
+  );
 }

@@ -9,7 +9,7 @@ import { radius, spacing, useColors } from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { selectUpcomingReminders } from '@/core/services/reminder-upcoming';
 import { useReminderOverview } from '@/hooks/useReminderOverview';
-import { useHomeCards } from '@/context/HomeCardsContext';
+import { useHomeCards } from '@/store/homeCardsStore';
 
 const MAX_VISIBLE = 2;
 

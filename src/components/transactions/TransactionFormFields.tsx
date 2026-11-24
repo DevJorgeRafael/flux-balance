@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { OptionChips } from '@/components/ui/OptionChips';
 import { SelectField } from '@/components/ui/SelectField';
+import { CategorySelectField } from '@/components/transactions/CategorySelectField';
 import { SegmentedTypeControl } from '@/components/ui/SegmentedTypeControl';
 import { useColors } from '@/components/ui/theme';
 import { MAX_ACCOUNT_CHIPS } from '@/core/constants/formOptions';
@@ -186,7 +187,8 @@ export function TransactionFormFields({
         ))}
 
       {values.type === 'TRANSFER' ? null : selection.typeCategories.length > 0 && (
-        <SelectField
+        <CategorySelectField
+          type={values.type}
           label={t('category')}
           title={t('category')}
           emptyLabel={categoryEmptyLabel ?? t('reminderNoCategory')}

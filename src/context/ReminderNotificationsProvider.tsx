@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-} from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { AppState, Platform } from 'react-native';
 import { appAlert } from '@/components/ui/alert/appAlert';
 import type { Reminder } from '@/core/models/reminder';
@@ -22,20 +15,12 @@ import { syncReminderNotifications } from '@/core/services/reminder-notification
 import { SqliteReminderRepository } from '@/infrastructure/repositories';
 import { ExpoReminderNotificationGateway } from '@/infrastructure/notifications/ExpoReminderNotificationGateway';
 import { useDashboard } from './DashboardContext';
+import {
+  useReminderNotificationsStore,
+  type RefreshReminderOptions,
+} from '@/store/reminderNotificationsStore';
 
-interface RefreshReminderOptions {
-  requestPermission?: boolean;
-}
-
-interface ReminderNotificationsContextValue {
-  refreshReminderNotifications: (
-    reminderId?: string,
-    options?: RefreshReminderOptions
-  ) => Promise<ReminderNotificationPermission>;
-}
-
-const ReminderNotificationsContext =
-  createContext<ReminderNotificationsContextValue | null>(null);
+export { useReminderNotifications } from '@/store/reminderNotificationsStore';
 
 const reminderRepo = new SqliteReminderRepository();
 const gateway = new ExpoReminderNotificationGateway();
@@ -242,24 +227,12 @@ export function ReminderNotificationsProvider({
     return () => subscription.remove();
   }, [scheduleReconcileAndSync]);
 
-  const value = useMemo<ReminderNotificationsContextValue>(
-    () => ({ refreshReminderNotifications }),
-    [refreshReminderNotifications]
-  );
+  useEffect(() => {
+    useReminderNotificationsStore
+      .getState()
+      .register(refreshReminderNotifications);
+    return () => useReminderNotificationsStore.getState().unregister();
+  }, [refreshReminderNotifications]);
 
-  return (
-    <ReminderNotificationsContext.Provider value={value}>
-      {children}
-    </ReminderNotificationsContext.Provider>
-  );
-}
-
-export function useReminderNotifications(): ReminderNotificationsContextValue {
-  const context = useContext(ReminderNotificationsContext);
-  if (!context) {
-    throw new Error(
-      'useReminderNotifications must be used within a ReminderNotificationsProvider.'
-    );
-  }
-  return context;
+  return <>{children}</>;
 }

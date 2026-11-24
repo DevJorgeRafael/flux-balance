@@ -10,7 +10,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import * as SplashScreen from 'expo-splash-screen';
 import { useReduceMotion } from '@/components/ui/theme';
 import { useDashboard } from '@/context/DashboardContext';
-import { SplashTransitionProvider } from '@/context/SplashTransitionContext';
+import { useSplashTransitionStore } from '@/store/splashTransitionStore';
 import { SplashPig, type SplashPigMode } from './SplashPig';
 import {
   HOME_REVEAL_DELAY_MS,
@@ -71,6 +71,14 @@ export function SplashTransition({ children, startupReady }: SplashTransitionPro
   const revealDelay = isRevealing && exitMode === 'story' ? HOME_REVEAL_DELAY_MS : 0;
   const pigMode: SplashPigMode = phase === 'exit' ? exitMode : 'story';
   const intro = phase === 'hold' && laidOut && !forceReveal && !reduceMotion;
+
+  useEffect(() => {
+    useSplashTransitionStore.getState().setState({
+      isRevealing,
+      isSplashHidden,
+      revealDelay,
+    });
+  }, [isRevealing, isSplashHidden, revealDelay]);
 
   const finish = useCallback(() => {
     setPhase('done');
@@ -197,11 +205,7 @@ export function SplashTransition({ children, startupReady }: SplashTransitionPro
     systemScheme === 'dark' ? SPLASH_BACKGROUND.dark : SPLASH_BACKGROUND.light;
 
   return (
-    <SplashTransitionProvider
-      isRevealing={isRevealing}
-      isSplashHidden={isSplashHidden}
-      revealDelay={revealDelay}
-    >
+    <>
       {children}
       {phase !== 'done' && (
         <View
@@ -223,7 +227,7 @@ export function SplashTransition({ children, startupReady }: SplashTransitionPro
           />
         </View>
       )}
-    </SplashTransitionProvider>
+    </>
   );
 }
 

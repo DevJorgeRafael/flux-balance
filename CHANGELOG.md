@@ -2,6 +2,18 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.5.1] - 2026-11-23
+
+### Añadido
+
+- Desde el selector de categorías del formulario principal de movimientos se puede crear una categoría nueva sin salir del flujo. Al volver, la categoría creada queda seleccionada y el resto del formulario se conserva.
+
+## [2.5.0] - 2026-11-23
+
+### Cambiado
+
+- El estado de la app usa Zustand en lugar de la mayoría de los React Context: tarjetas del inicio, splash, tema, idioma, moneda, dashboard, alertas y notificaciones.
+
 ## [2.4.4] - 2026-11-23
 
 ### Añadido

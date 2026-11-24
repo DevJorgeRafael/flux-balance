@@ -4,7 +4,7 @@ import Eye from 'lucide-react-native/icons/eye';
 import EyeOff from 'lucide-react-native/icons/eye-off';
 import { CountUpText } from '@/components/ui/atoms/CountUpText';
 import { useColors } from '@/components/ui/theme';
-import { useSplashTransition } from '@/context/SplashTransitionContext';
+import { useSplashTransition } from '@/store/splashTransitionStore';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { HomeReveal } from './HomeReveal';

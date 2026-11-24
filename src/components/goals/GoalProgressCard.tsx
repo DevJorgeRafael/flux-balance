@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { spacing, useColors } from '@/components/ui/theme';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useDashboard } from '@/context/DashboardContext';
-import { useHomeCards } from '@/context/HomeCardsContext';
+import { useHomeCards } from '@/store/homeCardsStore';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import type { Goal } from '@/core/models/goal';
 import { getGoalProgress } from '@/core/services/financial-twin';
