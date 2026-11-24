@@ -16,6 +16,10 @@ Reglas de UI extraídas de correcciones del usuario. Antes de construir o cambia
   Why: en dark la cuenta seleccionada y las cards quedaban más claras que la navegación y rompían la paleta.
   <!-- 2026-11-23: "el color de las cards es igual al del seleccionada y diferente al del bottom navigationbar eso también hay que corregir" -->
 
+- **El azul del hero en la status bar se desvanece durante los primeros 100 px de scroll; luego el área usa el fondo del tema.**
+  Why: el azul acompaña al balance arriba, pero estorba cuando el contenido ya scrolleó; el cambio sigue al dedo en vez de ser decoración.
+  <!-- 2026-11-23: "ese azul superior es molestoso" / "asimilar el comportamiento de Flutter" -->
+
 - **La `Card` de una sección del home es navegable a su pantalla; no lleva un enlace adicional.**
   Why: el usuario pidió simplificar: el mismo gesto que abre Metas debe abrir Recordatorios y Anticipaciones, sin un «Ver todos» ni «Ver presupuestos» separados.
   <!-- 2026-11-23: "quitar eso de esas 3 y que tenga la misma funcionalidad que el de metas navegar a su pantalla" -->
