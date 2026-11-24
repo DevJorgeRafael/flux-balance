@@ -22,6 +22,7 @@ import { SelectField } from '@/components/ui/SelectField';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 import { DatePicker } from '@/components/ui/organisms/DatePicker';
 import { SectionLabel } from '@/components/settings/SectionLabel';
+import { GoalProgressRing } from '@/components/goals/GoalProgressRing';
 import { spacing, useColors, useInsets } from '@/components/ui/theme';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useDashboard } from '@/context/DashboardContext';
@@ -237,33 +238,22 @@ export default function GoalsScreen() {
                             }),
                           })}
                     </Text>
-                    <View
-                      style={[
-                        styles.progressTrack,
-                        { backgroundColor: colors.controlTrack },
-                      ]}
-                    >
-                      <View
-                        style={[
-                          styles.progressFill,
-                          {
-                            backgroundColor: colors.primary,
-                            width: `${progress.ratio * 100}%`,
-                          },
-                        ]}
-                      />
-                    </View>
                   </View>
-                  <IconButton
-                    icon={<Pencil size={18} color={colors.text} strokeWidth={2.2} />}
-                    accessibilityLabel={t('editGoal')}
-                    onPress={() => openModal(goal)}
-                  />
-                  <IconButton
-                    icon={<Trash size={18} color={colors.errorText} strokeWidth={2.2} />}
-                    accessibilityLabel={t('deleteGoal')}
-                    onPress={() => handleDelete(goal)}
-                  />
+                  <GoalProgressRing ratio={progress.ratio} size={56} />
+                  <View style={styles.goalActions}>
+                    <IconButton
+                      size={16}
+                      icon={<Pencil size={16} color={colors.text} strokeWidth={2.2} />}
+                      accessibilityLabel={t('editGoal')}
+                      onPress={() => openModal(goal)}
+                    />
+                    <IconButton
+                      size={16}
+                      icon={<Trash size={16} color={colors.errorText} strokeWidth={2.2} />}
+                      accessibilityLabel={t('deleteGoal')}
+                      onPress={() => handleDelete(goal)}
+                    />
+                  </View>
                 </View>
               );
             })
@@ -400,19 +390,17 @@ const styles = StyleSheet.create({
   goalRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
+    gap: spacing.sm,
     paddingVertical: spacing.sm,
   },
   goalInfo: { flex: 1 },
   goalName: { fontSize: 14, fontWeight: '700' },
   goalDetail: { fontSize: 12 },
-  progressTrack: {
-    height: 6,
-    borderRadius: 3,
-    marginTop: spacing.sm,
-    overflow: 'hidden',
+  goalActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
-  progressFill: { height: 6, borderRadius: 3 },
   form: { gap: spacing.md, paddingBottom: spacing.xl },
   dateField: {
     minHeight: 52,
