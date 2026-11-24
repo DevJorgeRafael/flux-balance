@@ -139,12 +139,7 @@ export default function BudgetsScreen() {
           {t('budgets')}
         </Text>
         <Pressable
-          onPress={() =>
-            router.push({
-              pathname: '/settings/home',
-              params: { focus: 'anticipations' },
-            })
-          }
+          onPress={() => router.push('/settings/home')}
           accessibilityRole="button"
           accessibilityLabel={t('customizeHome')}
           hitSlop={8}

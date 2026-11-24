@@ -161,12 +161,7 @@ export default function GoalsScreen() {
         <IconButton
           icon={<Settings size={20} color={colors.text} strokeWidth={2.5} />}
           accessibilityLabel={t('customizeHome')}
-          onPress={() =>
-            router.push({
-              pathname: '/settings/home',
-              params: { focus: 'goals' },
-            })
-          }
+          onPress={() => router.push('/settings/home')}
         />
       </View>
 
