@@ -1,20 +1,19 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import TriangleAlert from 'lucide-react-native/icons/triangle-alert';
 import CalendarClock from 'lucide-react-native/icons/calendar-clock';
-import ChevronRight from 'lucide-react-native/icons/chevron-right';
+import TriangleAlert from 'lucide-react-native/icons/triangle-alert';
 import TrendingUp from 'lucide-react-native/icons/trending-up';
 import Wallet from 'lucide-react-native/icons/wallet';
 import { Card } from '@/components/ui/Card';
-import { spacing, useColors } from '@/components/ui/theme';
-import { useDashboard } from '@/context/DashboardContext';
-import { useHomeCards } from '@/store/homeCardsStore';
+import { radius, spacing, useColors } from '@/components/ui/theme';
 import { useCurrency } from '@/core/currency/useCurrency';
 import type { TranslationKey } from '@/core/i18n/translations';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import type { AnticipationEvent } from '@/core/services/anticipation';
+import { useDashboard } from '@/context/DashboardContext';
 import { useAnticipation } from '@/hooks/useAnticipation';
+import { useHomeCards } from '@/store/homeCardsStore';
 
 const MAX_VISIBLE = 3;
 
@@ -29,71 +28,6 @@ function eventIcon(event: AnticipationEvent) {
     default:
       return TriangleAlert;
   }
-}
-
-export function AnticipationCard() {
-  const colors = useColors();
-  const { t } = useTranslation();
-  const { format } = useCurrency();
-  const { categories, accounts } = useDashboard();
-  const { events, isLoading } = useAnticipation();
-  const { isVisible } = useHomeCards();
-
-  if (!isVisible('anticipations') || isLoading || events.length === 0) return null;
-
-  return (
-    <View style={styles.section}>
-      <View style={styles.headerRow}>
-        <Text style={[styles.heading, { color: colors.text }]}>
-          {t('anticipationTitle')}
-        </Text>
-      </View>
-      <Card variant="raised" shadowSize="sm" style={styles.card}>
-        <View style={styles.cardContent}>
-          {events.slice(0, MAX_VISIBLE).map((event, index) => {
-            const Icon = eventIcon(event);
-            const tone =
-              event.severity === 'critical'
-                ? colors.errorText
-                : event.severity === 'warning'
-                  ? colors.warningText
-                  : colors.primaryText;
-            const name = event.categoryId ?? event.accountId ?? '';
-            const label =
-              categories.find((category) => category.id === name)?.name ??
-              accounts.find((account) => account.id === name)?.name ??
-              name;
-            const message = getMessage(event, t, format, label);
-
-            return (
-              <View
-                key={event.id}
-                style={[
-                  styles.row,
-                  index > 0 && {
-                    borderTopWidth: StyleSheet.hairlineWidth,
-                    borderTopColor: colors.border,
-                  },
-                ]}
-              >
-                <Icon size={18} color={tone} strokeWidth={2.2} />
-                <Text
-                  style={[styles.rowText, { color: colors.text }]}
-                  numberOfLines={2}
-                >
-                  {message}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-        <PressableRow
-          label={t('budgets')}
-          onPress={() => router.push('/settings/budgets')}
-        />
-      </Card>
-    </View>
-  );
 }
 
 type Translate = (
@@ -128,47 +62,90 @@ function getMessage(
   }
 }
 
-function PressableRow({ label, onPress }: { label: string; onPress: () => void }) {
+export function AnticipationCard() {
   const colors = useColors();
+  const { t } = useTranslation();
+  const { format } = useCurrency();
+  const { categories, accounts } = useDashboard();
+  const { events, isLoading } = useAnticipation();
+  const { isVisible } = useHomeCards();
+
+  if (!isVisible('anticipations') || isLoading || events.length === 0) return null;
+
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="link"
-      accessibilityLabel={label}
-      style={({ pressed }) => [
-        styles.link,
-        { borderTopColor: colors.border },
-        pressed && styles.pressed,
-      ]}
-    >
-      <Text style={[styles.linkText, { color: colors.primaryText }]}>{label}</Text>
-      <ChevronRight size={15} color={colors.primaryText} strokeWidth={2.5} />
-    </Pressable>
+    <View style={styles.section}>
+      <Text style={[styles.heading, { color: colors.text }]}>
+        {t('anticipationTitle')} · {events.length}
+      </Text>
+
+      <Card
+        variant="raised"
+        shadowSize="sm"
+        style={styles.card}
+        onPress={() => router.push('/settings/budgets')}
+        accessibilityLabel={t('anticipationTitle')}
+      >
+        {events.slice(0, MAX_VISIBLE).map((event, index) => {
+          const Icon = eventIcon(event);
+          const severityColor =
+            event.severity === 'critical'
+              ? colors.errorText
+              : event.severity === 'warning'
+                ? colors.warningText
+                : colors.primaryText;
+          const name = event.categoryId ?? event.accountId ?? '';
+          const label =
+            categories.find((category) => category.id === name)?.name ??
+            accounts.find((account) => account.id === name)?.name ??
+            name;
+          const [lead, ...detail] = getMessage(event, t, format, label).split(' · ');
+
+          return (
+            <View
+              key={event.id}
+              style={[
+                styles.row,
+                index > 0 && {
+                  borderTopWidth: StyleSheet.hairlineWidth,
+                  borderTopColor: colors.border,
+                },
+              ]}
+            >
+              <View style={[styles.iconCircle, { backgroundColor: colors.primarySoft }]}>
+                <Icon size={18} color={colors.primaryText} strokeWidth={2.2} />
+              </View>
+              <Text style={[styles.rowText, { color: colors.textLight }]} numberOfLines={2}>
+                <Text style={[styles.lead, { color: colors.text }]}>{lead}</Text>
+                {detail.length > 0 ? ` · ${detail.join(' · ')}` : null}
+              </Text>
+              <View style={[styles.severityDot, { backgroundColor: severityColor }]} />
+            </View>
+          );
+        })}
+      </Card>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   section: { marginTop: spacing.xl, marginBottom: spacing.md },
-  headerRow: { marginBottom: spacing.sm },
-  heading: { fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
+  heading: { fontSize: 18, fontWeight: '800', letterSpacing: -0.3, marginBottom: spacing.sm },
   card: { paddingHorizontal: spacing.md },
-  cardContent: { paddingVertical: spacing.xs },
   row: {
+    minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    minHeight: 48,
     paddingVertical: spacing.sm,
   },
-  rowText: { flex: 1, fontSize: 13, fontWeight: '600' },
-  link: {
-    flexDirection: 'row',
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    minHeight: 44,
-    borderTopWidth: StyleSheet.hairlineWidth,
   },
-  linkText: { fontSize: 13, fontWeight: '800' },
-  pressed: { opacity: 0.7 },
+  rowText: { flex: 1, fontSize: 13, fontWeight: '600' },
+  lead: { fontWeight: '800' },
+  severityDot: { width: 6, height: 6, borderRadius: 3 },
 });

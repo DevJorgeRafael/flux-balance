@@ -6,7 +6,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import Bell from 'lucide-react-native/icons/bell';
 import Target from 'lucide-react-native/icons/target';
@@ -53,8 +53,6 @@ export default function HomeCustomizationScreen() {
   const { isDark } = useThemeMode();
   const { t } = useTranslation();
   const { visibility, setVisible } = useHomeCards();
-  const params = useLocalSearchParams<{ focus?: string }>();
-  const focused = typeof params.focus === 'string' ? params.focus : undefined;
   const offTrackColor = isDark ? colors.surfaceMuted : colors.controlTrack;
   const offThumbColor = isDark ? colors.text : colors.surface;
 
@@ -115,7 +113,6 @@ export default function HomeCustomizationScreen() {
                     borderBottomWidth: StyleSheet.hairlineWidth,
                     borderBottomColor: colors.border,
                   },
-                  focused === option.key && { backgroundColor: colors.primarySoft },
                   pressed && styles.pressed,
                 ]}
               >

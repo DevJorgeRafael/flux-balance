@@ -2,6 +2,19 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.5.3] - 2026-11-23
+
+### Cambiado
+
+- El azul del hero en la status bar se desvanece con el scroll; al desplazarse, la barra adopta el fondo del tema.
+
+## [2.5.2] - 2026-11-23
+
+### Cambiado
+
+- Home más limpio: una sola Card por sección, iconos neutros, acciones con nombre y anillo de progreso compartido entre el inicio y la pantalla de Metas.
+- Todas las Cards usan el mismo fondo que la barra inferior; la elevación se expresa con sombra.
+
 ## [2.5.1] - 2026-11-23
 
 ### Añadido

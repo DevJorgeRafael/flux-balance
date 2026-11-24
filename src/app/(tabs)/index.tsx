@@ -2,10 +2,16 @@ import React from 'react';
 import {
   StyleSheet,
   View,
-  ScrollView,
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   heroGradientDark,
@@ -47,6 +53,13 @@ export default function DashboardScreen() {
   } = useDashboard();
 
   const heroGradient = isDark ? heroGradientDark : heroGradientLight;
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollY.set(event.contentOffset.y);
+  });
+  const statusBarStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.get(), [0, 100], [1, 0], Extrapolation.CLAMP),
+  }));
 
   if (isLoading) {
     return (
@@ -57,8 +70,10 @@ export default function DashboardScreen() {
   }
 
   return (
-    <View style={[styles.screen, { backgroundColor: heroGradient.colors[0] }]}>
-      <ScrollView
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+      <Animated.ScrollView
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -122,13 +137,14 @@ export default function DashboardScreen() {
             </HomeReveal>
           </View>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
-      <View
+      <Animated.View
         pointerEvents="none"
         style={[
           styles.statusBarOverlay,
           { height: insets.top, backgroundColor: heroGradient.colors[0] },
+          statusBarStyle,
         ]}
       />
 

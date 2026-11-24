@@ -8,6 +8,26 @@ Reglas de UI extraídas de correcciones del usuario. Antes de construir o cambia
   Why: *inferido* — el usuario corrigió repetidamente que los formularios nuevos no se parecían a los ya construidos.
   <!-- 2026-11-23: "no te estás fijando en lo que ya está construido" -->
 
+- **Cada sección del home lleva una sola `Card`**, con las filas separadas por divisores finos, nunca Cards apiladas.
+  Why: los bordes repetidos y las sombras múltiples hacían que el home pareciera generado y desordenado.
+  <!-- 2026-11-23: aprobado en el pulido de "Próximos recordatorios", "Anticipaciones" y "Metas" -->
+
+- **Todas las Cards usan `colors.surface`, igual que la barra inferior.** La elevación se expresa con sombra, nunca con un fondo más claro.
+  Why: en dark la cuenta seleccionada y las cards quedaban más claras que la navegación y rompían la paleta.
+  <!-- 2026-11-23: "el color de las cards es igual al del seleccionada y diferente al del bottom navigationbar eso también hay que corregir" -->
+
+- **El azul del hero en la status bar se desvanece durante los primeros 100 px de scroll; luego el área usa el fondo del tema.**
+  Why: el azul acompaña al balance arriba, pero estorba cuando el contenido ya scrolleó; el cambio sigue al dedo en vez de ser decoración.
+  <!-- 2026-11-23: "ese azul superior es molestoso" / "asimilar el comportamiento de Flutter" -->
+
+- **La `Card` de una sección del home es navegable a su pantalla; no lleva un enlace adicional.**
+  Why: el usuario pidió simplificar: el mismo gesto que abre Metas debe abrir Recordatorios y Anticipaciones, sin un «Ver todos» ni «Ver presupuestos» separados.
+  <!-- 2026-11-23: "quitar eso de esas 3 y que tenga la misma funcionalidad que el de metas navegar a su pantalla" -->
+
+- **Si una sección muestra más de un elemento, el encabezado incluye el conteo.**
+  Why: el usuario necesita saber cuántos avisos hay sin leerlos uno por uno.
+  <!-- 2026-11-23: aprobado en el pulido del home -->
+
 ## Color
 
 - **Todo icono lucide pasado como nodo a `IconButton` lleva `color` explícito con un token.** La prop `color` de `IconButton` se ignora cuando se pasa un nodo `icon`.
@@ -17,6 +37,14 @@ Reglas de UI extraídas de correcciones del usuario. Antes de construir o cambia
 - **El botón destructive en tema oscuro usa `colors.error` (`#be123c`) con `colors.onError` (`#fff1f2`).** Nunca `#f43f5e`.
   Why: el rojo saturado original no queda bien en dark y el usuario pidió mejor contraste; el par actual da 5.72:1.
   <!-- 2026-11-23: "en dark el rojo no queda o no hace buen contraste" -->
+
+- **El color de ingreso/gasto vive en el importe, no en el fondo del icono.** Los iconos de las cards van en `colors.primarySoft` sobre `colors.primaryText`.
+  Why: los círculos verde/rojo competían entre sí y hacían ruido; el importe ya comunica el tipo con signo y color.
+  <!-- 2026-11-23: aprobado en el pulido del home -->
+
+- **El progreso usa `colors.primary` sobre `colors.controlTrack`.** No se introducen colores nuevos para barras ni anillos.
+  Why: el usuario pidió usar solo los colores del tema y organizar los existentes.
+  <!-- 2026-11-23: aprobado en el pulido del home -->
 
 ## Spacing & layout
 
@@ -33,6 +61,10 @@ Reglas de UI extraídas de correcciones del usuario. Antes de construir o cambia
 - **Las acciones de fila (editar/borrar) usan `IconButton` con nodo de icono, nunca botones de texto.**
   Why: *inferido* — los botones de texto rompían la homogeneidad con el resto de la app.
   <!-- 2026-11-23: "en el edit y el delete en lugar de texto sería mejor con íconos" -->
+
+- **Las acciones principales de una sección llevan nombre; el icono solo acompaña.** El patrón es `Ver todos ›`, `Ver presupuestos ›`, `Nuevo`.
+  Why: un botón con solo `+` obliga a adivinar; nombrarlo hace la interfaz predecible y profesional.
+  <!-- 2026-11-23: aprobado en el pulido del home -->
 
 - **Las confirmaciones usan `appConfirm`. Está prohibido usar `appAlert` con botones de cancelar/confirmar.**
   Why: en Android `appAlert` con dos botones cae al diálogo nativo del sistema, que no sigue el tema de la app.

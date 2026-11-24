@@ -17,7 +17,7 @@ export interface CardProps {
   children: React.ReactNode;
   /**
    * `default`: superficie con borde, sin sombra (referencia: Ajustes).
-   * `raised`: además, sombra suave difusa y fondo `cardRaised` en oscuro.
+   * `raised`: además, sombra suave difusa; el fondo sigue siendo `surface`.
    * `flat`: sin borde ni sombra, para superficies internas.
    */
   variant?: CardVariant;
@@ -63,8 +63,7 @@ export function Card({
 
   const hasShadow = variant === 'raised';
   const shadowToken = shadowSize === 'sm' ? cardShadowSm : cardShadow;
-  const surfaceColor =
-    backgroundColor ?? (variant === 'raised' ? colors.cardRaised : colors.surface);
+  const surfaceColor = backgroundColor ?? colors.surface;
   const resolvedBorderWidth = variant === 'flat' ? 0 : (borderWidth ?? 1);
   const resolvedBorderColor = borderColor ?? colors.border;
 
