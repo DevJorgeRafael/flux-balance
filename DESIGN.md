@@ -32,6 +32,10 @@ Reglas de UI extraídas de correcciones del usuario. Antes de construir o cambia
   Why: el usuario necesita saber cuántos avisos hay sin leerlos uno por uno.
   <!-- 2026-11-23: aprobado en el pulido del home -->
 
+- **Las Cards del carrusel de cuentas son compactas y no repiten etiquetas ni badges decorativos.**
+  Why: «Todas las cuentas» aparecía dos veces y, al quitar la insignia de rendimiento, quedaban huecos muertos por una altura fija antigua.
+  <!-- 2026-11-23: aprobado en la simplificación del home y cuentas -->
+
 ## Color
 
 - **Todo icono lucide pasado como nodo a `IconButton` lleva `color` explícito con un token.** La prop `color` de `IconButton` se ignora cuando se pasa un nodo `icon`.
@@ -49,6 +53,10 @@ Reglas de UI extraídas de correcciones del usuario. Antes de construir o cambia
 - **El progreso usa `colors.primary` sobre `colors.controlTrack`.** No se introducen colores nuevos para barras ni anillos.
   Why: el usuario pidió usar solo los colores del tema y organizar los existentes.
   <!-- 2026-11-23: aprobado en el pulido del home -->
+
+- **La distribución usa una sola familia de acento con opacidades; los badges de estado no usan fondos semánticos.**
+  Why: el usuario pidió menos colores sueltos; el `Zap` verde y la barra multicolor competían con el saldo.
+  <!-- 2026-11-23: aprobado en la simplificación de cuentas -->
 
 ## Spacing & layout
 

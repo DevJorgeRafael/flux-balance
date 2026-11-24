@@ -2,6 +2,14 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.5.5] - 2026-11-23
+
+### Cambiado
+
+- Home más limpio: resumen sin puntos de color, gastos en blanco, carrusel compacto sin etiquetas duplicadas ni insignias decorativas, e iconos +/- neutros.
+- Cuentas más limpias: icono único por fila, estimado y vencimiento como texto neutro, barra de vencimiento en azul del tema y distribución de un solo acento.
+- Versión preparada para Play Store con `versionCode` 9.
+
 ## [2.5.4] - 2026-11-23
 
 ### Añadido

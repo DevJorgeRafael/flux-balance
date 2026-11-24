@@ -1,7 +1,5 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import Zap from 'lucide-react-native/icons/zap';
-import Calendar from 'lucide-react-native/icons/calendar';
 import { Account, AccountType } from '@/core/models/account';
 import { spacing, useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
@@ -16,22 +14,7 @@ interface AccountCardProps {
 }
 
 /** Alto común de todas las cards del carrusel de cuentas. */
-export const ACCOUNT_CARD_HEIGHT = 144;
-
-function formatDateOnly(value: string, locale: string): string {
-  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
-  const date = match
-    ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
-    : new Date(value);
-
-  if (Number.isNaN(date.getTime())) return value;
-
-  return date.toLocaleDateString(locale, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
+export const ACCOUNT_CARD_HEIGHT = 112;
 
 export function AccountCard({
   account,
@@ -40,7 +23,7 @@ export function AccountCard({
   onPress,
 }: AccountCardProps) {
   const colors = useColors();
-  const { format, locale } = useCurrency();
+  const { format } = useCurrency();
   const { t } = useTranslation();
   const getAccountTypeLabel = (type: AccountType) => {
     switch (type) {
@@ -109,33 +92,6 @@ export function AccountCard({
           {format(account.balance, { hidden: !isBalanceVisible })}
         </Text>
 
-        {isFlexible && (
-          <View
-            style={[
-              styles.yieldHighlightBadge,
-              { backgroundColor: colors.successSoft, borderColor: colors.successText },
-            ]}
-          >
-            <Zap size={13} color={colors.successText} strokeWidth={2.5} />
-            <Text style={[styles.yieldHighlightText, { color: colors.successText }]}>
-              {t('activeDailyYield')}
-            </Text>
-          </View>
-        )}
-
-        {isFixed && account.fixedTermDeposits && account.fixedTermDeposits.length > 0 && (
-          <View
-            style={[
-              styles.fixedDateBadge,
-              { backgroundColor: colors.cardRaised, borderColor: colors.border },
-            ]}
-          >
-            <Calendar size={12} color={colors.textLight} strokeWidth={2} />
-            <Text style={[styles.fixedDateText, { color: colors.textLight }]}>
-              {t('due')}: {formatDateOnly(account.fixedTermDeposits[0].maturityDate, locale)}
-            </Text>
-          </View>
-        )}
     </Card>
   );
 }
@@ -188,34 +144,5 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '900',
     letterSpacing: -0.5,
-    marginBottom: spacing.sm,
-  },
-  yieldHighlightBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignSelf: 'flex-start',
-  },
-  yieldHighlightText: {
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  fixedDateBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  fixedDateText: {
-    fontSize: 11,
-    fontWeight: '600',
   },
 });
