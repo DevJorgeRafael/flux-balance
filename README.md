@@ -4,6 +4,15 @@ Versión actual: **v2.5.5**.
 
 Offline-first personal finance app built with Expo, React Native, and local SQLite.
 
+## Screenshots
+
+| | | | |
+| --- | --- | --- | --- |
+| <a href="assets/images/screenshots/home.png"><img src="assets/images/screenshots/home.png" width="180" alt="Home"></a> | <a href="assets/images/screenshots/accounts.png"><img src="assets/images/screenshots/accounts.png" width="180" alt="Accounts"></a> | <a href="assets/images/screenshots/stats.png"><img src="assets/images/screenshots/stats.png" width="180" alt="Stats by category"></a> | <a href="assets/images/screenshots/stats-trend.png"><img src="assets/images/screenshots/stats-trend.png" width="180" alt="Daily trend"></a> |
+| <a href="assets/images/screenshots/register-income.png"><img src="assets/images/screenshots/register-income.png" width="180" alt="Register income"></a> | <a href="assets/images/screenshots/register-expense.png"><img src="assets/images/screenshots/register-expense.png" width="180" alt="Register expense"></a> | <a href="assets/images/screenshots/home-dark.png"><img src="assets/images/screenshots/home-dark.png" width="180" alt="Home in dark mode"></a> | <a href="assets/images/screenshots/stats-dark.png"><img src="assets/images/screenshots/stats-dark.png" width="180" alt="Stats in dark mode"></a> |
+
+Click any screenshot to see it at full size.
+
 ## Requirements
 
 - Node.js 22 or newer.
@@ -53,7 +62,7 @@ Reminders are stored in local SQLite and scheduled with `expo-notifications`. Th
 - Android 13+ requests notification permission when the first reminder is saved. If permission is denied, the reminder is still saved without alerts.
 - Scheduling is `bestEffort`; battery optimizations may delay notifications.
 - iOS keeps at most 60 scheduled occurrences, so the app fills the nearest ones.
-- Xiaomi, Redmi, and POCO devices show a one-time MIUI setup tip after notifications are enabled.
+- When a reminder is active, a dismissible tip suggests checking the phone's battery-saver restrictions if alerts arrive late.
 - `expo-notifications` contains native code. Validate reminders with a development build or a release APK, not only with Expo Go.
 
 Manual smoke test on a release APK:
@@ -111,4 +120,4 @@ La URL final será:
 
 <https://devjorgerafael.github.io/flux-balance/privacy/>
 
-Cuando esa URL responda, actualiza `PRIVACY_URL` en `src/constants/about.ts` para mostrar el enlace dentro de la app.
+Esa URL ya está configurada en `PRIVACY_URL` en `src/constants/about.ts`, así que el enlace se muestra dentro de la app.
