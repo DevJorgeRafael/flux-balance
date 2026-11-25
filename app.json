@@ -2,7 +2,7 @@
   "expo": {
     "name": "Flux Balance",
     "slug": "flux-balance",
-    "version": "2.5.5",
+    "version": "2.5.6",
     "orientation": "default",
     "icon": "./assets/images/logos-app/icon-1024.png",
     "scheme": "fluxbalance",
@@ -14,7 +14,7 @@
     },
     "android": {
       "package": "com.devjorgerafael.flux_balance",
-      "versionCode": 9,
+      "versionCode": 10,
       "allowBackup": false,
       "blockedPermissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
