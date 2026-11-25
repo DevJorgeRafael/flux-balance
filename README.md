@@ -6,10 +6,19 @@ Offline-first personal finance app built with Expo, React Native, and local SQLi
 
 ## Screenshots
 
+### Phone
+
 | | | | |
 | --- | --- | --- | --- |
-| <a href="assets/images/screenshots/home.png"><img src="assets/images/screenshots/home.png" width="180" alt="Home"></a> | <a href="assets/images/screenshots/accounts.png"><img src="assets/images/screenshots/accounts.png" width="180" alt="Accounts"></a> | <a href="assets/images/screenshots/stats.png"><img src="assets/images/screenshots/stats.png" width="180" alt="Stats by category"></a> | <a href="assets/images/screenshots/stats-trend.png"><img src="assets/images/screenshots/stats-trend.png" width="180" alt="Daily trend"></a> |
-| <a href="assets/images/screenshots/register-income.png"><img src="assets/images/screenshots/register-income.png" width="180" alt="Register income"></a> | <a href="assets/images/screenshots/register-expense.png"><img src="assets/images/screenshots/register-expense.png" width="180" alt="Register expense"></a> | <a href="assets/images/screenshots/home-dark.png"><img src="assets/images/screenshots/home-dark.png" width="180" alt="Home in dark mode"></a> | <a href="assets/images/screenshots/stats-dark.png"><img src="assets/images/screenshots/stats-dark.png" width="180" alt="Stats in dark mode"></a> |
+| <a href="assets/images/screenshots/phone/home.png"><img src="assets/images/screenshots/phone/home.png" width="180" alt="Home"></a> | <a href="assets/images/screenshots/phone/accounts.png"><img src="assets/images/screenshots/phone/accounts.png" width="180" alt="Accounts"></a> | <a href="assets/images/screenshots/phone/stats.png"><img src="assets/images/screenshots/phone/stats.png" width="180" alt="Stats by category"></a> | <a href="assets/images/screenshots/phone/stats-trend.png"><img src="assets/images/screenshots/phone/stats-trend.png" width="180" alt="Daily trend"></a> |
+| <a href="assets/images/screenshots/phone/register-income.png"><img src="assets/images/screenshots/phone/register-income.png" width="180" alt="Register income"></a> | <a href="assets/images/screenshots/phone/register-expense.png"><img src="assets/images/screenshots/phone/register-expense.png" width="180" alt="Register expense"></a> | <a href="assets/images/screenshots/phone/home-dark.png"><img src="assets/images/screenshots/phone/home-dark.png" width="180" alt="Home in dark mode"></a> | <a href="assets/images/screenshots/phone/stats-dark.png"><img src="assets/images/screenshots/phone/stats-dark.png" width="180" alt="Stats in dark mode"></a> |
+
+### 10" tablet
+
+| | | | |
+| --- | --- | --- | --- |
+| <a href="assets/images/screenshots/tablet-10/home.png"><img src="assets/images/screenshots/tablet-10/home.png" width="180" alt="Home on tablet"></a> | <a href="assets/images/screenshots/tablet-10/accounts.png"><img src="assets/images/screenshots/tablet-10/accounts.png" width="180" alt="Accounts on tablet"></a> | <a href="assets/images/screenshots/tablet-10/stats.png"><img src="assets/images/screenshots/tablet-10/stats.png" width="180" alt="Stats by category on tablet"></a> | <a href="assets/images/screenshots/tablet-10/stats-trend.png"><img src="assets/images/screenshots/tablet-10/stats-trend.png" width="180" alt="Daily trend on tablet"></a> |
+| <a href="assets/images/screenshots/tablet-10/stats-balance.png"><img src="assets/images/screenshots/tablet-10/stats-balance.png" width="180" alt="Balance evolution on tablet"></a> | <a href="assets/images/screenshots/tablet-10/register-income.png"><img src="assets/images/screenshots/tablet-10/register-income.png" width="180" alt="Register income on tablet"></a> | <a href="assets/images/screenshots/tablet-10/register-expense.png"><img src="assets/images/screenshots/tablet-10/register-expense.png" width="180" alt="Register expense on tablet"></a> | <a href="assets/images/screenshots/tablet-10/settings.png"><img src="assets/images/screenshots/tablet-10/settings.png" width="180" alt="Settings on tablet"></a> |
 
 Click any screenshot to see it at full size.
 

@@ -29,6 +29,7 @@ import { AnticipationCard } from '@/components/anticipation/AnticipationCard';
 import { GoalProgressCard } from '@/components/goals/GoalProgressCard';
 import { HomeReveal } from '@/components/dashboard/HomeReveal';
 import { BottomFade } from '@/components/ui/BottomFade';
+import { ResponsiveContent } from '@/components/ui/ResponsiveContent';
 import { useDashboard } from '@/context/DashboardContext';
 import { useHomeCards } from '@/store/homeCardsStore';
 import { TAB_BAR_CONTENT_GAP, TAB_BAR_CONTENT_OFFSET } from '@/components/navigation/tabBarLayout';
@@ -95,20 +96,24 @@ export default function DashboardScreen() {
           dither
           style={[styles.heroZone, { paddingTop: insets.top + 12 }]}
         >
-          <DashboardHero
-            totalBalance={totalBalance}
-            isBalanceVisible={isBalanceVisible}
-            onToggleBalanceVisibility={toggleBalanceVisibility}
-          />
+          <ResponsiveContent>
+            <DashboardHero
+              totalBalance={totalBalance}
+              isBalanceVisible={isBalanceVisible}
+              onToggleBalanceVisibility={toggleBalanceVisibility}
+            />
+          </ResponsiveContent>
         </LinearGradient>
 
         <View style={styles.sheetStack}>
-          <HomeReveal delay={80} style={styles.summaryReveal}>
-            <DashboardSummaryCard
-              monthlyTotals={monthlyTotals}
-              isBalanceVisible={isBalanceVisible}
-            />
-          </HomeReveal>
+          <ResponsiveContent style={styles.summaryReveal}>
+            <HomeReveal delay={80}>
+              <DashboardSummaryCard
+                monthlyTotals={monthlyTotals}
+                isBalanceVisible={isBalanceVisible}
+              />
+            </HomeReveal>
+          </ResponsiveContent>
 
           <View
             style={[
@@ -119,31 +124,33 @@ export default function DashboardScreen() {
               },
             ]}
           >
-            <HomeReveal delay={140}>
-              <AccountCarousel
-                accounts={accounts}
-                totalBalance={totalBalance}
-                isBalanceVisible={isBalanceVisible}
-                selectedFilterAccountId={selectedFilterAccountId}
-                onSelectAccountFilter={handleSelectAccountFilter}
-                onOpenCreateAccountModal={openAccountModal}
-                showNewAccount={false}
-              />
+            <ResponsiveContent>
+              <HomeReveal delay={140}>
+                <AccountCarousel
+                  accounts={accounts}
+                  totalBalance={totalBalance}
+                  isBalanceVisible={isBalanceVisible}
+                  selectedFilterAccountId={selectedFilterAccountId}
+                  onSelectAccountFilter={handleSelectAccountFilter}
+                  onOpenCreateAccountModal={openAccountModal}
+                  showNewAccount={false}
+                />
 
-              <RecentTransactionsList
-                transactions={accounts.length === 0 ? [] : transactions}
-                isBalanceVisible={isBalanceVisible}
-                selectedFilterAccountId={selectedFilterAccountId}
-                selectedAccountName={selectedAccountName}
-                defaultAccountId={accounts[0]?.id}
-              />
+                <RecentTransactionsList
+                  transactions={accounts.length === 0 ? [] : transactions}
+                  isBalanceVisible={isBalanceVisible}
+                  selectedFilterAccountId={selectedFilterAccountId}
+                  selectedAccountName={selectedAccountName}
+                  defaultAccountId={accounts[0]?.id}
+                />
 
-              <View key={insightsKey}>
-                <UpcomingRemindersCard />
-                <AnticipationCard />
-                <GoalProgressCard />
-              </View>
-            </HomeReveal>
+                <View key={insightsKey}>
+                  <UpcomingRemindersCard />
+                  <AnticipationCard />
+                  <GoalProgressCard />
+                </View>
+              </HomeReveal>
+            </ResponsiveContent>
           </View>
         </View>
       </Animated.ScrollView>
