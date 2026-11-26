@@ -16,6 +16,7 @@ import TrendingUp from 'lucide-react-native/icons/trending-up';
 import { useColors, useInsets, useThemeMode } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { BottomFade } from '@/components/ui/BottomFade';
+import { ResponsiveContent } from '@/components/ui/ResponsiveContent';
 import { AboutSection } from '@/components/settings/AboutSection';
 import { DataSection } from '@/components/settings/DataSection';
 import { DeveloperSection } from '@/components/settings/DeveloperSection';
@@ -52,6 +53,7 @@ export default function SettingsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        <ResponsiveContent>
         <Text style={[styles.title, { color: colors.text }]}>{t('settings')}</Text>
 
         <SectionLabel>{t('system')}</SectionLabel>
@@ -162,6 +164,7 @@ export default function SettingsScreen() {
         <DataSection />
         <DeveloperSection />
         <AboutSection />
+        </ResponsiveContent>
       </ScrollView>
 
       <BottomFade />

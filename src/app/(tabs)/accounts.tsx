@@ -8,6 +8,7 @@ import { AccountsDistributionCard } from '@/components/accounts/AccountsDistribu
 import { AccountGroupSection } from '@/components/accounts/AccountGroupSection';
 import { AccountsEmptyState } from '@/components/accounts/AccountsEmptyState';
 import { BottomFade } from '@/components/ui/BottomFade';
+import { ResponsiveContent } from '@/components/ui/ResponsiveContent';
 import { useMonthlyAccountMovementCounts } from '@/hooks/useMonthlyAccountMovementCounts';
 import { buildAccountDistribution } from '@/core/services/account-distribution';
 import { useTranslation } from '@/core/i18n/useTranslation';
@@ -82,35 +83,37 @@ export default function AccountsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <AccountsHeader
-          totalBalance={totalBalance}
-          accountCount={accounts.length}
-          isBalanceVisible={isBalanceVisible}
-          onPressNewAccount={openAccountModal}
-        />
+        <ResponsiveContent>
+          <AccountsHeader
+            totalBalance={totalBalance}
+            accountCount={accounts.length}
+            isBalanceVisible={isBalanceVisible}
+            onPressNewAccount={openAccountModal}
+          />
 
-        {accounts.length === 0 ? (
-          <AccountsEmptyState onCreateAccount={openAccountModal} />
-        ) : (
-          <>
-            {distribution.shouldShowBar && (
-              <AccountsDistributionCard segments={distribution.segments} />
-            )}
+          {accounts.length === 0 ? (
+            <AccountsEmptyState onCreateAccount={openAccountModal} />
+          ) : (
+            <>
+              {distribution.shouldShowBar && (
+                <AccountsDistributionCard segments={distribution.segments} />
+              )}
 
-            <View style={styles.groups}>
-              {groups.map((group) => (
-                <AccountGroupSection
-                  key={group.type}
-                  title={group.title}
-                  accounts={group.accounts}
-                  movementCounts={movementCounts}
-                  isBalanceVisible={isBalanceVisible}
-                  onPressAccount={openAccountDetail}
-                />
-              ))}
-            </View>
-          </>
-        )}
+              <View style={styles.groups}>
+                {groups.map((group) => (
+                  <AccountGroupSection
+                    key={group.type}
+                    title={group.title}
+                    accounts={group.accounts}
+                    movementCounts={movementCounts}
+                    isBalanceVisible={isBalanceVisible}
+                    onPressAccount={openAccountDetail}
+                  />
+                ))}
+              </View>
+            </>
+          )}
+        </ResponsiveContent>
       </ScrollView>
 
       <BottomFade />

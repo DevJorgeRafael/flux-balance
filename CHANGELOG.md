@@ -2,6 +2,32 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.5.7] - 2026-11-26
+
+### Añadido
+
+- Cinco imágenes promocionales para Play Store y su generador reproducible, con el splash corregido como imagen principal.
+
+### Cambiado
+
+- Splash único para claro y oscuro con el degradado del logo y el cerdito animado; fondo nativo alineado con `#1e5ae6`.
+- Versión preparada para Play Store con `versionCode` 10.
+
+## [2.5.6] - 2026-11-25
+
+### Añadido
+
+- Capturas de pantalla de tablet de 10 pulgadas y galería separada en el README.
+
+### Cambiado
+
+- Layout adaptable en tablets y plegables: fondos a todo el ancho, contenido centrado y estadísticas en dos columnas en pantallas expandidas.
+- Versión preparada para Play Store con `versionCode` 10.
+
+### Corregido
+
+- El degradado inferior tapa el contenido detrás de la barra flotante, sin filas cortadas.
+
 ## [2.5.5] - 2026-11-23
 
 ### Cambiado
