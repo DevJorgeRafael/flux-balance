@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, useColorScheme } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -10,7 +11,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import * as SplashScreen from 'expo-splash-screen';
 import { useReduceMotion } from '@/components/ui/theme';
 import { useDashboard } from '@/context/DashboardContext';
-import { SplashTransitionProvider } from '@/context/SplashTransitionContext';
+import { useSplashTransitionStore } from '@/store/splashTransitionStore';
 import { SplashPig, type SplashPigMode } from './SplashPig';
 import {
   HOME_REVEAL_DELAY_MS,
@@ -25,10 +26,7 @@ import {
 const LOGO_READY_TIMEOUT_MS = 75;
 const MAX_HOLD_MS = 2500;
 
-const SPLASH_BACKGROUND = {
-  light: '#1642AF',
-  dark: '#0A0E1A',
-} as const;
+const SPLASH_GRADIENT = ['#1e5ae6', '#1642af', '#0e2a78'] as const;
 
 type Phase = 'hold' | 'exit' | 'done';
 
@@ -54,7 +52,6 @@ function easeInOutCubic(value: number): number {
 
 export function SplashTransition({ children, startupReady }: SplashTransitionProps) {
   const { isLoading } = useDashboard();
-  const systemScheme = useColorScheme();
   const reduceMotion = useReduceMotion();
   const [phase, setPhase] = useState<Phase>('hold');
   const [exitMode, setExitMode] = useState<SplashPigMode>('story');
@@ -71,6 +68,14 @@ export function SplashTransition({ children, startupReady }: SplashTransitionPro
   const revealDelay = isRevealing && exitMode === 'story' ? HOME_REVEAL_DELAY_MS : 0;
   const pigMode: SplashPigMode = phase === 'exit' ? exitMode : 'story';
   const intro = phase === 'hold' && laidOut && !forceReveal && !reduceMotion;
+
+  useEffect(() => {
+    useSplashTransitionStore.getState().setState({
+      isRevealing,
+      isSplashHidden,
+      revealDelay,
+    });
+  }, [isRevealing, isSplashHidden, revealDelay]);
 
   const finish = useCallback(() => {
     setPhase('done');
@@ -193,15 +198,8 @@ export function SplashTransition({ children, startupReady }: SplashTransitionPro
     return { opacity: 0.1 * flash };
   });
 
-  const backgroundColor =
-    systemScheme === 'dark' ? SPLASH_BACKGROUND.dark : SPLASH_BACKGROUND.light;
-
   return (
-    <SplashTransitionProvider
-      isRevealing={isRevealing}
-      isSplashHidden={isSplashHidden}
-      revealDelay={revealDelay}
-    >
+    <>
       {children}
       {phase !== 'done' && (
         <View
@@ -210,10 +208,9 @@ export function SplashTransition({ children, startupReady }: SplashTransitionPro
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants"
         >
-          <Animated.View
-            pointerEvents="none"
-            style={[styles.background, { backgroundColor }, backgroundStyle]}
-          />
+          <Animated.View pointerEvents="none" style={[styles.background, backgroundStyle]}>
+            <LinearGradient colors={[...SPLASH_GRADIENT]} style={StyleSheet.absoluteFill} />
+          </Animated.View>
           <Animated.View pointerEvents="none" style={[styles.flash, flashStyle]} />
           <SplashPig
             progress={progress}
@@ -223,7 +220,7 @@ export function SplashTransition({ children, startupReady }: SplashTransitionPro
           />
         </View>
       )}
-    </SplashTransitionProvider>
+    </>
   );
 }
 

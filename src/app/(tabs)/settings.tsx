@@ -7,11 +7,16 @@ import Languages from 'lucide-react-native/icons/languages';
 import Moon from 'lucide-react-native/icons/moon';
 import Plus from 'lucide-react-native/icons/plus';
 import Sun from 'lucide-react-native/icons/sun';
+import SlidersHorizontal from 'lucide-react-native/icons/sliders-horizontal';
+import Target from 'lucide-react-native/icons/target';
+import Brain from 'lucide-react-native/icons/brain';
+import Calculator from 'lucide-react-native/icons/calculator';
 import TrendingDown from 'lucide-react-native/icons/trending-down';
 import TrendingUp from 'lucide-react-native/icons/trending-up';
 import { useColors, useInsets, useThemeMode } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { BottomFade } from '@/components/ui/BottomFade';
+import { ResponsiveContent } from '@/components/ui/ResponsiveContent';
 import { AboutSection } from '@/components/settings/AboutSection';
 import { DataSection } from '@/components/settings/DataSection';
 import { DeveloperSection } from '@/components/settings/DeveloperSection';
@@ -48,7 +53,57 @@ export default function SettingsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        <ResponsiveContent>
         <Text style={[styles.title, { color: colors.text }]}>{t('settings')}</Text>
+
+        <SectionLabel>{t('system')}</SectionLabel>
+        <Card style={styles.card}>
+          <SettingsRow
+            icon={Coins}
+            label={t('currency')}
+            value={currency}
+            showChevron
+            onPress={() => router.push('/settings/currency')}
+          />
+          <SettingsRow
+            icon={isDark ? Moon : Sun}
+            label={t('theme')}
+            value={mode === 'system' ? t('system') : t(mode)}
+            showChevron
+            onPress={() => router.push('/settings/theme')}
+          />
+          <SettingsRow
+            icon={Languages}
+            label={t('language')}
+            value={languagePreference === 'system' ? t('system') : language.toUpperCase()}
+            showChevron
+            onPress={() => router.push('/settings/language')}
+          />
+          <SettingsRow
+            icon={SlidersHorizontal}
+            label={t('customizeHome')}
+            showChevron
+            isLast
+            onPress={() => router.push('/settings/home')}
+          />
+        </Card>
+
+        <SectionLabel>{t('reminders')}</SectionLabel>
+        <Card style={styles.card}>
+          <SettingsRow
+            icon={Bell}
+            label={t('manageReminders')}
+            value={activeReminderCount > 0 ? String(activeReminderCount) : undefined}
+            showChevron
+            onPress={() => router.push('/reminders')}
+          />
+          <SettingsRow
+            icon={Plus}
+            label={t('newReminder')}
+            isLast
+            onPress={() => router.push('/reminders/form')}
+          />
+        </Card>
 
         <SectionLabel>{t('categories')}</SectionLabel>
         <Card style={styles.card}>
@@ -77,52 +132,39 @@ export default function SettingsScreen() {
           />
         </Card>
 
-        <SectionLabel>{t('reminders')}</SectionLabel>
+        <SectionLabel>{t('planning')}</SectionLabel>
         <Card style={styles.card}>
           <SettingsRow
-            icon={Bell}
-            label={t('manageReminders')}
-            value={activeReminderCount > 0 ? String(activeReminderCount) : undefined}
+            icon={Target}
+            label={t('budgets')}
             showChevron
-            onPress={() => router.push('/reminders')}
+            onPress={() => router.push('/settings/budgets')}
           />
           <SettingsRow
-            icon={Plus}
-            label={t('newReminder')}
-            isLast
-            onPress={() => router.push('/reminders/form')}
-          />
-        </Card>
-
-        <SectionLabel>{t('system')}</SectionLabel>
-        <Card style={styles.card}>
-          <SettingsRow
-            icon={Coins}
-            label={t('currency')}
-            value={currency}
+            icon={Brain}
+            label={t('categoryRules')}
             showChevron
-            onPress={() => router.push('/settings/currency')}
+            onPress={() => router.push('/settings/category-rules')}
           />
           <SettingsRow
-            icon={isDark ? Moon : Sun}
-            label={t('theme')}
-            value={mode === 'system' ? t('system') : t(mode)}
+            icon={Target}
+            label={t('goals')}
             showChevron
-            onPress={() => router.push('/settings/theme')}
+            onPress={() => router.push('/settings/goals')}
           />
           <SettingsRow
-            icon={Languages}
-            label={t('language')}
-            value={languagePreference === 'system' ? t('system') : language.toUpperCase()}
+            icon={Calculator}
+            label={t('simulator')}
             showChevron
             isLast
-            onPress={() => router.push('/settings/language')}
+            onPress={() => router.push('/settings/simulator')}
           />
         </Card>
 
         <DataSection />
         <DeveloperSection />
         <AboutSection />
+        </ResponsiveContent>
       </ScrollView>
 
       <BottomFade />

@@ -4,6 +4,9 @@
 // Esquema SQLite de Flux Balance. Las tablas base se crean en 001_baseline.ts
 // (migración 1); app_settings se crea en 002_app_settings.ts (migración 2);
 // reminders se crea en 003_reminders.ts (migración 3).
+// budgets se crea en 004_budgets.ts (migración 4).
+// category_rules se crea en 005_category_rules.ts (migración 5).
+// goals se crea en 006_goals.ts (migración 6).
 // categories_backup_v1 lo crea migrateCategories.ts durante la migración 1.
 
 Table accounts {
@@ -125,7 +128,55 @@ Table reminders {
     (category_id, type) [name: 'idx_reminders_category']
   }
 
-  Note: '''Creada por la migración 3 (003_reminders.ts). CHECK: type IN ('INCOME', 'EXPENSE'); recurrence IN ('ONCE', 'DAILY', 'WEEKLY', 'MONTHLY'); amount NULL o > 0 y <= 1000000000000; time HH:mm y start_date YYYY-MM-DD con formato y rango básico; is_archived IN (0, 1); is_archived = 1 OR next_run_at IS NOT NULL OR recurrence = 'ONCE'. next_run_at guarda UTC ISO con milisegundos y Z. category_id referencia income_categories.id o expense_categories.id según type, sin FK declarada; se valida en SqliteReminderRepository. Los recordatorios no forman parte del respaldo en esta fase.'''
+  Note: '''Creada por la migración 3 (003_reminders.ts). CHECK: type IN ('INCOME', 'EXPENSE'); recurrence IN ('ONCE', 'DAILY', 'WEEKLY', 'MONTHLY'); amount NULL o > 0 y <= 1000000000000; time HH:mm y start_date YYYY-MM-DD con formato y rango básico; is_archived IN (0, 1); is_archived = 1 OR next_run_at IS NOT NULL OR recurrence = 'ONCE'. next_run_at guarda UTC ISO con milisegundos y Z. category_id referencia income_categories.id o expense_categories.id según type, sin FK declarada; se valida en SqliteReminderRepository. Los recordatorios forman parte del respaldo desde el formato v2.'''
+}
+
+Table budgets {
+  id TEXT [pk, not null]
+  category_id TEXT [not null]
+  type TEXT [not null]
+  year_month TEXT [not null]
+  limit_amount REAL [not null]
+  created_at TEXT [not null]
+  updated_at TEXT [not null]
+
+  indexes {
+    (year_month, type) [name: 'idx_budgets_month']
+  }
+
+  Note: '''Creada por la migración 4 (004_budgets.ts). CHECK: type IN ('INCOME', 'EXPENSE'); length(year_month) = 7 (YYYY-MM); limit_amount > 0. category_id referencia income_categories.id o expense_categories.id según type, sin FK declarada; se valida en SqliteBudgetRepository.'''
+}
+
+Table category_rules {
+  id TEXT [pk, not null]
+  keyword TEXT [not null]
+  category_id TEXT [not null]
+  type TEXT [not null]
+  hits INTEGER [not null, default: 1]
+  created_at TEXT [not null]
+  updated_at TEXT [not null]
+
+  indexes {
+    (type, keyword) [name: 'idx_category_rules_type_keyword']
+  }
+
+  Note: '''Creada por la migración 5 (005_category_rules.ts). CHECK: type IN ('INCOME', 'EXPENSE'); hits >= 1. category_id referencia income_categories.id o expense_categories.id según type, sin FK declarada; la lógica vive en category-rules.ts y SqliteCategoryRuleRepository.'''
+}
+
+Table goals {
+  id TEXT [pk, not null]
+  name TEXT [not null]
+  target_amount REAL [not null]
+  deadline TEXT [not null]
+  account_id TEXT
+  created_at TEXT [not null]
+  updated_at TEXT [not null]
+
+  indexes {
+    deadline [name: 'idx_goals_deadline']
+  }
+
+  Note: '''Creada por la migración 6 (006_goals.ts). CHECK: length(trim(name)) BETWEEN 1 AND 80; target_amount > 0; length(deadline) = 10 (YYYY-MM-DD). account_id referencia accounts.id con ON DELETE SET NULL.'''
 }
 
 Table app_settings {

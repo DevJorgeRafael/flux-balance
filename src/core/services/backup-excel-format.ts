@@ -5,7 +5,7 @@ import { isValidDateString } from './backup-validation-helpers';
 
 export type ExcelLanguage = 'es' | 'en';
 
-export type ExcelSheetKey = 'accounts' | 'categories' | 'movements';
+export type ExcelSheetKey = 'accounts' | 'categories' | 'movements' | 'reminders';
 
 export interface ExcelColumnDefinition<Key extends string = string> {
   key: Key;
@@ -21,6 +21,7 @@ export const EXCEL_SHEETS: Record<
   accounts: { es: 'Cuentas', en: 'Accounts' },
   categories: { es: 'Categorías', en: 'Categories' },
   movements: { es: 'Movimientos', en: 'Movements' },
+  reminders: { es: 'Recordatorios', en: 'Reminders' },
 };
 
 export const ACCOUNT_COLUMNS = [
@@ -59,14 +60,30 @@ export const MOVEMENT_COLUMNS = [
   { key: 'meta', es: '_Meta', en: '_Meta', hidden: true },
 ] as const satisfies readonly ExcelColumnDefinition[];
 
+export const REMINDER_COLUMNS = [
+  { key: 'title', es: 'Título', en: 'Title' },
+  { key: 'type', es: 'Tipo', en: 'Type' },
+  { key: 'account', es: 'Cuenta', en: 'Account' },
+  { key: 'category', es: 'Categoría', en: 'Category' },
+  { key: 'startDate', es: 'Fecha de inicio', en: 'Start date' },
+  { key: 'time', es: 'Hora', en: 'Time' },
+  { key: 'recurrence', es: 'Repetición', en: 'Recurrence' },
+  { key: 'amount', es: 'Monto', en: 'Amount' },
+  { key: 'archived', es: 'Archivado', en: 'Archived' },
+  { key: 'meta', es: '_Meta', en: '_Meta', hidden: true },
+] as const satisfies readonly ExcelColumnDefinition[];
+
 export type AccountColumnKey = (typeof ACCOUNT_COLUMNS)[number]['key'];
 export type CategoryColumnKey = (typeof CATEGORY_COLUMNS)[number]['key'];
 export type MovementColumnKey = (typeof MOVEMENT_COLUMNS)[number]['key'];
 
+export type ReminderColumnKey = (typeof REMINDER_COLUMNS)[number]['key'];
+
 export type ExcelColumnKey =
   | AccountColumnKey
   | CategoryColumnKey
-  | MovementColumnKey;
+  | MovementColumnKey
+  | ReminderColumnKey;
 
 const ACCOUNT_TYPE_LABELS: Record<
   ExcelLanguage,
@@ -101,6 +118,23 @@ const TRANSACTION_TYPE_LABELS: Record<
   es: { INCOME: 'Ingreso', EXPENSE: 'Gasto', TRANSFER: 'Transferencia' },
   en: { INCOME: 'Income', EXPENSE: 'Expense', TRANSFER: 'Transfer' },
 };
+
+const RECURRENCE_LABELS: Record<ExcelLanguage, Record<string, string>> = {
+  es: {
+    ONCE: 'Una vez',
+    DAILY: 'Diaria',
+    WEEKLY: 'Semanal',
+    MONTHLY: 'Mensual',
+  },
+  en: {
+    ONCE: 'Once',
+    DAILY: 'Daily',
+    WEEKLY: 'Weekly',
+    MONTHLY: 'Monthly',
+  },
+};
+
+const RECURRENCE_CODES = ['ONCE', 'DAILY', 'WEEKLY', 'MONTHLY'] as const;
 
 const DEPOSIT_STATUS_LABELS: Record<
   ExcelLanguage,
@@ -248,6 +282,29 @@ export function parseTransactionType(
       ([, label]) => label.toLowerCase() === normalized.toLowerCase()
     );
     if (entry) return entry[0] as TransactionType;
+  }
+  return null;
+}
+
+export function formatRecurrence(
+  recurrence: string,
+  language: ExcelLanguage
+): string {
+  return RECURRENCE_LABELS[language][recurrence] ?? recurrence;
+}
+
+export function parseRecurrence(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  if (!normalized) return null;
+  if ((RECURRENCE_CODES as readonly string[]).includes(normalized)) {
+    return normalized;
+  }
+  for (const language of ['es', 'en'] as const) {
+    const entry = Object.entries(RECURRENCE_LABELS[language]).find(
+      ([, label]) => label.toLowerCase() === normalized.toLowerCase()
+    );
+    if (entry) return entry[0];
   }
   return null;
 }

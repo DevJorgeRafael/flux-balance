@@ -22,10 +22,12 @@ const NOW = '2026-01-02T10:00:00.000Z';
 function createBackup() {
   return {
     format: 'flux-balance-backup',
-    schemaVersion: 1,
+    schemaVersion: 2,
     appVersion: '1.6.0',
     exportedAt: TIMESTAMP,
     currency: 'EUR',
+    reminders: [],
+    preferences: { theme: 'system', language: 'system' },
     accounts: [
       {
         id: 'acc-1',
@@ -210,6 +212,39 @@ test('exporta e importa cuentas, depósitos y splits sin perder metadatos', () =
   assert.deepEqual(result.backup, backup);
   assert.equal(result.preview.accounts, 1);
   assert.equal(result.preview.transactions, 1);
+});
+
+test('exporta e importa recordatorios con sus vínculos', () => {
+  const backup = createBackup();
+  backup.reminders.push({
+    id: 'rem-1',
+    title: 'Alquiler',
+    type: 'EXPENSE',
+    description: 'Pago mensual',
+    amount: 900,
+    accountId: 'acc-1',
+    categoryId: 'cat-exp-1',
+    recurrence: 'MONTHLY',
+    time: '09:00',
+    startDate: '2026-02-01',
+    nextRunAt: '2026-02-01T09:00:00.000Z',
+    isArchived: false,
+    lastNotifiedAt: null,
+    createdAt: TIMESTAMP,
+    updatedAt: TIMESTAMP,
+  });
+
+  const bytes = createExcelWorkbookBytes(backup, 'es');
+  const result = parseExcelWorkbookBytes(bytes, {
+    language: 'es',
+    appVersion: '1.6.0',
+    fallbackCurrency: 'EUR',
+    now: NOW,
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.backup.reminders, backup.reminders);
+  assert.equal(result.preview.reminders, 1);
 });
 
 test('acepta hojas y encabezados en inglés', () => {
@@ -421,7 +456,7 @@ test('rechaza demasiados splits agrupados en Excel', () => {
   assert.equal(error.sheet, 'Movimientos');
 });
 
-test('genera una plantilla vacía con las tres hojas', () => {
+test('genera una plantilla vacía con las cuatro hojas', () => {
   const bytes = createExcelTemplateBytes(
     'es',
     '1.6.0',
@@ -429,7 +464,12 @@ test('genera una plantilla vacía con las tres hojas', () => {
     TIMESTAMP
   );
   const workbook = XLSX.read(bytes, { type: 'array' });
-  assert.deepEqual(workbook.SheetNames, ['Cuentas', 'Categorías', 'Movimientos']);
+  assert.deepEqual(workbook.SheetNames, [
+    'Cuentas',
+    'Categorías',
+    'Movimientos',
+    'Recordatorios',
+  ]);
 
   const result = parseExcelWorkbookBytes(bytes, {
     language: 'es',

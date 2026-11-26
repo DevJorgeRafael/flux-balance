@@ -1,6 +1,26 @@
 # Flux Balance
 
+Versión actual: **v2.5.7**.
+
 Offline-first personal finance app built with Expo, React Native, and local SQLite.
+
+## Screenshots
+
+### Phone
+
+| | | | |
+| --- | --- | --- | --- |
+| <a href="assets/images/screenshots/phone/home.png"><img src="assets/images/screenshots/phone/home.png" width="180" alt="Home"></a> | <a href="assets/images/screenshots/phone/accounts.png"><img src="assets/images/screenshots/phone/accounts.png" width="180" alt="Accounts"></a> | <a href="assets/images/screenshots/phone/stats.png"><img src="assets/images/screenshots/phone/stats.png" width="180" alt="Stats by category"></a> | <a href="assets/images/screenshots/phone/stats-trend.png"><img src="assets/images/screenshots/phone/stats-trend.png" width="180" alt="Daily trend"></a> |
+| <a href="assets/images/screenshots/phone/register-income.png"><img src="assets/images/screenshots/phone/register-income.png" width="180" alt="Register income"></a> | <a href="assets/images/screenshots/phone/register-expense.png"><img src="assets/images/screenshots/phone/register-expense.png" width="180" alt="Register expense"></a> | <a href="assets/images/screenshots/phone/home-dark.png"><img src="assets/images/screenshots/phone/home-dark.png" width="180" alt="Home in dark mode"></a> | <a href="assets/images/screenshots/phone/stats-dark.png"><img src="assets/images/screenshots/phone/stats-dark.png" width="180" alt="Stats in dark mode"></a> |
+
+### 10" tablet
+
+| | | | |
+| --- | --- | --- | --- |
+| <a href="assets/images/screenshots/tablet-10/home.png"><img src="assets/images/screenshots/tablet-10/home.png" width="180" alt="Home on tablet"></a> | <a href="assets/images/screenshots/tablet-10/accounts.png"><img src="assets/images/screenshots/tablet-10/accounts.png" width="180" alt="Accounts on tablet"></a> | <a href="assets/images/screenshots/tablet-10/stats.png"><img src="assets/images/screenshots/tablet-10/stats.png" width="180" alt="Stats by category on tablet"></a> | <a href="assets/images/screenshots/tablet-10/stats-trend.png"><img src="assets/images/screenshots/tablet-10/stats-trend.png" width="180" alt="Daily trend on tablet"></a> |
+| <a href="assets/images/screenshots/tablet-10/stats-balance.png"><img src="assets/images/screenshots/tablet-10/stats-balance.png" width="180" alt="Balance evolution on tablet"></a> | <a href="assets/images/screenshots/tablet-10/register-income.png"><img src="assets/images/screenshots/tablet-10/register-income.png" width="180" alt="Register income on tablet"></a> | <a href="assets/images/screenshots/tablet-10/register-expense.png"><img src="assets/images/screenshots/tablet-10/register-expense.png" width="180" alt="Register expense on tablet"></a> | <a href="assets/images/screenshots/tablet-10/settings.png"><img src="assets/images/screenshots/tablet-10/settings.png" width="180" alt="Settings on tablet"></a> |
+
+Click any screenshot to see it at full size.
 
 ## Requirements
 
@@ -51,7 +71,7 @@ Reminders are stored in local SQLite and scheduled with `expo-notifications`. Th
 - Android 13+ requests notification permission when the first reminder is saved. If permission is denied, the reminder is still saved without alerts.
 - Scheduling is `bestEffort`; battery optimizations may delay notifications.
 - iOS keeps at most 60 scheduled occurrences, so the app fills the nearest ones.
-- Xiaomi, Redmi, and POCO devices show a one-time MIUI setup tip after notifications are enabled.
+- When a reminder is active, a dismissible tip suggests checking the phone's battery-saver restrictions if alerts arrive late.
 - `expo-notifications` contains native code. Validate reminders with a development build or a release APK, not only with Expo Go.
 
 Manual smoke test on a release APK:
@@ -91,6 +111,7 @@ Flux Balance se distribuye bajo la [licencia MIT](LICENSE).
 La app es gratuita y de código abierto. Si te resulta útil, puedes apoyar su desarrollo de forma voluntaria; no desbloquea funciones. El enlace de apoyo se configura en `src/constants/about.ts`.
 
 - [Repositorio](https://github.com/DevJorgeRafael/flux-balance)
+- [Apoyar el proyecto](https://ko-fi.com/devjorgerafael)
 
 ## Política de privacidad
 
@@ -108,4 +129,4 @@ La URL final será:
 
 <https://devjorgerafael.github.io/flux-balance/privacy/>
 
-Cuando esa URL responda, actualiza `PRIVACY_URL` en `src/constants/about.ts` para mostrar el enlace dentro de la app.
+Esa URL ya está configurada en `PRIVACY_URL` en `src/constants/about.ts`, así que el enlace se muestra dentro de la app.

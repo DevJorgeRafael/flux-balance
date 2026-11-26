@@ -26,6 +26,8 @@ export function createBackupFile(
     incomeCategories: data.incomeCategories,
     expenseCategories: data.expenseCategories,
     transactions: data.transactions,
+    reminders: data.reminders,
+    preferences: data.preferences,
   };
 }
 
@@ -39,6 +41,7 @@ export function getBackupPreview(backup: BackupFile): BackupPreview {
     incomeCategories: backup.incomeCategories.length,
     expenseCategories: backup.expenseCategories.length,
     transactions: backup.transactions.length,
+    reminders: backup.reminders.length,
     exportedAt: backup.exportedAt,
     currency: backup.currency,
     appVersion: backup.appVersion,
@@ -47,7 +50,11 @@ export function getBackupPreview(backup: BackupFile): BackupPreview {
 }
 
 export function hasBackupData(backup: BackupFile): boolean {
-  return backup.accounts.length > 0 || backup.transactions.length > 0;
+  return (
+    backup.accounts.length > 0 ||
+    backup.transactions.length > 0 ||
+    backup.reminders.length > 0
+  );
 }
 
 function pad(value: number): string {

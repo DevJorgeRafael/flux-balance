@@ -16,6 +16,7 @@ import Check from 'lucide-react-native/icons/check';
 import Trash from 'lucide-react-native/icons/trash';
 import { appAlert, appConfirm } from '@/components/ui/alert/appAlert';
 import { CategoryColorGrid } from '@/components/categories/CategoryColorGrid';
+import { publishCreatedCategory, useRestoreTransactionModalOnUnmount } from '@/components/settings/categoryHandoff';
 import { bestTextColor, useColors, useInsets } from '@/components/ui/theme';
 import {
   CATEGORY_TYPE_ACCENTS,
@@ -34,6 +35,8 @@ import { SqliteCategoryRepository } from '@/infrastructure/repositories';
 const categoryRepo = new SqliteCategoryRepository();
 
 export default function CategoryFormScreen() {
+  useRestoreTransactionModalOnUnmount();
+
   const rawParams = useLocalSearchParams<{
     type?: string | string[];
     id?: string | string[];
@@ -130,10 +133,6 @@ export default function CategoryFormScreen() {
         ? t('categoryNameDuplicate')
         : null;
 
-  const setDuplicateError = () => {
-    setShowNameError(true);
-  };
-
   const handleSave = async () => {
     if (!type) return;
 
@@ -155,18 +154,19 @@ export default function CategoryFormScreen() {
           type
         );
       } else {
-        await categoryRepo.create({
+        const created = await categoryRepo.create({
           name: normalizedName,
           type,
           color: selectedColor,
         });
+        publishCreatedCategory(created);
       }
 
       router.back();
     } catch (error) {
       console.error('Error saving category:', error);
       if (error instanceof Error && error.message === 'CATEGORY_NAME_DUPLICATE') {
-        setDuplicateError();
+        setShowNameError(true);
       } else {
         void appAlert({
           type: 'error',

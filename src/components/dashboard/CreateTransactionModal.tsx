@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import X from 'lucide-react-native/icons/x';
 import { appAlert } from '@/components/ui/alert/appAlert';
@@ -6,15 +6,23 @@ import { Button } from '@/components/ui/atoms/Button';
 import { BottomSheetModal } from '@/components/ui/BottomSheetModal';
 import { useColors } from '@/components/ui/theme';
 import { TransactionFormFields } from '@/components/transactions/TransactionFormFields';
-import {
-  resolveTransactionFormSelection,
-  type TransactionFormValues,
-} from '@/components/transactions/transactionFormState';
+import { resolveTransactionFormSelection } from '@/components/transactions/transactionFormState';
 import { getCurrencyDecimals } from '@/core/constants/currencies';
 import { MAX_AMOUNT } from '@/core/constants/inputLimits';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { getAmountInputErrorKey } from '@/core/i18n/validationMessages';
+import type { TransactionDraft } from '@/core/services/transactionDraft';
+import {
+  loadTransactionDraft,
+  saveTransactionDraft,
+} from '@/core/services/transactionDraftStorage';
+import { buildTransferDraft, validateTransferInput } from '@/core/services/transfer';
+import {
+  buildLearnedRules,
+  suggestCategory,
+  type CategoryRule,
+} from '@/core/services/category-rules';
 import type { Account } from '@/core/models/account';
 import type { Category } from '@/core/models/category';
 import type {
@@ -22,8 +30,12 @@ import type {
   TransactionType,
 } from '@/core/models/transaction';
 import { parseAmountInput } from '@/core/utils/money';
-import { SqliteTransactionRepository } from '@/infrastructure/repositories';
+import {
+  SqliteCategoryRuleRepository,
+  SqliteTransactionRepository,
+} from '@/infrastructure/repositories';
 import { applyTransactionPrefill } from './transactionPrefill';
+import { useCategoryCreationStore } from '@/store/categoryCreationStore';
 
 interface CreateTransactionModalProps {
   visible: boolean;
@@ -37,6 +49,7 @@ interface CreateTransactionModalProps {
 }
 
 const transactionRepo = new SqliteTransactionRepository();
+const categoryRuleRepo = new SqliteCategoryRuleRepository();
 
 export function CreateTransactionModal({
   visible,
@@ -52,25 +65,102 @@ export function CreateTransactionModal({
   const { currency, format, locale } = useCurrency();
   const { t } = useTranslation();
   const submittingRef = useRef(false);
+  const rulesRef = useRef<CategoryRule[]>([]);
+  const categoryTouchedRef = useRef(false);
 
-  const [formValues, setFormValues] = useState<TransactionFormValues>(() => ({
+  useEffect(() => {
+    if (!visible) return;
+    categoryTouchedRef.current = false;
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) return;
+    categoryRuleRepo
+      .getAll()
+      .then((rules) => {
+        rulesRef.current = rules;
+      })
+      .catch((error) => {
+        console.error('Error cargando reglas de categoría:', error);
+      });
+  }, [visible]);
+
+  const [formValues, setFormValues] = useState<TransactionDraft>(() => ({
     type: initialType,
     amount: '',
     description: '',
     accountId: accounts[0]?.id ?? '',
+    destinationAccountId: accounts[1]?.id ?? '',
     categoryId: '',
   }));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [appliedPrefill, setAppliedPrefill] = useState<TransactionPrefill | null>(
     null
   );
+  const draftLoadedRef = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadTransactionDraft().then((draft) => {
+      if (cancelled) return;
+      if (draft) setFormValues(draft);
+      draftLoadedRef.current = true;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!draftLoadedRef.current || !visible) return;
+    void saveTransactionDraft(formValues);
+  }, [formValues, visible]);
 
   const updateField = (
-    field: 'amount' | 'description' | 'accountId' | 'categoryId',
+    field: 'amount' | 'description' | 'accountId' | 'destinationAccountId' | 'categoryId',
     value: string
   ) => {
     setFormValues((current) => ({ ...current, [field]: value }));
   };
+
+  const handleFieldChange = (
+    field: 'amount' | 'description' | 'accountId' | 'destinationAccountId' | 'categoryId',
+    value: string
+  ) => {
+    if (field === 'categoryId') categoryTouchedRef.current = true;
+    if (field === 'description') {
+      setFormValues((current) => {
+        const suggestion =
+          current.type === 'TRANSFER'
+            ? null
+            : suggestCategory(value, rulesRef.current, current.type);
+        return {
+          ...current,
+          description: value,
+          categoryId:
+            !categoryTouchedRef.current && suggestion
+              ? suggestion.categoryId
+              : current.categoryId,
+        };
+      });
+      return;
+    }
+    updateField(field, value);
+  };
+
+  const applyCreatedCategory = useCallback((categoryId: string) => {
+    categoryTouchedRef.current = true;
+    setFormValues((current) => ({ ...current, categoryId }));
+  }, []);
+
+  useEffect(() => {
+    return useCategoryCreationStore.subscribe((state) => {
+      if (state.result && state.resultRequestId === state.requestId) {
+        const created = useCategoryCreationStore.getState().consumeResult();
+        if (created) applyCreatedCategory(created.id);
+      }
+    });
+  }, [applyCreatedCategory]);
 
   const resetForm = () => {
     setFormValues((current) => ({
@@ -78,12 +168,21 @@ export function CreateTransactionModal({
       amount: '',
       description: '',
       accountId: accounts[0]?.id ?? '',
+      destinationAccountId: accounts[1]?.id ?? '',
       categoryId: '',
     }));
   };
 
   const handleTypeChange = (type: TransactionType) => {
-    setFormValues((current) => ({ ...current, type, categoryId: '' }));
+    setFormValues((current) => ({
+      ...current,
+      type,
+      categoryId: '',
+      destinationAccountId:
+        type === 'TRANSFER' && current.destinationAccountId === current.accountId
+          ? (accounts.find((account) => account.id !== current.accountId)?.id ?? '')
+          : current.destinationAccountId,
+    }));
   };
 
   const applyPrefill = (prefill: TransactionPrefill, type: TransactionType) => {
@@ -161,6 +260,54 @@ export function CreateTransactionModal({
       return;
     }
 
+    if (formValues.type === 'TRANSFER') {
+      const input = {
+        sourceAccountId: accountId,
+        destinationAccountId: formValues.destinationAccountId,
+        amount: amountVal,
+        date: new Date().toISOString(),
+        description: formValues.description,
+      };
+      const validation = validateTransferInput(input);
+      if (validation) {
+        void appAlert({
+          type: 'warning',
+          title: t('error'),
+          message: t(
+            validation === 'invalidAccounts'
+              ? 'transferInvalidAccounts'
+              : 'transferInvalidInput'
+          ),
+          buttons: [{ text: t('accept') }],
+        });
+        return;
+      }
+
+      const transfer = buildTransferDraft(input);
+      if (!transfer.ok) return;
+
+      submittingRef.current = true;
+      try {
+        setIsSubmitting(true);
+        await transactionRepo.createWithSplits(transfer.draft);
+        resetForm();
+        onClose();
+        onTransactionCreated();
+      } catch (err: unknown) {
+        console.error('Error creating transfer:', err);
+        void appAlert({
+          type: 'error',
+          title: t('error'),
+          message: t('createTransactionError'),
+          buttons: [{ text: t('accept') }],
+        });
+      } finally {
+        submittingRef.current = false;
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
     if (formValues.type !== 'INCOME' && formValues.type !== 'EXPENSE') {
       return;
     }
@@ -181,6 +328,21 @@ export function CreateTransactionModal({
           },
         ],
       });
+
+      const learned = buildLearnedRules(
+        formValues.description,
+        selection.activeCategoryId,
+        formValues.type,
+        rulesRef.current
+      );
+      if (learned.length > 0) {
+        await Promise.all(learned.map((draft) => categoryRuleRepo.create(draft))).catch(
+          (error) => {
+            console.error('Error aprendiendo reglas de categoría:', error);
+          }
+        );
+        rulesRef.current = await categoryRuleRepo.getAll().catch(() => rulesRef.current);
+      }
 
       resetForm();
       onClose();
@@ -210,7 +372,9 @@ export function CreateTransactionModal({
         <Text style={[styles.modalHeading, { color: colors.text }]}>
           {formValues.type === 'INCOME'
             ? t('registerIncome')
-            : t('registerExpense')}
+            : formValues.type === 'TRANSFER'
+              ? t('registerTransfer')
+              : t('registerExpense')}
         </Text>
         <Pressable
           onPress={onClose}
@@ -231,7 +395,7 @@ export function CreateTransactionModal({
       >
         <TransactionFormFields
           values={formValues}
-          onChange={updateField}
+          onChange={handleFieldChange}
           onTypeChange={handleTypeChange}
           accounts={accounts}
           categories={categories}

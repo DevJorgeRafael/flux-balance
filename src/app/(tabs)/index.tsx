@@ -2,10 +2,16 @@ import React from 'react';
 import {
   StyleSheet,
   View,
-  ScrollView,
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   heroGradientDark,
@@ -19,9 +25,13 @@ import { DashboardSummaryCard } from '@/components/dashboard/DashboardSummaryCar
 import { AccountCarousel } from '@/components/dashboard/AccountCarousel';
 import { RecentTransactionsList } from '@/components/dashboard/RecentTransactionsList';
 import { UpcomingRemindersCard } from '@/components/reminders/UpcomingRemindersCard';
+import { AnticipationCard } from '@/components/anticipation/AnticipationCard';
+import { GoalProgressCard } from '@/components/goals/GoalProgressCard';
 import { HomeReveal } from '@/components/dashboard/HomeReveal';
 import { BottomFade } from '@/components/ui/BottomFade';
+import { ResponsiveContent } from '@/components/ui/ResponsiveContent';
 import { useDashboard } from '@/context/DashboardContext';
+import { useHomeCards } from '@/store/homeCardsStore';
 import { TAB_BAR_CONTENT_GAP, TAB_BAR_CONTENT_OFFSET } from '@/components/navigation/tabBarLayout';
 
 export default function DashboardScreen() {
@@ -43,8 +53,21 @@ export default function DashboardScreen() {
     handleRefresh,
     openAccountModal,
   } = useDashboard();
+  const { visibility } = useHomeCards();
+  const insightsKey = [
+    visibility.upcomingReminders ? 'r' : '',
+    visibility.anticipations ? 'a' : '',
+    visibility.goals ? 'g' : '',
+  ].join('');
 
   const heroGradient = isDark ? heroGradientDark : heroGradientLight;
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollY.set(event.contentOffset.y);
+  });
+  const statusBarStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.get(), [0, 100], [1, 0], Extrapolation.CLAMP),
+  }));
 
   if (isLoading) {
     return (
@@ -55,8 +78,10 @@ export default function DashboardScreen() {
   }
 
   return (
-    <View style={[styles.screen, { backgroundColor: heroGradient.colors[0] }]}>
-      <ScrollView
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+      <Animated.ScrollView
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -71,20 +96,24 @@ export default function DashboardScreen() {
           dither
           style={[styles.heroZone, { paddingTop: insets.top + 12 }]}
         >
-          <DashboardHero
-            totalBalance={totalBalance}
-            isBalanceVisible={isBalanceVisible}
-            onToggleBalanceVisibility={toggleBalanceVisibility}
-          />
+          <ResponsiveContent>
+            <DashboardHero
+              totalBalance={totalBalance}
+              isBalanceVisible={isBalanceVisible}
+              onToggleBalanceVisibility={toggleBalanceVisibility}
+            />
+          </ResponsiveContent>
         </LinearGradient>
 
         <View style={styles.sheetStack}>
-          <HomeReveal delay={80} style={styles.summaryReveal}>
-            <DashboardSummaryCard
-              monthlyTotals={monthlyTotals}
-              isBalanceVisible={isBalanceVisible}
-            />
-          </HomeReveal>
+          <ResponsiveContent style={styles.summaryReveal}>
+            <HomeReveal delay={80}>
+              <DashboardSummaryCard
+                monthlyTotals={monthlyTotals}
+                isBalanceVisible={isBalanceVisible}
+              />
+            </HomeReveal>
+          </ResponsiveContent>
 
           <View
             style={[
@@ -95,36 +124,43 @@ export default function DashboardScreen() {
               },
             ]}
           >
-            <HomeReveal delay={140}>
-              <AccountCarousel
-                accounts={accounts}
-                totalBalance={totalBalance}
-                isBalanceVisible={isBalanceVisible}
-                selectedFilterAccountId={selectedFilterAccountId}
-                onSelectAccountFilter={handleSelectAccountFilter}
-                onOpenCreateAccountModal={openAccountModal}
-                showNewAccount={false}
-              />
+            <ResponsiveContent>
+              <HomeReveal delay={140}>
+                <AccountCarousel
+                  accounts={accounts}
+                  totalBalance={totalBalance}
+                  isBalanceVisible={isBalanceVisible}
+                  selectedFilterAccountId={selectedFilterAccountId}
+                  onSelectAccountFilter={handleSelectAccountFilter}
+                  onOpenCreateAccountModal={openAccountModal}
+                  showNewAccount={false}
+                />
 
-              <RecentTransactionsList
-                transactions={accounts.length === 0 ? [] : transactions}
-                isBalanceVisible={isBalanceVisible}
-                selectedFilterAccountId={selectedFilterAccountId}
-                selectedAccountName={selectedAccountName}
-                defaultAccountId={accounts[0]?.id}
-              />
+                <RecentTransactionsList
+                  transactions={accounts.length === 0 ? [] : transactions}
+                  isBalanceVisible={isBalanceVisible}
+                  selectedFilterAccountId={selectedFilterAccountId}
+                  selectedAccountName={selectedAccountName}
+                  defaultAccountId={accounts[0]?.id}
+                />
 
-              <UpcomingRemindersCard />
-            </HomeReveal>
+                <View key={insightsKey}>
+                  <UpcomingRemindersCard />
+                  <AnticipationCard />
+                  <GoalProgressCard />
+                </View>
+              </HomeReveal>
+            </ResponsiveContent>
           </View>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
-      <View
+      <Animated.View
         pointerEvents="none"
         style={[
           styles.statusBarOverlay,
           { height: insets.top, backgroundColor: heroGradient.colors[0] },
+          statusBarStyle,
         ]}
       />
 

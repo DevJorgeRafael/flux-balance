@@ -1,9 +1,10 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useColors, withAlpha } from '@/components/ui/theme';
+import { useColors, useInsets, withAlpha } from '@/components/ui/theme';
+import { TAB_BAR_BOTTOM_MARGIN, TAB_BAR_HEIGHT } from '@/components/navigation/tabBarLayout';
 
-const FADE_HEIGHT = 24;
+const GRADIENT_HEIGHT = 48;
 
 /** Color transparente del mismo RGB: evita el velo gris que produce `transparent`. */
 function toTransparent(color: string): string {
@@ -22,18 +23,22 @@ interface BottomFadeProps {
 }
 
 /**
- * Degradado del borde inferior de una pantalla: del color de fondo a
- * transparente, para que el contenido que pasa por debajo de la barra
- * flotante no se vea cortado de golpe.
+ * Degradado del borde inferior de una pantalla: se vuelve opaco antes de
+ * llegar a la barra flotante para que el contenido nunca se vea cortado
+ * detrás de ella.
  */
 export function BottomFade({ color }: BottomFadeProps) {
   const colors = useColors();
+  const insets = useInsets();
   const baseColor = color ?? colors.background;
+  const barZone = TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN + insets.bottom;
+  const totalHeight = barZone + GRADIENT_HEIGHT;
 
   return (
-    <View pointerEvents="none" style={styles.fade}>
+    <View pointerEvents="none" style={[styles.fade, { height: totalHeight }]}>
       <LinearGradient
-        colors={[toTransparent(baseColor), baseColor]}
+        colors={[toTransparent(baseColor), baseColor, baseColor]}
+        locations={[0, GRADIENT_HEIGHT / totalHeight, 1]}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
         style={styles.gradient}
@@ -48,7 +53,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    height: FADE_HEIGHT,
     zIndex: 5,
   },
   gradient: {

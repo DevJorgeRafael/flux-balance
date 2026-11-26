@@ -19,7 +19,13 @@ import Plus from 'lucide-react-native/icons/plus';
 import type { LucideIcon } from 'lucide-react-native';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useColors, useThemeMode, withAlpha } from '@/components/ui/theme';
+import {
+  CONTENT_MAX_WIDTH,
+  useColors,
+  useResponsiveLayout,
+  useThemeMode,
+  withAlpha,
+} from '@/components/ui/theme';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useDashboard } from '@/context/DashboardContext';
 import { APP_TABS } from './tabConfig';
@@ -118,6 +124,7 @@ function TabButton({
 export function AppTabBar({ state, navigateToTab }: BottomTabBarProps) {
   const colors = useColors();
   const { isDark } = useThemeMode();
+  const { isExpanded } = useResponsiveLayout();
   const { t } = useTranslation();
   const { openTransactionModal } = useDashboard();
   const insets = useSafeAreaInsets();
@@ -166,6 +173,7 @@ export function AppTabBar({ state, navigateToTab }: BottomTabBarProps) {
         style={[
           styles.row,
           { paddingBottom: insets.bottom + TAB_BAR_BOTTOM_MARGIN },
+          isExpanded && styles.rowExpanded,
           animatedRowStyle,
         ]}
       >
@@ -222,12 +230,17 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 20,
     elevation: 20,
+    alignItems: 'center',
   },
   row: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: TAB_BAR_ACTION_GAP,
     paddingHorizontal: TAB_BAR_HORIZONTAL_MARGIN,
+  },
+  rowExpanded: {
+    width: '100%',
+    maxWidth: CONTENT_MAX_WIDTH,
   },
   bar: {
     flex: 1,

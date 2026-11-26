@@ -55,3 +55,11 @@ export {
 export type { UIProviderProps, ThemeMode } from './UIProvider';
 export { ThemeTransitionProvider, useThemeTransition } from './ThemeTransition';
 export { useReduceMotion } from './useReduceMotion';
+export {
+  CONTENT_MAX_WIDTH,
+  EXPANDED_MIN_WIDTH,
+  MEDIUM_MIN_WIDTH,
+  getBreakpoint,
+  useResponsiveLayout,
+} from './responsive';
+export type { Breakpoint, ResponsiveLayout } from './responsive';

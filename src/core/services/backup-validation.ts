@@ -26,6 +26,10 @@ import {
   validateCategoryList,
   validateTransaction,
 } from './backup-validation-entities';
+import {
+  validateBackupPreferences,
+  validateReminderList,
+} from './backup-validation-reminders';
 
 function fail(code: BackupValidationErrorCode): BackupParseResult {
   return { ok: false, errors: [{ code }] };
@@ -77,6 +81,8 @@ export function validateBackup(raw: unknown): BackupParseResult {
     'transactions',
     errors
   );
+  let reminders = requireArray(value, 'reminders', 'reminders', errors);
+  const preferences = value.preferences;
 
   let limitExceeded = false;
   if (
@@ -122,9 +128,18 @@ export function validateBackup(raw: unknown): BackupParseResult {
     transactions = null;
     limitExceeded = true;
   }
+  if (
+    reminders &&
+    !checkArrayLimit(errors, 'reminders', reminders, BACKUP_LIMITS.reminders)
+  ) {
+    reminders = null;
+    limitExceeded = true;
+  }
   if (limitExceeded) {
     return { ok: false, errors };
   }
+
+  validateBackupPreferences(preferences, errors);
 
   const currencyDecimals = getCurrencyDecimals(currency);
 
@@ -176,6 +191,12 @@ export function validateBackup(raw: unknown): BackupParseResult {
       splitIds,
       currencyDecimals
     );
+  });
+
+  validateReminderList(reminders, errors, {
+    accountIds,
+    incomeCategoryIds,
+    expenseCategoryIds,
   });
 
   if (errors.length > 0) {

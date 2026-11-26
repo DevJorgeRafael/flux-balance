@@ -1,7 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { isHexColor, useColors, useInsets } from '@/components/ui/theme';
+import {
+  isHexColor,
+  useColors,
+  useInsets,
+  useResponsiveLayout,
+} from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
 import { useTranslation } from '@/core/i18n/useTranslation';
 import { useDashboard } from '@/context/DashboardContext';
@@ -22,6 +27,7 @@ import { BalanceEvolutionSummary } from '@/components/stats/BalanceEvolutionSumm
 import { StatsEmptyState } from '@/components/stats/StatsEmptyState';
 import { AccountsEmptyState } from '@/components/accounts/AccountsEmptyState';
 import { BottomFade } from '@/components/ui/BottomFade';
+import { ResponsiveContent } from '@/components/ui/ResponsiveContent';
 import { TAB_BAR_CONTENT_GAP, TAB_BAR_CONTENT_OFFSET } from '@/components/navigation/tabBarLayout';
 
 const transactionRepo = new SqliteTransactionRepository();
@@ -43,6 +49,7 @@ function formatMonthLabel(date: Date, language: 'es' | 'en') {
 export default function StatsScreen() {
   const colors = useColors();
   const insets = useInsets();
+  const { isExpanded } = useResponsiveLayout();
   const { t, language } = useTranslation();
   const {
     accounts,
@@ -239,6 +246,7 @@ export default function StatsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        <ResponsiveContent>
         <StatsMonthSelector
           monthLabel={monthLabel}
           previousLabel={t('previousMonth')}
@@ -283,10 +291,10 @@ export default function StatsScreen() {
         ) : activeBreakdown.slices.length === 0 ? (
           <StatsEmptyState type={selectedType} />
         ) : (
-          <>
-            <Card style={styles.chartCard}>
+          <View style={[styles.breakdown, isExpanded && styles.breakdownExpanded]}>
+            <Card style={[styles.chartCard, isExpanded && styles.chartCardExpanded]}>
               {activeView === 'categories' ? (
-                <View style={styles.donutWrap}>
+                <View style={[styles.donutWrap, isExpanded && styles.donutWrapExpanded]}>
                   <CategoryDonut
                     slices={donutSlices}
                     total={activeBreakdown.total}
@@ -304,21 +312,24 @@ export default function StatsScreen() {
               )}
             </Card>
 
-            {activeView === 'categories' ? (
-              <CategoryBreakdownList
-                items={donutSlices}
-                selectedId={activeSelectedSliceId}
-                onSelect={handleSelectSlice}
-              />
-            ) : (
-              <DailyTrendSummary
-                stats={dailyStats}
-                type={selectedType}
-                month={selectedMonth}
-              />
-            )}
-          </>
+            <View style={isExpanded && styles.breakdownSide}>
+              {activeView === 'categories' ? (
+                <CategoryBreakdownList
+                  items={donutSlices}
+                  selectedId={activeSelectedSliceId}
+                  onSelect={handleSelectSlice}
+                />
+              ) : (
+                <DailyTrendSummary
+                  stats={dailyStats}
+                  type={selectedType}
+                  month={selectedMonth}
+                />
+              )}
+            </View>
+          </View>
         )}
+        </ResponsiveContent>
       </ScrollView>
 
       <BottomFade />
@@ -344,7 +355,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     marginBottom: 20,
   },
+  breakdown: {
+    gap: 20,
+  },
+  breakdownExpanded: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  chartCardExpanded: {
+    flex: 1,
+    marginBottom: 0,
+    alignSelf: 'stretch',
+  },
+  breakdownSide: {
+    flex: 1,
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+  },
   donutWrap: {
     alignItems: 'center',
+  },
+  donutWrapExpanded: {
+    flex: 1,
+    justifyContent: 'center',
   },
 });

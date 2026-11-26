@@ -169,8 +169,8 @@ export const darkPalette: ThemeColors = {
   successText: '#34d399',
 
   // Rojo coral vibrante
-  error: '#f43f5e',
-  onError: '#0A0E1A',
+  error: '#be123c',
+  onError: '#fff1f2',
   errorSoft: 'rgba(244, 63, 94, 0.16)',
   errorText: '#fb7185',
 

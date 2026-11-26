@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  RECENT_TRANSACTIONS_EXPANDED_LIMIT,
   selectRecentTransactions,
   selectVisibleRecentTransactions,
 } from './recent-transactions.ts';
@@ -99,6 +100,20 @@ test('muestra 5 movimientos y cuenta los ocultos', () => {
   const expanded = selectVisibleRecentTransactions(all, { expanded: true });
   assert.equal(expanded.transactions.length, 7);
   assert.equal(expanded.hiddenCount, 0);
+});
+
+test('expande como máximo 10 movimientos y sigue contando los ocultos', () => {
+  const all = Array.from({ length: 25 }, (_, index) =>
+    transaction(`tx-${index}`, `2026-11-${String(20 - (index % 20)).padStart(2, '0')}`)
+  );
+
+  const collapsed = selectVisibleRecentTransactions(all);
+  assert.equal(collapsed.hiddenCount, 20);
+
+  const expanded = selectVisibleRecentTransactions(all, { expanded: true });
+  assert.equal(RECENT_TRANSACTIONS_EXPANDED_LIMIT, 10);
+  assert.equal(expanded.transactions.length, 10);
+  assert.equal(expanded.hiddenCount, 15);
 });
 
 test('respeta un límite personalizado y tolera valores inválidos', () => {

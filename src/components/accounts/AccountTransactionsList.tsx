@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, Pressable } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, View, Text, Pressable } from 'react-native';
 import { router } from 'expo-router';
+import ListFilter from 'lucide-react-native/icons/list-filter';
 import Receipt from 'lucide-react-native/icons/receipt';
 import Plus from 'lucide-react-native/icons/plus';
 import Minus from 'lucide-react-native/icons/minus';
+import X from 'lucide-react-native/icons/x';
 import { Transaction } from '@/core/models/transaction';
-import { useColors } from '@/components/ui/theme';
+import { spacing, useColors } from '@/components/ui/theme';
 import { Card } from '@/components/ui/Card';
+import { DateRangeFilterSheet } from '@/components/accounts/DateRangeFilterSheet';
+import type { DateRange } from '@/components/ui/organisms/DatePicker';
 import { useCurrency } from '@/core/currency/useCurrency';
 import { useTranslation } from '@/core/i18n/useTranslation';
+import {
+  filterTransactionsByDateRange,
+  formatDateRangeLabel,
+} from '@/core/services/transaction-date-filter';
 
 interface AccountTransactionsListProps {
   transactions: Transaction[];
@@ -16,20 +24,40 @@ interface AccountTransactionsListProps {
 
 type FilterType = 'ALL' | 'INCOME' | 'EXPENSE';
 
+const PAGE_SIZE = 20;
+
 export function AccountTransactionsList({ transactions }: AccountTransactionsListProps) {
   const [filterType, setFilterType] = useState<FilterType>('ALL');
+  const [dateRange, setDateRange] = useState<DateRange | null>(null);
+  const [isDateSheetVisible, setIsDateSheetVisible] = useState(false);
+  const [dateSheetKey, setDateSheetKey] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const colors = useColors();
   const { format, locale } = useCurrency();
   const { t } = useTranslation();
 
-  const filteredTransactions = transactions.filter((tx) => {
+  const dateFilteredTransactions = useMemo(
+    () => filterTransactionsByDateRange(transactions, dateRange),
+    [transactions, dateRange]
+  );
+  const filteredTransactions = dateFilteredTransactions.filter((tx) => {
     if (filterType === 'ALL') return true;
     return tx.type === filterType;
   });
-  const incomeCount = transactions.filter((tx) => tx.type === 'INCOME').length;
-  const expenseCount = transactions.filter((tx) => tx.type === 'EXPENSE').length;
+  const incomeCount = dateFilteredTransactions.filter((tx) => tx.type === 'INCOME').length;
+  const expenseCount = dateFilteredTransactions.filter((tx) => tx.type === 'EXPENSE').length;
+  const dateLabel = formatDateRangeLabel(dateRange, locale);
+  const filterKey = `${filterType}|${dateRange?.start.getTime() ?? ''}|${dateRange?.end?.getTime() ?? ''}|${transactions.length}`;
+  const [previousFilterKey, setPreviousFilterKey] = useState(filterKey);
+
+  if (filterKey !== previousFilterKey) {
+    setPreviousFilterKey(filterKey);
+    setVisibleCount(PAGE_SIZE);
+  }
+
+  const pagedTransactions = filteredTransactions.slice(0, visibleCount);
   const filters: { type: FilterType; label: string; count: number }[] = [
-    { type: 'ALL', label: t('allMovements'), count: transactions.length },
+    { type: 'ALL', label: t('allMovements'), count: dateFilteredTransactions.length },
     { type: 'INCOME', label: t('income'), count: incomeCount },
     { type: 'EXPENSE', label: t('expense'), count: expenseCount },
   ];
@@ -47,7 +75,13 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
         </Text>
       </View>
 
-      <View style={styles.filterPillsRow}>
+      <ScrollView
+        horizontal
+        nestedScrollEnabled
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterPillsScroll}
+        contentContainerStyle={styles.filterPillsRow}
+      >
         {filters.map(({ type, label, count }) => {
           const selected = filterType === type;
           const accent =
@@ -92,7 +126,57 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
             </Pressable>
           );
         })}
-      </View>
+
+        <Pressable
+          style={({ pressed }) => [
+            styles.filterPillBtn,
+            styles.filterPillWithIcon,
+            {
+              backgroundColor: dateRange ? colors.primarySoft : colors.surface,
+              borderColor: dateRange ? colors.primaryText : colors.border,
+            },
+            pressed && styles.pressed,
+          ]}
+          onPress={() => {
+            setDateSheetKey((current) => current + 1);
+            setIsDateSheetVisible(true);
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={t('filterByDate')}
+          hitSlop={2}
+        >
+          <ListFilter
+            size={15}
+            color={dateRange ? colors.primaryText : colors.textLight}
+            strokeWidth={2.2}
+          />
+          <Text
+            style={[
+              styles.filterPillText,
+              { color: dateRange ? colors.primaryText : colors.textLight },
+            ]}
+            numberOfLines={1}
+          >
+            {dateLabel ?? t('filterByDate')}
+          </Text>
+        </Pressable>
+
+        {dateRange ? (
+          <Pressable
+            style={({ pressed }) => [
+              styles.dateClearButton,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+              pressed && styles.pressed,
+            ]}
+            onPress={() => setDateRange(null)}
+            accessibilityRole="button"
+            accessibilityLabel={t('clearDateFilter')}
+            hitSlop={2}
+          >
+            <X size={15} color={colors.textLight} strokeWidth={2.2} />
+          </Pressable>
+        ) : null}
+      </ScrollView>
 
       {/* Lista de Movimientos */}
       {filteredTransactions.length === 0 ? (
@@ -102,12 +186,16 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
           </View>
           <Text style={[styles.emptyHeading, { color: colors.text }]}>{t('noMovements')}</Text>
           <Text style={[styles.emptySubtext, { color: colors.textLight }]}>
-            {filterType === 'ALL' ? t('noAccountMovements') : t('noFilteredMovements')}
+            {dateRange
+              ? t('noDateRangeMovements')
+              : filterType === 'ALL'
+                ? t('noAccountMovements')
+                : t('noFilteredMovements')}
           </Text>
         </Card>
       ) : (
         <View style={styles.transactionsList}>
-          {filteredTransactions.map((tx) => {
+          {pagedTransactions.map((tx) => {
             const isIncome = tx.type === 'INCOME';
             const dateFormatted = new Date(tx.date).toLocaleDateString(locale, {
               weekday: 'short',
@@ -162,6 +250,34 @@ export function AccountTransactionsList({ transactions }: AccountTransactionsLis
           })}
         </View>
       )}
+
+      {filteredTransactions.length > visibleCount ? (
+        <Pressable
+          onPress={() => setVisibleCount((count) => count + PAGE_SIZE)}
+          accessibilityRole="button"
+          accessibilityLabel={t('moreMovements')}
+          style={({ pressed }) => [
+            styles.moreButton,
+            { backgroundColor: colors.primarySoft },
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={[styles.moreButtonText, { color: colors.primaryText }]}>
+            {t('moreMovements')}
+          </Text>
+        </Pressable>
+      ) : null}
+
+      <DateRangeFilterSheet
+        key={dateSheetKey}
+        visible={isDateSheetVisible}
+        range={dateRange}
+        onClose={() => setIsDateSheetVisible(false)}
+        onApply={(range) => {
+          setDateRange(range);
+          setIsDateSheetVisible(false);
+        }}
+      />
     </>
   );
 }
@@ -182,19 +298,37 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  dateClearButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterPillsScroll: {
+    flexGrow: 0,
+    marginBottom: 16,
+  },
   filterPillsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: 8,
-    marginBottom: 16,
+    paddingRight: 24,
   },
   filterPillBtn: {
     minHeight: 44,
+    flexShrink: 0,
     justifyContent: 'center',
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 20,
     borderWidth: 1,
+  },
+  filterPillWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   filterPillText: {
     fontSize: 12,
@@ -244,6 +378,17 @@ const styles = StyleSheet.create({
   },
   transactionValue: {
     fontSize: 15,
+    fontWeight: '800',
+  },
+  moreButton: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    marginTop: spacing.md,
+  },
+  moreButtonText: {
+    fontSize: 13,
     fontWeight: '800',
   },
   pressed: {

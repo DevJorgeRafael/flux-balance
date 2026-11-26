@@ -18,7 +18,7 @@ export const SUPPORT_URL = 'https://ko-fi.com/devjorgerafael';
 export const PRIVACY_URL = 'https://devjorgerafael.github.io/flux-balance/privacy/';
 
 /** Interruptor general de la sección de apoyo. */
-export const SHOW_DONATION = false;
+export const SHOW_DONATION = true;
 
 /** El apoyo solo se muestra con la donación activa y una URL configurada. */
 export function isSupportVisible(showDonation: boolean, supportUrl: string): boolean {

@@ -23,7 +23,6 @@ export function DashboardSummaryCard({
     <Card variant="raised" style={styles.card}>
       <View style={styles.metric}>
         <View style={styles.metricLabelRow}>
-          <View style={[styles.metricDot, { backgroundColor: colors.success }]} />
           <Text style={[styles.metricLabel, { color: colors.textLight }]} numberOfLines={1}>
             {t('income')}
           </Text>
@@ -43,13 +42,12 @@ export function DashboardSummaryCard({
 
       <View style={styles.metric}>
         <View style={styles.metricLabelRow}>
-          <View style={[styles.metricDot, { backgroundColor: colors.error }]} />
           <Text style={[styles.metricLabel, { color: colors.textLight }]} numberOfLines={1}>
             {t('expense')}
           </Text>
         </View>
         <Text
-          style={[styles.metricValue, { color: colors.errorText }]}
+          style={[styles.metricValue, { color: colors.text }]}
           numberOfLines={1}
           adjustsFontSizeToFit
         >
@@ -63,7 +61,6 @@ export function DashboardSummaryCard({
 
       <View style={styles.metric}>
         <View style={styles.metricLabelRow}>
-          <View style={[styles.metricDot, { backgroundColor: colors.primary }]} />
           <Text style={[styles.metricLabel, { color: colors.textLight }]} numberOfLines={1}>
             {t('net')}
           </Text>
@@ -106,11 +103,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-  },
-  metricDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
   },
   metricLabel: {
     fontSize: 11,

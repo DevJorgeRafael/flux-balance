@@ -15,6 +15,7 @@ export const BACKUP_LIMITS = {
   transactions: 10000,
   depositsPerAccount: 100,
   splitsPerTransaction: 100,
+  reminders: 500,
   excelRowsPerSheet: 100000,
 } as const;
 

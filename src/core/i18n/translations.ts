@@ -1,24 +1,26 @@
 import { alertTranslations } from './alert-translations';
+import { anticipationTranslations } from './anticipation-translations';
 import { backupExcelTranslations } from './backup-excel-translations';
+import { categoryRulesTranslations } from './category-rules-translations';
 import { dataTransferTranslations } from './data-transfer-translations';
-import { homeTranslations } from './home-translations';
+import { financialTwinTranslations } from './financial-twin-translations';
+import { helpTranslations } from './help-translations'; import { homeTranslations } from './home-translations';
 import { movementTranslations } from './movement-translations';
 import { reminderTranslations } from './reminder-translations';
 import { startupTranslations } from './startup-translations';
 import { statsTranslations } from './stats-translations';
 import { transactionTranslations } from './transaction-translations';
+import { transferTranslations } from './transfer-translations';
 import { validationTranslations } from './validation-translations';
 
 export type Language = 'es' | 'en';
 
 export const translations = {
   es: {
-    ...alertTranslations.es, ...movementTranslations.es, ...transactionTranslations.es,
-    ...dataTransferTranslations.es,
-    ...backupExcelTranslations.es,
-    ...validationTranslations.es,
-    ...startupTranslations.es, ...statsTranslations.es, ...homeTranslations.es,
-    ...reminderTranslations.es,
+    ...alertTranslations.es, ...anticipationTranslations.es, ...movementTranslations.es, ...transactionTranslations.es,
+    ...dataTransferTranslations.es, ...backupExcelTranslations.es, ...transferTranslations.es, ...categoryRulesTranslations.es, ...financialTwinTranslations.es,
+    ...validationTranslations.es, ...startupTranslations.es, ...statsTranslations.es, ...homeTranslations.es,
+    ...reminderTranslations.es, ...helpTranslations.es,
     home: 'Inicio',
     accountsTab: 'Cuentas',
     stats: 'Stats',
@@ -135,10 +137,10 @@ export const translations = {
     backupSummaryAccounts: 'Cuentas',
     backupSummaryCategories: 'Categorías',
     backupSummaryCategoryBreakdown: '{{income}} de ingresos · {{expense}} de gastos',
-    backupSummaryTransactions: 'Movimientos',
+    backupSummaryTransactions: 'Movimientos', backupSummaryReminders: 'Recordatorios',
     backupSummaryExportedAt: 'Exportado',
     backupSummaryCurrency: 'Moneda',
-    backupImportWarning: 'Se reemplazarán todas las cuentas, categorías, movimientos y depósitos actuales. La moneda de visualización también cambiará a la del respaldo. Esta acción no se puede deshacer.',
+    backupImportWarning: 'Se reemplazarán todas las cuentas, categorías, movimientos, depósitos, recordatorios y preferencias actuales. La moneda de visualización también cambiará a la del respaldo. Esta acción no se puede deshacer.',
     backupImportReplace: 'Reemplazar datos',
     backupImportErrorsTitle: 'El respaldo tiene errores',
     backupImportErrorsMessage: 'No se importó nada. Corrige el archivo o elige otro respaldo.',
@@ -156,7 +158,6 @@ export const translations = {
     account: 'Cuenta',
     fixedTerm: 'Plazo fijo',
     flexible: 'Flexible',
-    activeDailyYield: 'Rendimiento diario activo',
     due: 'Vence',
     newAccountTitle: 'Nueva cuenta',
     accountType: 'Tipo de cuenta',
@@ -231,12 +232,10 @@ export const translations = {
     months: 'meses',
   },
   en: {
-    ...alertTranslations.en, ...movementTranslations.en, ...transactionTranslations.en,
-    ...dataTransferTranslations.en,
-    ...backupExcelTranslations.en,
-    ...validationTranslations.en,
-    ...startupTranslations.en, ...statsTranslations.en, ...homeTranslations.en,
-    ...reminderTranslations.en,
+    ...alertTranslations.en, ...anticipationTranslations.en, ...movementTranslations.en, ...transactionTranslations.en,
+    ...dataTransferTranslations.en, ...backupExcelTranslations.en, ...transferTranslations.en, ...categoryRulesTranslations.en, ...financialTwinTranslations.en,
+    ...validationTranslations.en, ...startupTranslations.en, ...statsTranslations.en, ...homeTranslations.en,
+    ...reminderTranslations.en, ...helpTranslations.en,
     home: 'Home',
     accountsTab: 'Accounts',
     stats: 'Stats',
@@ -353,10 +352,10 @@ export const translations = {
     backupSummaryAccounts: 'Accounts',
     backupSummaryCategories: 'Categories',
     backupSummaryCategoryBreakdown: '{{income}} income · {{expense}} expense',
-    backupSummaryTransactions: 'Movements',
+    backupSummaryTransactions: 'Movements', backupSummaryReminders: 'Reminders',
     backupSummaryExportedAt: 'Exported',
     backupSummaryCurrency: 'Currency',
-    backupImportWarning: 'All current accounts, categories, movements, and deposits will be replaced. The display currency will also change to the backup currency. This action cannot be undone.',
+    backupImportWarning: 'All current accounts, categories, movements, deposits, reminders, and preferences will be replaced. The display currency will also change to the backup currency. This action cannot be undone.',
     backupImportReplace: 'Replace data',
     backupImportErrorsTitle: 'The backup has errors',
     backupImportErrorsMessage: 'Nothing was imported. Fix the file or choose another backup.',
@@ -374,7 +373,6 @@ export const translations = {
     account: 'Account',
     fixedTerm: 'Fixed term',
     flexible: 'Flexible',
-    activeDailyYield: 'Active daily yield',
     due: 'Due',
     newAccountTitle: 'New account',
     accountType: 'Account type',

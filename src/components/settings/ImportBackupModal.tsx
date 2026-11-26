@@ -161,7 +161,12 @@ export function ImportBackupModal({
           },
         ]}
       >
-        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={handleClose}
+          accessible={false}
+          accessibilityElementsHidden
+        />
 
         <View style={styles.dialogWrapper} pointerEvents="box-none">
           <ScrollView
@@ -251,6 +256,10 @@ export function ImportBackupModal({
                     <SummaryRow
                       label={t('backupSummaryTransactions')}
                       value={String(preview?.transactions ?? 0)}
+                    />
+                    <SummaryRow
+                      label={t('backupSummaryReminders')}
+                      value={String(preview?.reminders ?? 0)}
                     />
                     <SummaryRow
                       label={t('backupSummaryExportedAt')}

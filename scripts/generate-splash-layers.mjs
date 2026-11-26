@@ -19,6 +19,114 @@ const SLOT = { x: 455.5, y: 409 };
 const BACK_LINE_PATH =
   'M 330 357 C 380 350 430 341 480 344 C 530 347 580 355 630 372';
 const BACK_LINE_WIDTH = 29;
+const OUTLINE_SMOOTH = { left: 200, innerLeft: 250, right: 660, bottom: 230, degree: 6 };
+
+function polynomialFit(values, left, right, degree) {
+  const size = degree + 1;
+  const matrix = Array.from({ length: size }, () => Array(size).fill(0));
+  const vector = Array(size).fill(0);
+
+  for (let x = left; x <= right; x += 1) {
+    if (values[x] < 0) continue;
+    const u = (x - left) / (right - left);
+    for (let i = 0; i < size; i += 1) {
+      const ui = u ** i;
+      vector[i] += values[x] * ui;
+      for (let j = 0; j < size; j += 1) matrix[i][j] += ui * u ** j;
+    }
+  }
+
+  for (let column = 0; column < size; column += 1) {
+    let pivot = column;
+    for (let row = column + 1; row < size; row += 1) {
+      if (Math.abs(matrix[row][column]) > Math.abs(matrix[pivot][column])) pivot = row;
+    }
+    [matrix[column], matrix[pivot]] = [matrix[pivot], matrix[column]];
+    [vector[column], vector[pivot]] = [vector[pivot], vector[column]];
+
+    const divisor = matrix[column][column];
+    if (divisor === 0) continue;
+    for (let c = column; c < size; c += 1) matrix[column][c] /= divisor;
+    vector[column] /= divisor;
+
+    for (let row = 0; row < size; row += 1) {
+      if (row === column) continue;
+      const factor = matrix[row][column];
+      for (let c = column; c < size; c += 1) matrix[row][c] -= factor * matrix[column][c];
+      vector[row] -= factor * vector[column];
+    }
+  }
+
+  return (x) => {
+    const u = (x - left) / (right - left);
+    return vector.reduce((sum, coefficient, i) => sum + coefficient * u ** i, 0);
+  };
+}
+
+function smoothTopOutline(rgba, width, height) {
+  const { left, innerLeft, right, bottom, degree } = OUTLINE_SMOOTH;
+  const lastX = Math.min(right, width - 1);
+  const lastY = Math.min(bottom, height - 1);
+  const alphaAt = (x, y) => rgba[(y * width + x) * 4 + 3];
+  const outer = new Int16Array(width).fill(-1);
+  const inner = new Int16Array(width).fill(-1);
+
+  for (let x = left; x <= lastX; x += 1) {
+    let first = -1;
+    for (let y = 0; y < lastY; y += 1) {
+      if (alphaAt(x, y) >= 128) {
+        first = y;
+        break;
+      }
+    }
+    if (first < 0) continue;
+
+    let last = first;
+    for (let y = first + 1; y < lastY; y += 1) {
+      if (alphaAt(x, y) >= 128) last = y;
+      else if (y - last > 2) break;
+    }
+    outer[x] = first;
+    inner[x] = last;
+  }
+
+  const topCurve = polynomialFit(outer, left, lastX, degree);
+  const bottomCurve = polynomialFit(inner, innerLeft, lastX, degree);
+  const smoothed = Buffer.from(rgba);
+  for (let x = left; x <= lastX; x += 1) {
+    if (outer[x] < 0) continue;
+    const top = topCurve(x);
+    const from = Math.max(0, Math.floor(top) - 4);
+
+    if (x < innerLeft) {
+      const to = Math.min(height - 1, Math.ceil(top) + 4);
+      for (let y = from; y <= to; y += 1) {
+        smoothed[(y * width + x) * 4 + 3] = Math.max(
+          0,
+          Math.min(255, Math.round(255 * (0.5 + 0.5 * Math.tanh((y - top) / 0.5))))
+        );
+      }
+      for (let y = to + 1; y < height; y += 1) {
+        if (alphaAt(x, y) > 0) break;
+        smoothed[(y * width + x) * 4 + 3] = 255;
+      }
+      continue;
+    }
+
+    const bottomEdge = bottomCurve(x);
+    const to = Math.min(height - 1, Math.ceil(bottomEdge) + 4);
+    for (let y = from; y <= to; y += 1) {
+      const topAlpha = 255 * (0.5 + 0.5 * Math.tanh((y - top) / 0.5));
+      const bottomAlpha = 255 * (0.5 + 0.5 * Math.tanh((bottomEdge - y) / 0.5));
+      smoothed[(y * width + x) * 4 + 3] = Math.max(
+        0,
+        Math.min(255, Math.round(Math.min(topAlpha, bottomAlpha)))
+      );
+    }
+  }
+
+  return smoothed;
+}
 
 const { data, info } = await sharp(sourcePath)
   .ensureAlpha()
@@ -98,8 +206,17 @@ const bodyCrop = {
 
 await mkdir(assetsDir, { recursive: true });
 
-await sharp(bodyPatched)
+const bodyRaw = await sharp(bodyPatched)
   .extract(bodyCrop)
+  .ensureAlpha()
+  .raw()
+  .toBuffer({ resolveWithObject: true });
+
+const smoothedBody = smoothTopOutline(bodyRaw.data, bodyRaw.info.width, bodyRaw.info.height);
+
+await sharp(smoothedBody, {
+  raw: { width: bodyRaw.info.width, height: bodyRaw.info.height, channels: 4 },
+})
   .png({ compressionLevel: 9 })
   .toFile(bodyPath);
 

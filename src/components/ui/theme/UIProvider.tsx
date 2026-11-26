@@ -82,7 +82,7 @@ export function UIProvider({
   icons = renderDefaultIcon,
   insets = zeroInsets,
   labels: labelOverrides,
-  allowFontScaling = false,
+  allowFontScaling = true,
   ModalSafeAreaBoundary = DefaultModalSafeAreaBoundary,
 }: UIProviderProps) {
   const systemScheme = useColorScheme();

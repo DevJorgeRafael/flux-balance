@@ -8,7 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useReduceMotion } from '@/components/ui/theme';
-import { useSplashTransition } from '@/context/SplashTransitionContext';
+import { useSplashTransition } from '@/store/splashTransitionStore';
 
 const ENTER_DURATION = 500;
 const REDUCED_DURATION = 200;
@@ -29,8 +29,8 @@ export function HomeReveal({
 }: HomeRevealProps) {
   const { isRevealing, revealDelay } = useSplashTransition();
   const reduceMotion = useReduceMotion();
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(reduceMotion ? 0 : distance);
+  const opacity = useSharedValue(isRevealing ? 0 : 1);
+  const translateY = useSharedValue(isRevealing && !reduceMotion ? distance : 0);
 
   useEffect(() => {
     if (!isRevealing) return;

@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import FileSpreadsheet from 'lucide-react-native/icons/file-spreadsheet';
 import FileText from 'lucide-react-native/icons/file-text';
-import { appAlert } from '@/components/ui/alert/appAlert';
+import { appAlert, appConfirm } from '@/components/ui/alert/appAlert';
 import { BackupProgressModal } from '@/components/settings/BackupProgressModal';
 import {
   DataTransferScreen,
@@ -106,42 +106,28 @@ export default function ExportDataScreen() {
     }
   }, [language, t]);
 
-  const handleExport = useCallback(() => {
+  const handleExport = useCallback(async () => {
     if (isBusy) return;
 
-    void appAlert({
-      type: 'warning',
+    const confirmed = await appConfirm({
       title: t('backupExportWarningTitle'),
       message: t('backupExportWarningMessage'),
-      buttons: [
-        { text: t('cancel'), style: 'cancel' },
-        {
-          text: t('backupExportContinue'),
-          onPress: () => {
-            void runExport();
-          },
-        },
-      ],
+      confirmText: t('backupExportContinue'),
+      cancelText: t('cancel'),
     });
+    if (confirmed) void runExport();
   }, [isBusy, runExport, t]);
 
-  const handleExportExcel = useCallback(() => {
+  const handleExportExcel = useCallback(async () => {
     if (isBusy) return;
 
-    void appAlert({
-      type: 'warning',
+    const confirmed = await appConfirm({
       title: t('backupExportWarningTitle'),
       message: t('backupExportWarningMessage'),
-      buttons: [
-        { text: t('cancel'), style: 'cancel' },
-        {
-          text: t('backupExportContinue'),
-          onPress: () => {
-            void runExportExcel();
-          },
-        },
-      ],
+      confirmText: t('backupExportContinue'),
+      cancelText: t('cancel'),
     });
+    if (confirmed) void runExportExcel();
   }, [isBusy, runExportExcel, t]);
 
   const options: DataTransferOption[] = [

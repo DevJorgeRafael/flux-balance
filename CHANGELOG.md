@@ -2,6 +2,152 @@
 
 Todos los cambios relevantes de Flux Balance se documentan en este archivo.
 
+## [2.5.7] - 2026-11-26
+
+### Añadido
+
+- Cinco imágenes promocionales para Play Store y su generador reproducible, con el splash corregido como imagen principal.
+
+### Cambiado
+
+- Splash único para claro y oscuro con el degradado del logo y el cerdito animado; fondo nativo alineado con `#1e5ae6`.
+- Versión preparada para Play Store con `versionCode` 10.
+
+## [2.5.6] - 2026-11-25
+
+### Añadido
+
+- Capturas de pantalla de tablet de 10 pulgadas y galería separada en el README.
+
+### Cambiado
+
+- Layout adaptable en tablets y plegables: fondos a todo el ancho, contenido centrado y estadísticas en dos columnas en pantallas expandidas.
+- Versión preparada para Play Store con `versionCode` 10.
+
+### Corregido
+
+- El degradado inferior tapa el contenido detrás de la barra flotante, sin filas cortadas.
+
+## [2.5.5] - 2026-11-23
+
+### Cambiado
+
+- Home más limpio: resumen sin puntos de color, gastos en blanco, carrusel compacto sin etiquetas duplicadas ni insignias decorativas, e iconos +/- neutros.
+- Cuentas más limpias: icono único por fila, estimado y vencimiento como texto neutro, barra de vencimiento en azul del tema y distribución de un solo acento.
+- Versión preparada para Play Store con `versionCode` 9.
+
+## [2.5.4] - 2026-11-23
+
+### Añadido
+
+- El formulario de movimientos conserva un borrador en el dispositivo si se interrumpe o se cierra la app.
+- Ayuda contextual para «anticipaciones», «cerebro local» y la tasa nominal anual.
+
+### Corregido
+
+- Las tarjetas del home vuelven a renderizarse al regresar de Metas o Anticipaciones, sin dejar espacios reservados.
+- El botón «Limpiar filtro» del selector de fechas ya no se parte en dos líneas.
+
+## [2.5.3] - 2026-11-23
+
+### Cambiado
+
+- El azul del hero en la status bar se desvanece con el scroll; al desplazarse, la barra adopta el fondo del tema.
+
+## [2.5.2] - 2026-11-23
+
+### Cambiado
+
+- Home más limpio: una sola Card por sección, iconos neutros, acciones con nombre y anillo de progreso compartido entre el inicio y la pantalla de Metas.
+- Todas las Cards usan el mismo fondo que la barra inferior; la elevación se expresa con sombra.
+
+## [2.5.1] - 2026-11-23
+
+### Añadido
+
+- Desde el selector de categorías del formulario principal de movimientos se puede crear una categoría nueva sin salir del flujo. Al volver, la categoría creada queda seleccionada y el resto del formulario se conserva.
+
+## [2.5.0] - 2026-11-23
+
+### Cambiado
+
+- El estado de la app usa Zustand en lugar de la mayoría de los React Context: tarjetas del inicio, splash, tema, idioma, moneda, dashboard, alertas y notificaciones.
+
+## [2.4.4] - 2026-11-23
+
+### Añadido
+
+- Filtro por fecha en el historial de movimientos de cada cuenta: permite elegir un solo día o un rango con el DatePicker, sin fechas futuras. El filtro comparte fila con los filtros Todos/Ingresos/Gastos.
+
+### Cambiado
+
+- «Ver más» del inicio muestra como máximo 10 movimientos adicionales por vez, sin ocultar el acceso al historial de la cuenta.
+
+### Corregido
+
+- Eliminado el botón «Ajustar saldo» que aparecía en el detalle de cuenta fuera de contexto.
+
+## [2.4.3] - 2026-11-23
+
+### Añadido
+
+- «Personalizar inicio» en Ajustes: permite ocultar o volver a mostrar las tarjetas de anticipaciones, progreso de metas y próximos recordatorios.
+- Acceso directo a la nueva pantalla desde los engranajes de Presupuestos y Metas. La preferencia se guarda en el dispositivo y se conserva en el respaldo.
+
+## [2.4.2] - 2026-11-23
+
+### Cambiado
+
+- Ajustes reordenados: Sistema aparece primero, seguido de Recordatorios y Categorías; Presupuestos, Cerebro local, Metas y Simulador de ahorro se agrupan en Planificación.
+- Datos y Modo desarrollador se mantienen juntos y por encima de Acerca de.
+
+## [2.4.1] - 2026-11-21
+
+### Añadido
+
+- Metas de ahorro con importe objetivo, fecha límite y cuenta opcional.
+- Simulador de ahorro con interés compuesto y cálculo de la aportación necesaria.
+- Tarjeta de progreso de la meta en el inicio.
+
+### Mejorado
+
+- El botón destructivo de las confirmaciones usa un rojo más sobrio en tema oscuro, con contraste AA.
+
+## [2.4.0] - 2026-11-21
+
+### Añadido
+
+- Cerebro local: sugiere la categoría al escribir la descripción y aprende de las correcciones, sin enviar datos a ningún servidor.
+- Pantalla de reglas aprendidas en Ajustes, con opción de borrarlas.
+
+## [2.3.1] - 2026-11-21
+
+### Añadido
+
+- Presupuestos mensuales por categoría, con alta, edición y borrado en Ajustes.
+- Tarjeta de anticipaciones en el inicio: avisa de presupuestos al límite, plazos fijos por vencer, saldo bajo y gastos atípicos.
+- Notificación del sistema una vez al día cuando hay anticipaciones; al tocarla se abre la pantalla de presupuestos.
+
+## [2.3.0] - 2026-11-21
+
+### Añadido
+
+- Transferencias reales entre cuentas: descuentan del origen, abonan en el destino y no contaminan las estadísticas.
+- Ajuste manual de saldo en el detalle de cuenta, registrado como un movimiento.
+- Los respaldos conservan las transferencias con sus dos cuentas.
+
+## [2.2.5] - 2026-11-21
+
+### Añadido
+
+- Los respaldos JSON y Excel incluyen los recordatorios con sus vínculos de cuenta y categoría.
+- Los respaldos conservan las preferencias de tema e idioma.
+- El resumen de importación muestra cuántos recordatorios contiene el respaldo.
+
+### Mejorado
+
+- Los respaldos de versiones anteriores se migran automáticamente al formato v2.
+
 ## [2.2.4] - 2026-11-21
 
 ### Añadido
